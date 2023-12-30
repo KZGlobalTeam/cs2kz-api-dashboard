@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 
-const useAdminStore = defineStore('admin', {
+export const useAdminStore = defineStore('admin', {
   state: () => ({
     name: '',
     steamId: '',
   }),
   getters: {
-    
+
   },
   actions: {
 

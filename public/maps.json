@@ -1,0 +1,156 @@
+[
+  {
+    "courses": [
+      {
+        "filters": [
+          {
+            "has_teleports": true,
+            "mode": "kz_classic",
+            "ranked": true,
+            "tier": 3
+          },
+          {
+            "has_teleports": false,
+            "mode": "kz_classic",
+            "ranked": true,
+            "tier": 4
+          }
+        ],
+        "id": 1,
+        "mappers": [
+          {
+            "name": "GameChaos",
+            "steam_id": "STEAM_1:0:102468802"
+          }
+        ],
+        "stage": 0
+      }
+    ],
+    "created_on": "2023-12-10T10:41:01Z",
+    "filesize": 190335000,
+    "id": 1,
+    "mappers": [
+      {
+        "name": "GameChaos",
+        "steam_id": "STEAM_1:0:102468802"
+      }
+    ],
+    "name": "kz_checkmate",
+    "updated_on": "2023-12-10T10:41:01Z",
+    "workshop_id": 3070194623
+  },
+  {
+    "courses": [
+      {
+        "filters": [
+          {
+            "has_teleports": false,
+            "mode": "kz_classic",
+            "ranked": true,
+            "tier": 3
+          },
+          {
+            "has_teleports": false,
+            "mode": "kz_vanilla",
+            "ranked": true,
+            "tier": 2
+          }
+        ],
+        "id": 2,
+        "mappers": [
+          {
+            "name": "Reeed",
+            "steam_id": "STEAM_1:0:102468802"
+          }
+        ],
+        "stage": 0
+      }
+    ],
+    "created_on": "2023-11-09T10:41:01Z",
+    "filesize": 190342387,
+    "id": 2,
+    "mappers": [
+      {
+        "name": "Reeed",
+        "steam_id": "STEAM_1:0:102468802"
+      }
+    ],
+    "name": "kz_tangent",
+    "updated_on": "2023-11-09T10:41:01Z",
+    "workshop_id": 3070456623
+  },
+  {
+    "courses": [
+      {
+        "filters": [
+          {
+            "has_teleports": false,
+            "mode": "kz_classic",
+            "ranked": true,
+            "tier": 4
+          },
+          {
+            "has_teleports": true,
+            "mode": "kz_classic",
+            "ranked": true,
+            "tier": 2
+          },
+          {
+            "has_teleports": false,
+            "mode": "kz_vanilla",
+            "ranked": false,
+            "tier": 1
+          }
+        ],
+        "id": 3,
+        "mappers": [
+          {
+            "name": "Reeed",
+            "steam_id": "STEAM_1:0:102468802"
+          }
+        ],
+        "stage": 0
+      },
+      {
+        "filters": [
+          {
+            "has_teleports": false,
+            "mode": "kz_classic",
+            "ranked": true,
+            "tier": 4
+          },
+          {
+            "has_teleports": true,
+            "mode": "kz_classic",
+            "ranked": false,
+            "tier": 5
+          }
+        ],
+        "id": 4,
+        "mappers": [
+          {
+            "name": "GameChaos",
+            "steam_id": "STEAM_1:0:102468802"
+          }
+        ],
+        "stage": 1
+      }
+    ],
+    "created_on": "2023-10-28T10:41:01Z",
+    "filesize": 190342387,
+    "id": 3,
+    "mappers": [
+      {
+        "name": "Reeed",
+        "steam_id": "STEAM_1:0:102468802"
+      },
+      {
+        "name": "GameChaos",
+        "steam_id": "STEAM_1:0:102468802"
+      }
+    ],
+    "name": "kz_acores",
+    "updated_on": "2023-10-28T10:41:01Z",
+    "workshop_id": 3070456623
+  }
+]
