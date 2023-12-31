@@ -40,7 +40,7 @@ onBeforeMount(() => {
 const pathArray = computed(() => route.path.split('/').filter(item => item !== '').map(item => item.charAt(0).toUpperCase() + item.slice(1)))
 
 function getLink(index: number) {
-  const path = pathArray.value.slice(0, index + 1).join('/');
+  const path = pathArray.value.slice(0, index + 1).join('/').toLowerCase();
   return '/' + path;
 }
 </script>

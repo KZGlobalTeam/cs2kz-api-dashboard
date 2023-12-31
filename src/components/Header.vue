@@ -3,7 +3,7 @@
     <p class="text-xl font-semibold">CS2KZ-API</p>
 
     <div>
-      <n-button @click="handleSignIn" strong>SIGN IN</n-button>
+      <n-button @click="handleSignIn" text-color="#6dde6d" strong>SIGN IN</n-button>
     </div>
   </div>
 </template>

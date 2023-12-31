@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[250px] bg-gray-800 min-h-screen flex flex-col py-4 px-2">
+  <div class="w-[200px] bg-gray-800 min-h-screen flex flex-col py-4 px-2">
     <RouterLink to="/home" class="flex gap-4 items-center p-2 hover:bg-gray-700 rounded-md cursor-pointer">
       <ion-icon name="home-sharp"></ion-icon>
       <p class="font-medium">Home</p>
