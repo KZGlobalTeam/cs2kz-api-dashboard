@@ -1,17 +1,17 @@
 export const baseUrl = 'http://106.14.107.95:42069'
 
 type Filter = {
-  has_teleports: boolean,
+  type: string,
   mode: string,
-  ranked: boolean,
+  // ranked: boolean,
   tier: number
 }
 
-type Course = {
+export type Course = {
   filters: Filter[],
-  id: number,
+  // id: number,
   mappers: Mapper[],
-  stage: number
+  // stage: number
 }
 
 type Mapper = {
