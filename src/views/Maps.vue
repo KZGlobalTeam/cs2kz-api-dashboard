@@ -19,6 +19,7 @@
         clearable
       />
       <n-button @click="loadMapsData">REFRESH</n-button>
+      <n-button text-color="#37ab56" @click="createMap">New Map</n-button>
     </div>
 
     <!-- maps table -->
@@ -221,6 +222,12 @@ function loadMapsData() {
       }))
       loading.value = false
     })
+}
+
+function createMap() {
+  router.push({
+    name: "createmap",
+  })
 }
 
 function goToMap(id: number) {
