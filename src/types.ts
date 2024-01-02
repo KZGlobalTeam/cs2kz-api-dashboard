@@ -1,31 +1,31 @@
-export const baseUrl = 'http://106.14.107.95:42069'
+export const baseUrl = "http://106.14.107.95:42069"
 
-type Filter = {
-  type: string,
-  mode: string,
-  // ranked: boolean,
+interface Filter {
+  ranked: boolean,
+  mode: string
+  teleports: boolean
   tier: number
 }
 
-export type Course = {
-  filters: Filter[],
-  // id: number,
-  mappers: Mapper[],
-  // stage: number
+export interface Course {
+  id: number
+  filters: Filter[]
+  mappers: Mapper[]
+  stage: number
 }
 
-type Mapper = {
-  name: string,
+export interface Mapper {
+  name: string
   steam_id: string
 }
 
-export type Map = {
-  courses: Course[],
-  created_on: string,
-  filesize: number,
-  id: number,
-  mappers: Mapper[],
-  name: string,
-  updated_on: string,
+export interface Map {
+  id: number
+  name: string
+  filesize: number
   workshop_id: number
+  courses: Course[]
+  mappers: Mapper[]
+  created_on: string
+  updated_on: string
 }

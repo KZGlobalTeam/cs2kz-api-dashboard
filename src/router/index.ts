@@ -20,12 +20,12 @@ const router = createRouter({
     {
       path: "/home/maps/:id",
       name: "map",
-      component: () => import("../views/Map.vue"),
+      component: () => import("../views/MapEditor.vue"),
     },
     {
       path: '/home/maps/create',
       name: 'createmap',
-      component: () => import('../views/CreateMap.vue')
+      component: () => import('../views/MapCreator.vue')
     },
     {
       path: "/home/servers",
