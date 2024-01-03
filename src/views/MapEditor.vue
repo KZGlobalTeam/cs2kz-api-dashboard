@@ -1,9 +1,10 @@
 <template>
-  <div v-if="map">
+  <div>
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
       <!-- basic info -->
       <n-form
-        :model="map"
+        ref="infoForm"
+        :model="info"
         :rules="rules"
         label-placement="top"
         label-width="auto"
@@ -14,23 +15,21 @@
         }"
       >
         <n-form-item label="Map" path="name">
-          <n-input v-model:value="map.name" placeholder="kz_aaaa" />
+          <n-input v-model:value="info.name" placeholder="kz_aaaa" />
         </n-form-item>
         <n-form-item label="Workshop ID" path="workshop_id">
-          <n-input
-            v-model:value="map.workshop_id"
-            placeholder="123456789"
-          />
+          <n-input v-model:value="info.workshop_id" placeholder="123456789" />
         </n-form-item>
       </n-form>
 
       <!-- mappers -->
-      <n-form :model="map">
+      <n-form :model="mappersModel" ref="mappersForm">
         <p class="mb-2">Mappers</p>
         <n-dynamic-input
-          v-model:value="map.mappers"
+          v-model:value="mappersModel.mappers"
           item-style="margin-bottom: 0;"
-          :on-create="onCreate"
+          :on-create="onCreateMapper"
+          :on-remove="onRemoveMapper"
           #="{ index }"
         >
           <div class="flex gap-4">
@@ -41,9 +40,10 @@
               :rule="mapperNameRule"
             >
               <n-input
-                v-model:value="map.mappers[index].name"
+                v-model:value="mappersModel.mappers[index].name"
                 placeholder="Name"
                 @keydown.enter.prevent
+                @input="onInputMapperName(index)"
               />
             </n-form-item>
             <n-form-item
@@ -53,9 +53,10 @@
               :rule="mapperSteamIdRule"
             >
               <n-input
-                v-model:value="map.mappers[index].steam_id"
+                v-model:value="mappersModel.mappers[index].steam_id"
                 placeholder="Steam ID"
                 @keydown.enter.prevent
+                @input="onInputMapperSteamId(index)"
               />
             </n-form-item>
           </div>
@@ -63,78 +64,168 @@
       </n-form>
     </div>
 
-    <div class="p-4 bg-gray-800 rounded-md">
-      <CourseEditor :mappers="map.mappers" :courses="map.courses" />
-    </div>
-  </div>
+    <!-- Courses -->
+    <div class="p-4 bg-gray-800 rounded-md mb-4">
+      <div>
+        <n-button @click="createCourse" text-color="#37ab56"
+          >New Course</n-button
+        >
+      </div>
 
-  <div v-else>
-    loading...
+      <!-- Course X -->
+      <div
+        v-for="(course, index) in courses"
+        :key="course.id"
+        class="p-4 bg-gray-900 border border-slate-600 rounded-md mt-4"
+      >
+        <!-- Course 1 [Delete] -->
+        <div
+          class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
+        >
+          <p class="font-medium text-xl">{{ `Course ${index}` }}</p>
+          <n-button
+            @click="deleteCourse(index)"
+            text-color="#e2e8f0"
+            type="error"
+            >Delete</n-button
+          >
+        </div>
+
+        <!-- Mappers -->
+        <p class="my-2">Mappers</p>
+        <n-select
+          multiple
+          v-model:value="course.mapperIds"
+          :options="mappersOptions"
+        />
+
+        <!-- Filters [New Filter] -->
+        <div
+          class="flex items-center justify-between border-b border-slate-600 pb-2 mt-4 mb-2"
+        >
+          <p>Filters</p>
+          <n-button
+            @click="createFilter(index)"
+            size="tiny"
+            text-color="#37ab56"
+            >New Filter</n-button
+          >
+        </div>
+
+        <n-table :bordered="false" :single-line="false">
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Type</th>
+              <th>Tier</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(filter, filterIndex) in course.filters"
+              :key="filter.id"
+            >
+              <td>
+                <n-select v-model:value="filter.mode" :options="modeOptions" />
+              </td>
+              <td>
+                <n-select v-model:value="filter.type" :options="typeOptions" />
+              </td>
+              <td>
+                <n-select v-model:value="filter.tier" :options="tierOptions" />
+              </td>
+              <td>
+                <n-button
+                  @click="deleteFilter(index, filterIndex)"
+                  type="error"
+                  size="small"
+                  text-color="#e2e8f0"
+                  >Delete</n-button
+                >
+              </td>
+            </tr>
+          </tbody>
+        </n-table>
+      </div>
+    </div>
+
+    <div class="p-4 bg-gray-800 rounded-md">
+      <n-button
+        @click.prevent="saveMap"
+        :disabled="loading"
+        :loading="loading"
+        class="saveButton"
+        text-color="#3cc962"
+        size="large"
+        strong
+        bordered
+        >Save</n-button
+      >
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeMount } from "vue"
-import { NForm, NFormItem, NInput, NDynamicInput } from "naive-ui"
-import CourseEditor from "../components/map/CourseEditor.vue"
-import type { Course, Mapper } from "../types"
-import _ from 'lodash'
+import { useRouter } from "vue-router"
+import {
+  NForm,
+  NFormItem,
+  NInput,
+  NButton,
+  NSelect,
+  NTable,
+  NDynamicInput,
+  FormInst,
+  useMessage,
+} from "naive-ui"
+import type { Map } from "../types"
 
-type Map = {
+type Filter = {
   id: number
+  mode: string
+  type: string
+  tier: number
+  ranked: boolean
+}
+
+type Course = {
+  filters: Filter[]
+  mapperIds: string[]
+  id: number
+}
+
+type Mapper = {
   name: string
-  filesize: number
-  workshop_id: string
-  courses: Course[]
-  mappers: Mapper[]
-  created_on: string
-  updated_on: string
+  steam_id: string
 }
 
-const map = ref<Map>()
+let oldMap
+// just for optimizational purposes
+let filterId = 0
+let newCourseId = 0
 
-const oldMap = ref<Map>()
+const router = useRouter()
 
-const mapData = {
-  courses: [
-    {
-      filters: [
-        {
-          teleports: true,
-          mode: "kz_classic",
-          ranked: true,
-          tier: 3,
-        },
-        {
-          teleports: false,
-          mode: "kz_classic",
-          ranked: true,
-          tier: 4,
-        },
-      ],
-      id: 1,
-      mappers: [
-        {
-          name: "GameChaos",
-          steam_id: "STEAM_1:0:102468802",
-        },
-      ],
-      stage: 0,
-    },
-  ],
-  created_on: "2023-12-10T10:41:01Z",
-  filesize: 190335000,
-  id: 1,
-  mappers: [
-    {
-      name: "GameChaos",
-      steam_id: "STEAM_1:0:102468802",
-    },
-  ],
-  name: "kz_checkmate",
-  updated_on: "2023-12-10T10:41:01Z",
-  workshop_id: 3070194623,
-}
+// const message = useMessage()
+// name, workshop_id
+const info = ref({
+  name: "",
+  workshop_id: "",
+})
+const infoForm = ref<FormInst | null>(null)
+
+// mappers input
+const mappersModel = ref<{ mappers: Mapper[] }>({mappers: [{name: '', steam_id: ''}]})
+const mappersForm = ref<FormInst | null>(null)
+
+const courses = ref<Course[]>([])
+
+// mapper select options for each course
+const mappersOptions = ref<{ label: string; value: string }[]>([])
+
+const loading = ref(false)
 
 const rules = {
   name: {
@@ -163,16 +254,174 @@ const mapperSteamIdRule = {
   message: "Invalid Steam ID.",
 }
 
+const modeOptions = [
+  { label: "Classic", value: "kz_classic" },
+  { label: "Vanilla", value: "kz_vanilla" },
+]
+
+const typeOptions = [
+  { label: "Standard", value: "standard" },
+  { label: "Pro", value: "pro" },
+]
+
+const tierOptions = [
+  { label: "1", value: 1 },
+  { label: "2", value: 2 },
+  { label: "3", value: 3 },
+  { label: "4", value: 4 },
+  { label: "5", value: 5 },
+  { label: "6", value: 6 },
+  { label: "7", value: 7 },
+  { label: "8", value: 8 },
+  { label: "9", value: 9 },
+  { label: "10", value: 10 },
+]
+
 onBeforeMount(() => {
-  map.value = {...mapData, workshop_id: String(mapData.workshop_id)}
-  // clone the original map data for later diffing
-  oldMap.value = _.cloneDeep(map.value)
+  fetch("/map.json")
+    .then((res) => res.json())
+    .then((data: Map) => {
+      // console.log("data", data)
+      // save original map data for later diffing
+      oldMap = data
+
+      // fill info model
+      info.value = { name: data.name, workshop_id: String(data.workshop_id) }
+
+      mappersModel.value = { mappers: data.mappers }
+
+      mappersOptions.value = data.mappers.map((mapper) => ({
+        label: mapper.name,
+        value: mapper.steam_id,
+      }))
+
+      courses.value = data.courses.map((course) => ({
+        filters: course.filters.map((filter) => ({
+          id: filterId++,
+          mode: filter.mode,
+          type: filter.teleports ? "standard" : "pro",
+          tier: filter.tier,
+          ranked: filter.ranked,
+        })),
+        mapperIds: course.mappers.map((mapper) => mapper.steam_id),
+        id: course.id,
+      }))
+    })
 })
 
-function onCreate() {
+function onCreateMapper() {
+  mappersOptions.value.push({ label: "", value: "" })
   return {
     name: "",
     steam_id: "",
   }
 }
+
+function onRemoveMapper(index: number) {
+  mappersOptions.value.splice(index, 1)
+}
+
+function onInputMapperName(index: number) {
+  mappersOptions.value[index].label = mappersModel.value.mappers[index].name
+}
+
+function onInputMapperSteamId(index: number) {
+  mappersOptions.value[index].value = mappersModel.value.mappers[index].steam_id
+}
+
+// the stage number is based on the index of the course
+function createCourse() {
+  courses.value.push({
+    filters: [
+      {
+        id: filterId++,
+        mode: "kz_classic",
+        type: "standard",
+        tier: 1,
+        ranked: false
+      },
+    ],
+    mapperIds: [],
+    id: newCourseId++,
+  })
+}
+
+function deleteCourse(courseIndex: number) {
+  courses.value.splice(courseIndex, 1)
+}
+
+function createFilter(courseIndex: number) {
+  courses.value[courseIndex].filters.push({
+    id: filterId++,
+    mode: "kz_classic",
+    type: "standard",
+    tier: 1,
+    ranked: false
+  })
+}
+
+function deleteFilter(courseIndex: number, filterIndex: number) {
+  courses.value[courseIndex].filters.splice(filterIndex, 1)
+}
+
+function saveMap() {
+  // validate map info
+  infoForm.value?.validate((errors) => {
+    if (errors) {
+      // message.error("Incomplete map information.")
+    } else {
+      // validate mappers
+      mappersForm.value?.validate((errors) => {
+        if (errors) {
+          // message.error("Incomplete mapper information.")
+        } else {
+          // validate courses
+          const missingMapper = courses.value.some(
+            (course) => course.mapperIds.length === 0
+          )
+
+          if (missingMapper) {
+            // message.error("Missing mapper information in courses.")
+          } else {
+            submitMap()
+          }
+        }
+      })
+    }
+  })
+}
+
+function submitMap() {
+  loading.value = true
+  const mapToCreate = {
+    name: info.value.name,
+    workshop_id: parseInt(info.value.workshop_id),
+    mappers: mappersModel.value.mappers.map((mapper) => mapper.steam_id),
+    courses: courses.value.map((course, index) => ({
+      stage: index,
+      filters: course.filters.map((filter) => ({
+        mode: filter.mode,
+        teleports: filter.type === "standard" ? true : false,
+        tier: filter.tier,
+        ranked: false,
+      })),
+      mappers: course.mapperIds,
+    })),
+  }
+
+  setTimeout(() => {
+    console.log("map created", JSON.stringify(mapToCreate))
+    loading.value = false
+    // message.success("Map created")
+    router.push({
+      name: "maps",
+    })
+  }, 3000)
+}
 </script>
+
+<style scoped>
+.saveButton {
+  font-size: 16px;
+}
+</style>

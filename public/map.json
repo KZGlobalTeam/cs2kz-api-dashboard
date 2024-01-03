@@ -1,0 +1,22 @@
+{
+  "name": "kz_checkmate",
+  "workshop_id": 3070194623,
+  "mappers": ["STEAM_1:0:102468802", "STEAM_1:0:15624523"],
+  "courses": [
+    {
+      "stage": 0,
+      "filters": [
+        { "mode": "kz_classic", "teleports": true, "tier": 3, "ranked": false },
+        { "mode": "kz_classic", "teleports": false, "tier": 4, "ranked": false }
+      ],
+      "mappers": ["STEAM_1:0:102468802"]
+    },
+    {
+      "stage": 1,
+      "filters": [
+        { "mode": "kz_classic", "teleports": true, "tier": 1, "ranked": false }
+      ],
+      "mappers": ["STEAM_1:0:102468802", "STEAM_1:0:15624523"]
+    }
+  ]
+}

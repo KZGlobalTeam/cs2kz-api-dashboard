@@ -1,6 +1,6 @@
 export const baseUrl = "http://106.14.107.95:42069"
 
-interface Filter {
+export interface Filter {
   ranked: boolean,
   mode: string
   teleports: boolean

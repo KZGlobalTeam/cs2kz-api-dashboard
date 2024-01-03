@@ -1,22 +1,24 @@
 <template>
   <div class="font-poppings text-slate-200">
     <n-config-provider :theme="darkTheme" :locale="enUS">
-      <Header />
-      <div class="flex">
-        <NavBar />
-        <div class="flex-1 bg-gray-900 p-4">
-          <div class="flex mb-4">
-            <div class="flex items-center mr-1" v-for="(part, index) in pathArray" :key="index">
-              <RouterLink class="mr-1"
-                :class="index !== pathArray.length - 1 ? 'bg-gray-800 hover:bg-gray-700 text-green-600 py-1 px-[10px] rounded-md' : 'cursor-default'"
-                :to="getLink(index)">{{ part }}
-              </RouterLink>
-              <ion-icon v-if="index !== pathArray.length - 1" size="" name="chevron-forward-sharp"></ion-icon>
+      <!-- <n-message-provider> -->
+        <Header />
+        <div class="flex">
+          <NavBar />
+          <div class="flex-1 bg-gray-900 p-4">
+            <div class="flex mb-4">
+              <div class="flex items-center mr-1" v-for="(part, index) in pathArray" :key="index">
+                <RouterLink class="mr-1"
+                  :class="index !== pathArray.length - 1 ? 'bg-gray-800 hover:bg-gray-700 text-blue-600 py-1 px-[10px] rounded-md' : 'cursor-default'"
+                  :to="getLink(index)">{{ part }}
+                </RouterLink>
+                <ion-icon v-if="index !== pathArray.length - 1" size="" name="chevron-forward-sharp"></ion-icon>
+              </div>
             </div>
+            <RouterView />
           </div>
-          <RouterView />
         </div>
-      </div>
+      <!-- </n-message-provider> -->
     </n-config-provider>
   </div>
 </template>
@@ -26,7 +28,7 @@ import Header from './components/Header.vue';
 import NavBar from './components/NavBar.vue';
 import { RouterView, useRoute } from 'vue-router';
 import { onBeforeMount, computed } from 'vue'
-import { darkTheme, NConfigProvider, enUS } from 'naive-ui';
+import { darkTheme, NConfigProvider, NMessageProvider, enUS } from 'naive-ui';
 import { useAdminStore } from './store/admin';
 
 const adminStore = useAdminStore()
