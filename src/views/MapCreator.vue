@@ -17,10 +17,7 @@
           <n-input v-model:value="info.name" placeholder="kz_aaaa" />
         </n-form-item>
         <n-form-item label="Workshop ID" path="workshop_id">
-          <n-input
-            v-model:value="info.workshop_id"
-            placeholder="123456789"
-          />
+          <n-input v-model:value="info.workshop_id" placeholder="123456789" />
         </n-form-item>
       </n-form>
 
@@ -152,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, watch } from "vue"
 import {
   NForm,
   NFormItem,
@@ -250,16 +247,33 @@ const tierOptions = [
   { label: "10", value: 10 },
 ]
 
-const mappersOptions = computed(() => {
-  return Array(courses.value.length)
-    .fill(null)
-    .map((_) => {
-      return mappersModel.value.mappers.map((mapper) => ({
-        label: mapper.name,
-        value: mapper.steam_id,
-      }))
-    })
-})
+// const mappersOptions = computed(() => {
+//   return Array(courses.value.length)
+//     .fill(null)
+//     .map((_) => {
+//       return mappersModel.value.mappers.map((mapper) => ({
+//         label: mapper.name,
+//         value: mapper.steam_id,
+//       }))
+//     })
+// })
+
+let mappersOptions: { label: string; value: string }[][]
+
+watch(
+  () => courses.value.length,
+  (newLength: number) => {
+    mappersOptions = Array(newLength)
+      .fill(null)
+      .map((_) => {
+        return mappersModel.value.mappers.map((mapper) => ({
+          label: mapper.name,
+          value: mapper.steam_id,
+        }))
+      })
+  },
+  { immediate: true }
+)
 
 // the stage number is based on the index of the course
 function createCourse() {
