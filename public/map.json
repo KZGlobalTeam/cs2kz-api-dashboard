@@ -19,6 +19,7 @@
       "stage": 0,
       "filters": [
         {
+          "id": 1,
           "mode": "kz_classic",
           "teleports": true,
           "tier": 3,
@@ -41,12 +42,14 @@
       "stage": 1,
       "filters": [
         {
+          "id": 2,
           "mode": "kz_classic",
           "teleports": true,
           "tier": 1,
           "ranked_status": "unranked"
         },
         {
+          "id": 3,
           "mode": "kz_vanilla",
           "teleports": false,
           "tier": 4,

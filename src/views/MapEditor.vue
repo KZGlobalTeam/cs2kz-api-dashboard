@@ -188,6 +188,7 @@ import {
   useMessage,
 } from "naive-ui"
 import type { Map } from "../types"
+import _ from "lodash"
 
 type Filter = {
   id: number
@@ -198,13 +199,14 @@ type Filter = {
 }
 
 type Course = {
+  id: number
+  stage: number
   filters: Filter[]
   mapperIds: string[]
-  id: number
 }
 
-let newFilterId = 0
-let newCourseId = 0
+let newFilterId = -1
+let newCourseId = -1
 let oldMap: Map
 
 const router = useRouter()
@@ -223,9 +225,11 @@ const mappersForm = ref<FormInst | null>(null)
 
 const courses = ref<Course[]>([
   {
+    id: newCourseId--,
+    stage: 0,
     filters: [
       {
-        id: newFilterId++,
+        id: newFilterId--,
         mode: "kz_classic",
         type: "standard",
         ranked_status: "unranked",
@@ -233,7 +237,6 @@ const courses = ref<Course[]>([
       },
     ],
     mapperIds: [],
-    id: newCourseId++,
   },
 ])
 
@@ -304,7 +307,7 @@ onBeforeMount(() => {
       })
       .then((result: Map) => {
         // save original map data for later comparison
-        oldMap = result
+        oldMap = _.cloneDeep(result)
         info.value = {
           workshop_id: result.workshop_id.toString(),
         }
@@ -314,15 +317,16 @@ onBeforeMount(() => {
           value: mapper.steam_id,
         }))
         courses.value = result.courses.map((course) => ({
+          id: course.id,
+          stage: course.stage,
           filters: course.filters.map((filter) => ({
             id: filter.id,
             mode: filter.mode,
-            type: filter.teleports ? "pro" : "standard",
+            type: filter.teleports ? "standard" : "pro",
             tier: filter.tier,
             ranked_status: filter.ranked_status,
           })),
           mapperIds: course.mappers.map((mapper) => mapper.steam_id),
-          id: course.id,
         }))
       })
   }
@@ -360,9 +364,11 @@ function onInputMapperSteamId(index: number) {
 // the stage number is based on the index of the course
 function createCourse() {
   courses.value.push({
+    id: newCourseId--,
+    stage: 0,
     filters: [
       {
-        id: newFilterId++,
+        id: newFilterId--,
         mode: "kz_classic",
         type: "standard",
         tier: 1,
@@ -370,7 +376,6 @@ function createCourse() {
       },
     ],
     mapperIds: [],
-    id: newCourseId++,
   })
 }
 
@@ -380,7 +385,7 @@ function deleteCourse(courseIndex: number) {
 
 function createFilter(courseIndex: number) {
   courses.value[courseIndex].filters.push({
-    id: newFilterId++,
+    id: newFilterId--,
     mode: "kz_classic",
     type: "standard",
     tier: 1,
@@ -441,22 +446,25 @@ function createMap() {
   }
 
   setTimeout(() => {
-    console.log("map created", JSON.stringify(mapToCreate))
+    console.log("map created", mapToCreate)
     loading.value = false
     // message.success("Map created")
     router.push({
       name: "maps",
     })
-  }, 3000)
+  }, 2000)
 }
 
 function updateMap() {
   loading.value = true
+  // update stage
+  courses.value.forEach((course, index) => {
+    course.stage = index
+  })
   // this is horrendous
   const mapToPatch = {
     id: oldMap.id,
     workshop_id: parseInt(info.value.workshop_id),
-
 
     added_mappers: mappersModel.value.mappers
       .filter(
@@ -467,7 +475,6 @@ function updateMap() {
       )
       .map((mapper) => mapper.steam_id),
 
-
     removed_mappers: oldMap.mappers
       .filter(
         (oldMapper) =>
@@ -477,14 +484,13 @@ function updateMap() {
       )
       .map((mapper) => mapper.steam_id),
 
-
     added_courses: courses.value
       .filter(
         (course) =>
           !oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
       )
       .map((course) => ({
-        stage: course.id,
+        stage: course.stage,
         filters: course.filters.map((filter) => ({
           mode: filter.mode,
           teleports: filter.type === "standard" ? true : false,
@@ -494,7 +500,6 @@ function updateMap() {
         mappers: course.mapperIds,
       })),
 
-
     removed_courses: oldMap.courses
       .filter(
         (oldCourse) =>
@@ -502,68 +507,80 @@ function updateMap() {
       )
       .map((course) => course.id),
 
+    course_updates: courses.value.map((course) => {
+      const oldCourse = oldMap.courses.find(
+        (oldCourse) => oldCourse.id === course.id
+      )!
+      return {
+        id: course.id,
+        stage: course.stage,
+        added_filters: course.filters
+          .filter(
+            (filter) =>
+              !oldCourse.filters.some((oldFilter) => oldFilter.id === filter.id)
+          )
+          .map((filter) => ({
+            mode: filter.mode,
+            teleports: filter.type === "standard" ? true : false,
+            tier: filter.tier,
+            ranked_status: filter.ranked_status,
+          })),
 
-    course_updates: courses.value
-      .filter((course) =>
-        oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
-      )
-      .map((course) => {
-        const oldCourse = oldMap.courses.find(
-          (oldCourse) => oldCourse.id === course.id
-        )!
-        return {
-          id: course.id,
+        removed_filters: oldCourse.filters
+          .filter(
+            (oldFilter) =>
+              !course.filters.some((filter) => filter.id === oldFilter.id)
+          )
+          .map((filter) => filter.id),
 
-          added_filters: course.filters
-            .filter(
-              (filter) =>
-                !oldCourse.filters.some(
-                  (oldFilter) => oldFilter.id === filter.id
-                )
-            )
-            .map((filter) => ({
+        filter_updates: course.filters
+          .filter((filter) =>
+            oldCourse.filters.some((oldFilter) => {
+              let oldType = oldFilter.teleports ? "standard" : "pro"
+              return (
+                oldFilter.id === filter.id &&
+                (oldFilter.mode !== filter.mode ||
+                  oldType !== filter.type ||
+                  oldFilter.tier !== filter.tier ||
+                  oldFilter.ranked_status !== filter.ranked_status)
+              )
+            })
+          )
+          .map((filter) => {
+            return {
               id: filter.id,
               mode: filter.mode,
               teleports: filter.type === "standard" ? true : false,
               tier: filter.tier,
               ranked_status: filter.ranked_status,
-            })),
+            }
+          }),
 
-          removed_filters: oldCourse.filters
-            .filter(
-              (oldFilter) =>
-                !course.filters.some((filter) => filter.id === oldFilter.id)
+        added_mappers: course.mapperIds.filter(
+          (mapper) =>
+            !oldCourse.mappers.some(
+              (oldMapper) => oldMapper.steam_id === mapper
             )
-            .map((filter) => filter.id),
+        ),
 
-          filter_updates: course.filters
-            .filter((filter) =>
-              oldCourse.filters.some((oldFilter) => oldFilter.id === filter.id)
-            )
-            .map((filter) => {
-              return {
-                id: filter.id,
-                mode: filter.mode,
-                teleports: filter.type === "standard" ? true : false,
-                tier: filter.tier,
-                ranked_status: filter.ranked_status,
-              }
-            }),
-
-          added_mappers: course.mapperIds.filter(
-            (mapper) =>
-              !oldCourse.mappers.some(
-                (oldMapper) => oldMapper.steam_id === mapper
-              )
-          ),
-          
-          removed_mappers: oldCourse.mappers.filter(
+        removed_mappers: oldCourse.mappers
+          .filter(
             (oldMapper) =>
               !course.mapperIds.some((mapper) => mapper === oldMapper.steam_id)
-          ),
-        }
-      }),
+          )
+          .map((mapper) => mapper.steam_id),
+      }
+    }),
   }
+
+  setTimeout(() => {
+    console.log("map updated", mapToPatch)
+    loading.value = false
+    // message.success("Map updated")
+    // router.push({
+    //   name: "maps",
+    // })
+  }, 2000)
 }
 </script>
 
