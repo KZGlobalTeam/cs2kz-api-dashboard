@@ -25,7 +25,7 @@ const router = createRouter({
     {
       path: '/home/maps/create',
       name: 'createmap',
-      component: () => import('../views/MapCreator.vue')
+      component: () => import('../views/MapEditor.vue')
     },
     {
       path: "/home/servers",

@@ -1,22 +1,64 @@
 {
-  "name": "kz_checkmate",
-  "workshop_id": 3070194623,
-  "mappers": ["STEAM_1:0:102468802", "STEAM_1:0:15624523"],
-  "courses": [
+  "id": 1,
+  "name": "kz_tangent",
+  "filesize": 18475024,
+  "workshop_id": 341653467,
+  "mappers": [
     {
-      "stage": 0,
-      "filters": [
-        { "mode": "kz_classic", "teleports": true, "tier": 3, "ranked": false },
-        { "mode": "kz_classic", "teleports": false, "tier": 4, "ranked": false }
-      ],
-      "mappers": ["STEAM_1:0:102468802"]
+      "name": "GameChaos",
+      "steam_id": "STEAM_1:0:102468802"
     },
     {
+      "name": "Reeed",
+      "steam_id": "STEAM_1:0:103479001"
+    }
+  ],
+  "courses": [
+    {
+      "id": 1,
+      "stage": 0,
+      "filters": [
+        {
+          "mode": "kz_classic",
+          "teleports": true,
+          "tier": 3,
+          "ranked_status": "unranked"
+        }
+      ],
+      "mappers": [
+        {
+          "name": "GameChaos",
+          "steam_id": "STEAM_1:0:102468802"
+        },
+        {
+          "name": "Reeed",
+          "steam_id": "STEAM_1:0:103479001"
+        }
+      ]
+    },
+    {
+      "id": 2,
       "stage": 1,
       "filters": [
-        { "mode": "kz_classic", "teleports": true, "tier": 1, "ranked": false }
+        {
+          "mode": "kz_classic",
+          "teleports": true,
+          "tier": 1,
+          "ranked_status": "unranked"
+        },
+        {
+          "mode": "kz_vanilla",
+          "teleports": false,
+          "tier": 4,
+          "ranked_status": "never"
+        }
       ],
-      "mappers": ["STEAM_1:0:102468802", "STEAM_1:0:15624523"]
+      "mappers": [
+        {
+          "name": "Reeed",
+          "steam_id": "STEAM_1:0:103479001"
+        }
+      ]
     }
   ]
 }

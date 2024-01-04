@@ -14,9 +14,9 @@
           maxWidth: '640px',
         }"
       >
-        <n-form-item label="Map" path="name">
+        <!-- <n-form-item label="Map" path="name">
           <n-input v-model:value="info.name" placeholder="kz_aaaa" />
-        </n-form-item>
+        </n-form-item> -->
         <n-form-item label="Workshop ID" path="workshop_id">
           <n-input v-model:value="info.workshop_id" placeholder="123456789" />
         </n-form-item>
@@ -118,6 +118,7 @@
               <th>Mode</th>
               <th>Type</th>
               <th>Tier</th>
+              <th>Ranked Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -134,6 +135,12 @@
               </td>
               <td>
                 <n-select v-model:value="filter.tier" :options="tierOptions" />
+              </td>
+              <td>
+                <n-select
+                  v-model:value="filter.ranked_status"
+                  :options="rankedStatusOptions"
+                />
               </td>
               <td>
                 <n-button
@@ -168,7 +175,7 @@
 
 <script setup lang="ts">
 import { ref, onBeforeMount } from "vue"
-import { useRouter } from "vue-router"
+import { useRouter, useRoute } from "vue-router"
 import {
   NForm,
   NFormItem,
@@ -187,7 +194,7 @@ type Filter = {
   mode: string
   type: string
   tier: number
-  ranked: boolean
+  ranked_status: string
 }
 
 type Course = {
@@ -196,34 +203,44 @@ type Course = {
   id: number
 }
 
-type Mapper = {
-  name: string
-  steam_id: string
-}
-
-let oldMap
-// just for optimizational purposes
-let filterId = 0
+let newFilterId = 0
 let newCourseId = 0
+let oldMap: Map
 
 const router = useRouter()
+const route = useRoute()
 
 // const message = useMessage()
 // name, workshop_id
 const info = ref({
-  name: "",
   workshop_id: "",
 })
 const infoForm = ref<FormInst | null>(null)
 
 // mappers input
-const mappersModel = ref<{ mappers: Mapper[] }>({mappers: [{name: '', steam_id: ''}]})
+const mappersModel = ref({ mappers: [{ name: "", steam_id: "" }] })
 const mappersForm = ref<FormInst | null>(null)
 
-const courses = ref<Course[]>([])
+const courses = ref<Course[]>([
+  {
+    filters: [
+      {
+        id: newFilterId++,
+        mode: "kz_classic",
+        type: "standard",
+        ranked_status: "unranked",
+        tier: 1,
+      },
+    ],
+    mapperIds: [],
+    id: newCourseId++,
+  },
+])
 
 // mapper select options for each course
-const mappersOptions = ref<{ label: string; value: string }[]>([])
+const mappersOptions = ref<{ label: string; value: string }[]>([
+  { label: "", value: "" },
+])
 
 const loading = ref(false)
 
@@ -240,13 +257,11 @@ const rules = {
     message: "Invalid workshop id.",
   },
 }
-
 const mapperNameRule = {
   required: true,
   trigger: ["blur", "input"],
   message: "Name is required.",
 }
-
 // TODO: validate steam id
 const mapperSteamIdRule = {
   required: true,
@@ -258,12 +273,10 @@ const modeOptions = [
   { label: "Classic", value: "kz_classic" },
   { label: "Vanilla", value: "kz_vanilla" },
 ]
-
 const typeOptions = [
   { label: "Standard", value: "standard" },
   { label: "Pro", value: "pro" },
 ]
-
 const tierOptions = [
   { label: "1", value: 1 },
   { label: "2", value: 2 },
@@ -276,37 +289,43 @@ const tierOptions = [
   { label: "9", value: 9 },
   { label: "10", value: 10 },
 ]
+const rankedStatusOptions = [
+  { label: "Never", value: "never" },
+  { label: "Unranked", value: "unranked" },
+  { label: "Ranked", value: "ranked" },
+]
 
 onBeforeMount(() => {
-  fetch("/map.json")
-    .then((res) => res.json())
-    .then((data: Map) => {
-      // console.log("data", data)
-      // save original map data for later diffing
-      oldMap = data
-
-      // fill info model
-      info.value = { name: data.name, workshop_id: String(data.workshop_id) }
-
-      mappersModel.value = { mappers: data.mappers }
-
-      mappersOptions.value = data.mappers.map((mapper) => ({
-        label: mapper.name,
-        value: mapper.steam_id,
-      }))
-
-      courses.value = data.courses.map((course) => ({
-        filters: course.filters.map((filter) => ({
-          id: filterId++,
-          mode: filter.mode,
-          type: filter.teleports ? "standard" : "pro",
-          tier: filter.tier,
-          ranked: filter.ranked,
-        })),
-        mapperIds: course.mappers.map((mapper) => mapper.steam_id),
-        id: course.id,
-      }))
-    })
+  // load map data
+  if (route.params.id) {
+    fetch(`/map.json`)
+      .then((res) => {
+        return res.json()
+      })
+      .then((result: Map) => {
+        // save original map data for later comparison
+        oldMap = result
+        info.value = {
+          workshop_id: result.workshop_id.toString(),
+        }
+        mappersModel.value.mappers = result.mappers
+        mappersOptions.value = result.mappers.map((mapper) => ({
+          label: mapper.name,
+          value: mapper.steam_id,
+        }))
+        courses.value = result.courses.map((course) => ({
+          filters: course.filters.map((filter) => ({
+            id: filter.id,
+            mode: filter.mode,
+            type: filter.teleports ? "pro" : "standard",
+            tier: filter.tier,
+            ranked_status: filter.ranked_status,
+          })),
+          mapperIds: course.mappers.map((mapper) => mapper.steam_id),
+          id: course.id,
+        }))
+      })
+  }
 })
 
 function onCreateMapper() {
@@ -323,10 +342,19 @@ function onRemoveMapper(index: number) {
 
 function onInputMapperName(index: number) {
   mappersOptions.value[index].label = mappersModel.value.mappers[index].name
+  // if (inputTimer.value) clearTimeout(inputTimer.value)
+  // inputTimer.value = setTimeout(() => {
+  //   mappersOptions.value[index].label = mappersModel.value.mappers[index].name
+  // }, 500)
 }
 
 function onInputMapperSteamId(index: number) {
   mappersOptions.value[index].value = mappersModel.value.mappers[index].steam_id
+  // if (inputTimer.value) clearTimeout(inputTimer.value)
+  // inputTimer.value = setTimeout(() => {
+  //   mappersOptions.value[index].value =
+  //     mappersModel.value.mappers[index].steam_id
+  // }, 500)
 }
 
 // the stage number is based on the index of the course
@@ -334,11 +362,11 @@ function createCourse() {
   courses.value.push({
     filters: [
       {
-        id: filterId++,
+        id: newFilterId++,
         mode: "kz_classic",
         type: "standard",
         tier: 1,
-        ranked: false
+        ranked_status: "unranked",
       },
     ],
     mapperIds: [],
@@ -352,11 +380,11 @@ function deleteCourse(courseIndex: number) {
 
 function createFilter(courseIndex: number) {
   courses.value[courseIndex].filters.push({
-    id: filterId++,
+    id: newFilterId++,
     mode: "kz_classic",
     type: "standard",
     tier: 1,
-    ranked: false
+    ranked_status: "unranked",
   })
 }
 
@@ -383,7 +411,11 @@ function saveMap() {
           if (missingMapper) {
             // message.error("Missing mapper information in courses.")
           } else {
-            submitMap()
+            if (route.params.id) {
+              updateMap()
+            } else {
+              createMap()
+            }
           }
         }
       })
@@ -391,10 +423,9 @@ function saveMap() {
   })
 }
 
-function submitMap() {
+function createMap() {
   loading.value = true
   const mapToCreate = {
-    name: info.value.name,
     workshop_id: parseInt(info.value.workshop_id),
     mappers: mappersModel.value.mappers.map((mapper) => mapper.steam_id),
     courses: courses.value.map((course, index) => ({
@@ -403,7 +434,7 @@ function submitMap() {
         mode: filter.mode,
         teleports: filter.type === "standard" ? true : false,
         tier: filter.tier,
-        ranked: false,
+        ranked_status: filter.ranked_status,
       })),
       mappers: course.mapperIds,
     })),
@@ -417,6 +448,122 @@ function submitMap() {
       name: "maps",
     })
   }, 3000)
+}
+
+function updateMap() {
+  loading.value = true
+  // this is horrendous
+  const mapToPatch = {
+    id: oldMap.id,
+    workshop_id: parseInt(info.value.workshop_id),
+
+
+    added_mappers: mappersModel.value.mappers
+      .filter(
+        (mapper) =>
+          !oldMap.mappers.some(
+            (oldMapper) => oldMapper.steam_id === mapper.steam_id
+          )
+      )
+      .map((mapper) => mapper.steam_id),
+
+
+    removed_mappers: oldMap.mappers
+      .filter(
+        (oldMapper) =>
+          !mappersModel.value.mappers.some(
+            (mapper) => mapper.steam_id === oldMapper.steam_id
+          )
+      )
+      .map((mapper) => mapper.steam_id),
+
+
+    added_courses: courses.value
+      .filter(
+        (course) =>
+          !oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
+      )
+      .map((course) => ({
+        stage: course.id,
+        filters: course.filters.map((filter) => ({
+          mode: filter.mode,
+          teleports: filter.type === "standard" ? true : false,
+          tier: filter.tier,
+          ranked_status: filter.ranked_status,
+        })),
+        mappers: course.mapperIds,
+      })),
+
+
+    removed_courses: oldMap.courses
+      .filter(
+        (oldCourse) =>
+          !courses.value.some((course) => course.id === oldCourse.id)
+      )
+      .map((course) => course.id),
+
+
+    course_updates: courses.value
+      .filter((course) =>
+        oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
+      )
+      .map((course) => {
+        const oldCourse = oldMap.courses.find(
+          (oldCourse) => oldCourse.id === course.id
+        )!
+        return {
+          id: course.id,
+
+          added_filters: course.filters
+            .filter(
+              (filter) =>
+                !oldCourse.filters.some(
+                  (oldFilter) => oldFilter.id === filter.id
+                )
+            )
+            .map((filter) => ({
+              id: filter.id,
+              mode: filter.mode,
+              teleports: filter.type === "standard" ? true : false,
+              tier: filter.tier,
+              ranked_status: filter.ranked_status,
+            })),
+
+          removed_filters: oldCourse.filters
+            .filter(
+              (oldFilter) =>
+                !course.filters.some((filter) => filter.id === oldFilter.id)
+            )
+            .map((filter) => filter.id),
+
+          filter_updates: course.filters
+            .filter((filter) =>
+              oldCourse.filters.some((oldFilter) => oldFilter.id === filter.id)
+            )
+            .map((filter) => {
+              return {
+                id: filter.id,
+                mode: filter.mode,
+                teleports: filter.type === "standard" ? true : false,
+                tier: filter.tier,
+                ranked_status: filter.ranked_status,
+              }
+            }),
+
+          added_mappers: course.mapperIds.filter(
+            (mapper) =>
+              !oldCourse.mappers.some(
+                (oldMapper) => oldMapper.steam_id === mapper
+              )
+          ),
+          
+          removed_mappers: oldCourse.mappers.filter(
+            (oldMapper) =>
+              !course.mapperIds.some((mapper) => mapper === oldMapper.steam_id)
+          ),
+        }
+      }),
+  }
 }
 </script>
 

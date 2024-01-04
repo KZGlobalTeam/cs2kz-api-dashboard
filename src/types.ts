@@ -1,10 +1,11 @@
 export const baseUrl = "http://106.14.107.95:42069"
 
 export interface Filter {
-  ranked: boolean,
+  id: number
   mode: string
   teleports: boolean
   tier: number
+  ranked_status: 'never' | 'unranked' | 'ranked',
 }
 
 export interface Course {
