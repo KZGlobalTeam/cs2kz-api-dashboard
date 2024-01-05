@@ -1,7 +1,7 @@
 <template>
   <div class="font-poppings text-slate-200">
     <n-config-provider :theme="darkTheme" :locale="enUS">
-      <!-- <n-message-provider> -->
+      <n-message-provider>
         <Header />
         <div class="flex">
           <NavBar />
@@ -18,7 +18,7 @@
             <RouterView />
           </div>
         </div>
-      <!-- </n-message-provider> -->
+      </n-message-provider>
     </n-config-provider>
   </div>
 </template>

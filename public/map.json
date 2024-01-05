@@ -23,7 +23,28 @@
           "mode": "kz_classic",
           "teleports": true,
           "tier": 3,
-          "ranked_status": "unranked"
+          "ranked_status": "ranked"
+        },
+        {
+          "id": 2,
+          "mode": "kz_classic",
+          "teleports": false,
+          "tier": 3,
+          "ranked_status": "ranked"
+        },
+        {
+          "id": 3,
+          "mode": "kz_vanilla",
+          "teleports": true,
+          "tier": 5,
+          "ranked_status": "ranked"
+        },
+        {
+          "id": 4,
+          "mode": "kz_vanilla",
+          "teleports": false,
+          "tier": 6,
+          "ranked_status": "ranked"
         }
       ],
       "mappers": [
@@ -42,18 +63,32 @@
       "stage": 1,
       "filters": [
         {
-          "id": 2,
+          "id": 5,
           "mode": "kz_classic",
           "teleports": true,
-          "tier": 1,
+          "tier": 2,
           "ranked_status": "unranked"
         },
         {
-          "id": 3,
+          "id": 6,
+          "mode": "kz_classic",
+          "teleports": false,
+          "tier": 3,
+          "ranked_status": "unranked"
+        },
+        {
+          "id": 7,
+          "mode": "kz_vanilla",
+          "teleports": true,
+          "tier": 9,
+          "ranked_status": "unranked"
+        },
+        {
+          "id": 8,
           "mode": "kz_vanilla",
           "teleports": false,
-          "tier": 4,
-          "ranked_status": "never"
+          "tier": 10,
+          "ranked_status": "unranked"
         }
       ],
       "mappers": [
