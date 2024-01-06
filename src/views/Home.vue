@@ -1,6 +1,6 @@
 <template>
   <div class="text-slate-200">
-    The home page of the cs2 kz api.
+    KREEDZ.
   </div>
 </template>
 

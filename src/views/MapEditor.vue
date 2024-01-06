@@ -331,9 +331,9 @@ function createMap() {
     console.log("map created", mapToCreate)
     loading.value = false
     message.success("Map created", { duration: 3000 })
-    // router.push({
-    //   name: "maps",
-    // })
+    router.push({
+      name: "maps",
+    })
   }, 2000)
 }
 
@@ -444,9 +444,9 @@ function updateMap() {
     console.log("map updated", mapToUpdate)
     loading.value = false
     message.success("Map created", { duration: 3000 })
-    // router.push({
-    //   name: "maps",
-    // })
+    router.push({
+      name: "maps",
+    })
   }, 2000)
 }
 </script>

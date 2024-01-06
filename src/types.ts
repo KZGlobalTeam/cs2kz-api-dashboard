@@ -1,4 +1,4 @@
-export const baseUrl = "http://106.14.107.95:42069"
+export const apiBaseUrl = "http://106.14.107.95:42069"
 
 export interface Filter {
   id: number

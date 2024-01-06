@@ -1,1 +1,2 @@
-This project is aimed for managing cs2 kz api for admins.
+# Dashboard for cs2 kz API
+WIP
