@@ -11,13 +11,8 @@ export default defineConfig({
       }
     }
   })],
-  // server: {
-  //   proxy: {
-  //     '/api': {
-  //       target: 'http://106.14.107.95:42069',
-  //       changeOrigin: true,
-  //       rewrite: (path) => path.replace(/^\/api/, ''),
-  //     },
-  //   }
-  // }
+  server: {
+    host: '127.0.0.1',
+    port: 80
+  }
 })

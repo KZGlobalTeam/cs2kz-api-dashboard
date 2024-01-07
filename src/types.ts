@@ -1,11 +1,13 @@
-export const apiBaseUrl = "http://106.14.107.95:42069"
+export const apiBaseUrl = "http://127.0.0.1:42069"
+export const steamApiUrl =
+  "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2"
 
 export interface Filter {
   id: number
-  mode: 'kz_classic' | 'kz_vanilla'
+  mode: "kz_classic" | "kz_vanilla"
   teleports: boolean
   tier: number
-  ranked_status: 'never' | 'unranked' | 'ranked',
+  ranked_status: "never" | "unranked" | "ranked"
 }
 
 export interface Course {

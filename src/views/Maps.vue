@@ -47,6 +47,7 @@ import type {
 import type { Map } from "../types"
 import { format } from "date-fns"
 import { useRouter } from "vue-router"
+import axiosClient from "../axios"
 
 type RowData = {
   id: number
@@ -103,7 +104,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
           "a",
           {
             href: `https://steamcommunity.com/sharedfiles/filedetails/?id=${rowData.workshop_id}`,
-            target: '_blank',
+            target: "_blank",
             class: "text-blue-600 underline",
           },
           {
@@ -206,22 +207,38 @@ onBeforeMount(() => {
   loadMapsData()
 })
 
-function loadMapsData() {
+async function loadMapsData() {
   loading.value = true
-  fetch("/maps.json")
-    .then((res) => {
-      return res.json()
-    })
-    .then((result: Map[]) => {
-      data.value = result.map((v) => ({
-        id: v.id,
-        name: v.name,
-        created_on: format(new Date(v.created_on), "yyyy-MM-dd HH:mm:ss"),
-        updated_on: format(new Date(v.updated_on), "yyyy-MM-dd HH:mm:ss"),
-        workshop_id: v.workshop_id,
-      }))
-      loading.value = false
-    })
+  try {
+    const result = await axiosClient.get("/maps")
+    console.log(result.data)
+
+    data.value = result.data.map((v: Map) => ({
+      id: v.id,
+      name: v.name,
+      created_on: format(new Date(v.created_on), "yyyy-MM-dd HH:mm:ss"),
+      updated_on: format(new Date(v.updated_on), "yyyy-MM-dd HH:mm:ss"),
+      workshop_id: v.workshop_id,
+    }))
+    
+    loading.value = false
+  } catch (error) {
+    console.log(error)
+  }
+  // fetch("/maps.json")
+  //   .then((res) => {
+  //     return res.json()
+  //   })
+  //   .then((result: Map[]) => {
+  //     data.value = result.map((v) => ({
+  //       id: v.id,
+  //       name: v.name,
+  //       created_on: format(new Date(v.created_on), "yyyy-MM-dd HH:mm:ss"),
+  //       updated_on: format(new Date(v.updated_on), "yyyy-MM-dd HH:mm:ss"),
+  //       workshop_id: v.workshop_id,
+  //     }))
+  //     loading.value = false
+  //   })
 }
 
 function createMap() {
