@@ -2,7 +2,7 @@
   <div class="font-poppings text-slate-200">
     <n-config-provider :theme="darkTheme" :locale="enUS">
       <n-message-provider>
-        <Header />
+        <Header :loading="loading" />
         <div class="flex">
           <NavBar />
           <div class="flex-1 bg-gray-900 p-4">
@@ -38,31 +38,42 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue"
 import Header from "./components/Header.vue"
 import NavBar from "./components/NavBar.vue"
 import { RouterView, useRoute } from "vue-router"
 import { onBeforeMount, computed } from "vue"
 import { darkTheme, NConfigProvider, NMessageProvider, enUS } from "naive-ui"
 import { useAdminStore } from "./store/admin"
-import { apiBaseUrl } from "./types"
 import axiosClient from "./axios"
 
 const adminStore = useAdminStore()
 const route = useRoute()
+const loading = ref(false)
 
 onBeforeMount(async () => {
+  loading.value = true
   const steamId = getCookie("steam_id")
-  try {
-    const { data } = await axiosClient.get(`${apiBaseUrl}/?steam_id=${steamId}`)
-    console.log(data)
+  // console.log('steamId', steamId);
 
-    if (data) {
-      adminStore.name = data.name
-      adminStore.steamId = data.steam_id
+  if (steamId) {
+    try {
+      const { data } = await axiosClient.get(
+        `/players/${encodeURIComponent(steamId)}/steam`
+      )
+      // console.log(data)
+
+      if (data) {
+        adminStore.steamId = data.steam_id
+        adminStore.name = data.username
+        adminStore.avatar_url = data.avatar_url
+      }
+    } catch (error) {
+      console.log(error)
     }
-  } catch (error) {
-    console.log(error)
   }
+
+  loading.value = false
 })
 
 const pathArray = computed(() =>

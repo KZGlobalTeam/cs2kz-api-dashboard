@@ -211,7 +211,7 @@ async function loadMapsData() {
   loading.value = true
   try {
     const result = await axiosClient.get("/maps")
-    console.log(result.data)
+    // console.log(result.data)
 
     data.value = result.data.map((v: Map) => ({
       id: v.id,
