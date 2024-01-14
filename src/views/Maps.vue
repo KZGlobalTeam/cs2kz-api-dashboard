@@ -30,6 +30,7 @@
         :loading="loading"
         :pagination="pagination"
         :row-key="rowKey"
+        size="small"
         @update:sorter="handleSorterChange"
       />
     </div>
@@ -38,13 +39,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, onBeforeMount, computed, h } from "vue"
-import { NInput, NDatePicker, NDataTable, NButton } from "naive-ui"
+import { NInput, NDatePicker, NDataTable, NButton, useMessage } from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
   DataTableColumn,
 } from "naive-ui"
-import type { Map } from "../types"
+import type { Map, GlobalStatus } from "../types"
 import { format } from "date-fns"
 import { useRouter } from "vue-router"
 import axiosClient from "../axios"
@@ -53,10 +54,11 @@ type RowData = {
   id: number
   name: string
   created_on: string
-  updated_on: string
   workshop_id: number
+  global_status: GlobalStatus
 }
 const router = useRouter()
+const message = useMessage()
 
 const loading = ref(true)
 const data = ref<RowData[]>([])
@@ -133,6 +135,52 @@ const columns = ref<DataTableColumn<RowData>[]>([
     sorter: "default",
   },
   {
+    title: "Status",
+    key: "status",
+    defaultFilterOptionValues: ["global", "in_testing", "not_global"],
+    filterOptions: [
+      {
+        label: "Global",
+        value: "global",
+      },
+      {
+        label: "In Testing",
+        value: "in_testing",
+      },
+      {
+        label: "Not Global",
+        value: "not_global",
+      },
+    ],
+    filter(value, row) {
+      return row.global_status === value
+    },
+    render(rowData) {
+      return h(
+        "div",
+        {
+          class: "w-20 py-0.5 flex items-center justify-center rounded-lg",
+          style: {
+            backgroundColor:
+              rowData.global_status === "global"
+                ? "#038a0e"
+                : rowData.global_status === "in_testing"
+                ? "#ab7105"
+                : "#858282",
+          },
+        },
+        {
+          default: () =>
+            rowData.global_status === "global"
+              ? "Global"
+              : rowData.global_status === "in_testing"
+              ? "In Testing"
+              : "Not Global",
+        }
+      )
+    },
+  },
+  {
     title: "Created",
     key: "created_on",
     sortOrder: false,
@@ -144,51 +192,28 @@ const columns = ref<DataTableColumn<RowData>[]>([
     },
   },
   {
-    title: "Updated",
-    key: "updated_on",
-    sortOrder: "descend",
-    sorter(rowA, rowB) {
-      return (
-        new Date(rowA.updated_on).getTime() -
-        new Date(rowB.updated_on).getTime()
-      )
-    },
-  },
-  {
     title: "Actions",
     key: "actions",
-    render(rowData: RowData) {
-      return h("div", { class: "flex gap-2" }, [
-        h(
-          NButton,
-          {
-            type: "default",
-            textColor: "#e2e8f0",
-            size: "small",
-            onClick: () => goToMap(rowData.id),
-          },
-          { default: () => "Edit" }
-        ),
-        h(
-          NButton,
-          {
-            type: "error",
-            textColor: "#e2e8f0",
-            size: "small",
-            onClick: () => deleteMap(rowData.id),
-          },
-          { default: () => "Delete" }
-        ),
-      ])
+    render(rowData) {
+      return h(
+        NButton,
+        {
+          type: "default",
+          textColor: "#e2e8f0",
+          size: "tiny",
+          onClick: () => goToMap(rowData.id),
+        },
+        { default: () => "Edit" }
+      )
     },
   },
 ])
 
 const pagination = reactive({
   page: 1,
-  pageSize: 3,
+  pageSize: 10,
   showSizePicker: true,
-  pageSizes: [1, 2, 3],
+  pageSizes: [10, 20, 50],
   prefix(info: PaginationInfo) {
     return `Total: ${info.itemCount} maps`
   },
@@ -216,29 +241,16 @@ async function loadMapsData() {
     data.value = result.data.map((v: Map) => ({
       id: v.id,
       name: v.name,
+      global_status: v.global_status,
       created_on: format(new Date(v.created_on), "yyyy-MM-dd HH:mm:ss"),
-      updated_on: format(new Date(v.updated_on), "yyyy-MM-dd HH:mm:ss"),
       workshop_id: v.workshop_id,
     }))
-    
+
     loading.value = false
   } catch (error) {
+    message.error("Failed to load maps", { duration: 3000 })
     console.log(error)
   }
-  // fetch("/maps.json")
-  //   .then((res) => {
-  //     return res.json()
-  //   })
-  //   .then((result: Map[]) => {
-  //     data.value = result.map((v) => ({
-  //       id: v.id,
-  //       name: v.name,
-  //       created_on: format(new Date(v.created_on), "yyyy-MM-dd HH:mm:ss"),
-  //       updated_on: format(new Date(v.updated_on), "yyyy-MM-dd HH:mm:ss"),
-  //       workshop_id: v.workshop_id,
-  //     }))
-  //     loading.value = false
-  //   })
 }
 
 function createMap() {
@@ -254,11 +266,6 @@ function goToMap(id: number) {
       id,
     },
   })
-}
-
-function deleteMap(id: number) {
-  console.log("delete map", id)
-  // TODO: delete map
 }
 
 function rowKey(rowData: RowData) {

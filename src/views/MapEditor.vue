@@ -1,14 +1,42 @@
 <template>
   <div>
+    <p v-if="editing" class="text-2xl font-semibold mb-2">{{ name }}</p>
+    <!-- id and global status -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
-      <!-- basic info -->
       <div class="mb-4">
-        <p class="mb-2">Workshop ID</p>
+        <p class="mb-2 font-medium">Workshop ID</p>
         <n-input v-model:value="workshopId" placeholder="123456789" />
       </div>
-
-      <!-- mappers -->
-      <p class="my-2">Mappers</p>
+      <div>
+        <p class="mb-2 font-medium">Global Status</p>
+        <n-space>
+          <n-radio
+            :checked="globalStatus === 'global'"
+            value="global"
+            @change="handleStatusChange"
+          >
+            Global
+          </n-radio>
+          <n-radio
+            :checked="globalStatus === 'in_testing'"
+            value="in_testing"
+            @change="handleStatusChange"
+          >
+            In Testing
+          </n-radio>
+          <n-radio
+            :checked="globalStatus === 'not_global'"
+            value="not_global"
+            @change="handleStatusChange"
+          >
+            Not Global
+          </n-radio>
+        </n-space>
+      </div>
+    </div>
+    <!-- mappers -->
+    <div class="p-4 bg-gray-800 mb-4 rounded-md">
+      <p class="my-2 font-medium">Mappers</p>
       <n-dynamic-input
         v-model:value="mappers"
         item-style="margin-bottom: 1rem;"
@@ -21,7 +49,6 @@
             placeholder="Name"
             @keydown.enter.prevent
           />
-
           <n-input
             v-model:value="mappers[index].steam_id"
             placeholder="Steam ID"
@@ -30,7 +57,6 @@
         </div>
       </n-dynamic-input>
     </div>
-
     <!-- Courses -->
     <div class="p-4 bg-gray-800 rounded-md mb-4">
       <!-- Course X -->
@@ -43,7 +69,13 @@
         <div
           class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
         >
-          <p class="font-medium text-xl">{{ `Course ${courseIndex}` }}</p>
+          <p
+            contenteditable="true"
+            @input="updateCourseName($event, courseIndex)"
+            class="font-medium text-xl"
+          >
+            {{ course.name ? course.name : `Course ${courseIndex}` }}
+          </p>
           <n-button
             @click="deleteCourse(courseIndex)"
             text-color="#e2e8f0"
@@ -51,7 +83,6 @@
             >Delete</n-button
           >
         </div>
-
         <!-- Mappers -->
         <div class="mb-4">
           <p class="my-2">Mappers</p>
@@ -75,15 +106,13 @@
             </div>
           </n-dynamic-input>
         </div>
-
         <!-- Filters [New Filter] -->
         <div
           class="flex items-center justify-between border-b border-slate-600 pb-2 mb-2"
         >
           <p>Filters</p>
         </div>
-
-        <n-table :bordered="false" :single-line="false">
+        <n-table :bordered="false" :single-line="false" size="small">
           <thead>
             <tr>
               <th>Mode</th>
@@ -95,7 +124,7 @@
           <tbody>
             <tr v-for="filter in course.filters" :key="filter.id">
               <td>
-                {{ filter.mode === "kz_classic" ? "Classic" : "Vanilla" }}
+                {{ filter.mode === "classic" ? "Classic" : "Vanilla" }}
               </td>
               <td>
                 {{ filter.teleports ? "Standard" : "Pro" }}
@@ -113,14 +142,13 @@
           </tbody>
         </n-table>
       </div>
-
-      <div>
+      <!-- if we're creating a new map, then it's allowed -->
+      <div v-if="!editing">
         <n-button @click="createCourse" text-color="#37ab56"
           >New Course</n-button
         >
       </div>
     </div>
-
     <div class="p-4 bg-gray-800 rounded-md">
       <n-button
         @click.prevent="saveMap"
@@ -138,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount } from "vue"
+import { ref, onBeforeMount, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import {
   NInput,
@@ -146,19 +174,26 @@ import {
   NSelect,
   NTable,
   NDynamicInput,
+  NSpace,
+  NRadio,
   useMessage,
+  useDialog,
 } from "naive-ui"
 import type { Mapper, Course, Map } from "../types"
 import _ from "lodash"
+import axiosClient from "../axios"
+import { AxiosResponse } from "axios"
 
-let newCourseId = -1
+let newCourseId = 1
 let oldMap: Map
 
 const router = useRouter()
 const route = useRoute()
 
 const message = useMessage()
+const dialog = useDialog()
 
+const name = ref("")
 const workshopId = ref("")
 
 // mappers input
@@ -168,17 +203,21 @@ const courses = ref<Course[]>([])
 
 const loading = ref(false)
 
+const globalStatus = ref("global")
+
+const editing = computed(() => !!route.params.id)
+
 const tierOptions = [
-  { label: "1", value: 1 },
-  { label: "2", value: 2 },
-  { label: "3", value: 3 },
-  { label: "4", value: 4 },
-  { label: "5", value: 5 },
-  { label: "6", value: 6 },
-  { label: "7", value: 7 },
-  { label: "8", value: 8 },
-  { label: "9", value: 9 },
-  { label: "10", value: 10 },
+  { label: "Very Easy", value: "very_easy" },
+  { label: "Easy", value: "easy" },
+  { label: "Medium", value: "medium" },
+  { label: "Advanced", value: "advanced" },
+  { label: "Hard", value: "hard" },
+  { label: "Very Hard", value: "very_hard" },
+  { label: "Extreme", value: "extreme" },
+  { label: "Death", value: "death" },
+  { label: "Unfeasible", value: "unfeasible" },
+  { label: "Impossible", value: "impossible" },
 ]
 const rankedStatusOptions = [
   { label: "Never", value: "never" },
@@ -186,21 +225,26 @@ const rankedStatusOptions = [
   { label: "Ranked", value: "ranked" },
 ]
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   // load map data
   if (route.params.id) {
-    fetch(`/map.json`)
-      .then((res) => {
-        return res.json()
-      })
-      .then((result: Map) => {
-        // save original map data for later comparison
-        oldMap = _.cloneDeep(result)
+    try {
+      const { data } = (await axiosClient.get(
+        `/maps/${route.params.id}`
+      )) as AxiosResponse<Map>
+      // console.log(data);
 
-        workshopId.value = result.workshop_id.toString()
-        mappers.value = result.mappers
-        courses.value = result.courses
-      })
+      // save original map data for later comparison
+      oldMap = _.cloneDeep(data)
+
+      globalStatus.value = data.global_status
+      name.value = data.name
+      workshopId.value = data.workshop_id.toString()
+      mappers.value = data.mappers
+      courses.value = data.courses
+    } catch (error) {
+      console.log(error)
+    }
   }
 })
 
@@ -211,38 +255,43 @@ function onCreateMapper() {
   }
 }
 
+function handleStatusChange(e: Event) {
+  globalStatus.value = (e.target as HTMLInputElement).value
+}
+
 // the stage number will be updated before map is submitted
 function createCourse() {
   courses.value.push({
-    id: newCourseId--,
+    id: newCourseId++,
     stage: 0,
+    name: "",
     filters: [
       {
         id: 1,
-        mode: "kz_classic",
+        mode: "vanilla",
         teleports: true,
-        tier: 1,
+        tier: "very_easy",
         ranked_status: "unranked",
       },
       {
         id: 2,
-        mode: "kz_classic",
+        mode: "vanilla",
         teleports: false,
-        tier: 1,
+        tier: "very_easy",
         ranked_status: "unranked",
       },
       {
         id: 3,
-        mode: "kz_vanilla",
+        mode: "classic",
         teleports: true,
-        tier: 1,
+        tier: "very_easy",
         ranked_status: "unranked",
       },
       {
         id: 4,
-        mode: "kz_vanilla",
+        mode: "classic",
         teleports: false,
-        tier: 1,
+        tier: "very_easy",
         ranked_status: "unranked",
       },
     ],
@@ -251,7 +300,20 @@ function createCourse() {
 }
 
 function deleteCourse(courseIndex: number) {
-  courses.value.splice(courseIndex, 1)
+  dialog.warning({
+    title: "Warning",
+    content: "Are you sure you want to delete this course?",
+    positiveText: "Yes",
+    negativeText: "Cancel",
+    onPositiveClick: () => {
+      courses.value.splice(courseIndex, 1)
+      // message.success("Course deleted", { duration: 1000 })
+    },
+  })
+}
+
+function updateCourseName(e: Event, courseIndex: number) {
+  courses.value[courseIndex].name = (e.target as HTMLInputElement).innerText
 }
 
 function saveMap() {
@@ -295,28 +357,26 @@ function saveMap() {
   })
 
   if (validated) {
-    try {
-      if (route.params.id) {
-        updateMap()
-      } else {
-        createMap()
-      }
-    } catch (error) {
-      console.log(error)
-      message.error("Failed to save map", { duration: 3000 })
+    if (editing.value && oldMap.courses.length === courses.value.length) {
+      // map is not mutated on account of the amount of courses
+      patchMap()
+    } else {
+      // map is mutated or a new map
+      putMap()
     }
   } else {
     loading.value = false
   }
 }
 
-function createMap() {
+async function putMap() {
   loading.value = true
-  const mapToCreate = {
+  const mapToPut = {
     workshop_id: parseInt(workshopId.value),
     mappers: mappers.value.map((mapper) => mapper.steam_id),
     courses: courses.value.map((course, index) => ({
       stage: index,
+      name: course.name,
       filters: course.filters.map((filter) => ({
         mode: filter.mode,
         teleports: filter.teleports,
@@ -327,25 +387,29 @@ function createMap() {
     })),
   }
 
-  setTimeout(() => {
-    console.log("map created", mapToCreate)
+  try {
+    console.log("map to put", mapToPut)
+    await axiosClient.put("/maps", mapToPut)
     loading.value = false
-    message.success("Map created", { duration: 3000 })
+    message.success("Map saved", { duration: 3000 })
     router.push({
       name: "maps",
     })
-  }, 2000)
+  } catch (error) {
+    console.log(error)
+    message.error("Failed to create map", { duration: 3000 })
+  }
 }
 
-function updateMap() {
+async function patchMap() {
   loading.value = true
   // update stage
   courses.value.forEach((course, index) => {
     course.stage = index
   })
 
-  const mapToUpdate = {
-    id: oldMap.id,
+  const mapToPatch = {
+    global_status: globalStatus.value,
     workshop_id: parseInt(workshopId.value),
 
     added_mappers: mappers.value
@@ -366,29 +430,6 @@ function updateMap() {
       )
       .map((mapper) => mapper.steam_id),
 
-    added_courses: courses.value
-      .filter(
-        (course) =>
-          !oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
-      )
-      .map((course) => ({
-        stage: course.stage,
-        filters: course.filters.map((filter) => ({
-          mode: filter.mode,
-          teleports: filter.teleports,
-          tier: filter.tier,
-          ranked_status: filter.ranked_status,
-        })),
-        mappers: course.mappers.map((mapper) => mapper.steam_id),
-      })),
-
-    removed_courses: oldMap.courses
-      .filter(
-        (oldCourse) =>
-          !courses.value.some((course) => course.id === oldCourse.id)
-      )
-      .map((oldCourse) => oldCourse.id),
-
     course_updates: courses.value
       .filter((course) =>
         oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
@@ -401,7 +442,7 @@ function updateMap() {
         if (oldCourse) {
           return {
             id: course.id,
-            stage: course.stage,
+
             filter_updates: course.filters
               .filter((filter, index) => {
                 const oldFilter = oldCourse.filters[index]
@@ -440,14 +481,18 @@ function updateMap() {
       }),
   }
 
-  setTimeout(() => {
-    console.log("map updated", mapToUpdate)
+  try {
+    console.log("map to patch", mapToPatch)
+    await axiosClient.patch(`/maps/${oldMap.id}`, mapToPatch)
     loading.value = false
-    message.success("Map created", { duration: 3000 })
+    message.success("Map updated", { duration: 3000 })
     router.push({
       name: "maps",
     })
-  }, 2000)
+  } catch (error) {
+    console.log(error)
+    message.error("Failed to update map", { duration: 3000 })
+  }
 }
 </script>
 

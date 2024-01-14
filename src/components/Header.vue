@@ -33,6 +33,7 @@ import { apiBaseUrl } from "../types"
 import { NButton } from "naive-ui"
 import { useRouter } from "vue-router";
 import { useAdminStore } from "../store/admin"
+import axiosClient from "../axios";
 
 const router = useRouter()
 const adminStore = useAdminStore()
@@ -52,7 +53,8 @@ async function handleSignIn() {
 async function handleSignOut() {
   try {
     adminStore.$reset()
-    document.cookie = "steam_id=; max-age=0; path=/;"
+    await axiosClient.get('/auth/steam/logout')
+    // document.cookie = "steam_id=; max-age=0; path=/;"
     router.push("/")
   } catch (error) {
     console.log(error)
