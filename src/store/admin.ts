@@ -1,14 +1,27 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia"
+import axiosClient from "../axios"
 
-export const useAdminStore = defineStore('admin', {
+export const useAdminStore = defineStore("admin", {
   state: () => ({
-    steamId: '',
-    avatar_url: ''
+    steamId: "",
+    avatar_url: "",
+    // roles: ['servers']
+    roles: null as string[] | null,
   }),
-  getters: {
-
-  },
+  getters: {},
   actions: {
+    async fetchPermissions() {
+      try {
+        if (this.steamId) {
+          const { data } = await axiosClient.get(`/auth/admins/${this.steamId}`)
 
-  }
+          // console.log(data)
+          this.roles = data.roles
+          // this.roles = ["bans", "servers", "admin"]
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
+  },
 })

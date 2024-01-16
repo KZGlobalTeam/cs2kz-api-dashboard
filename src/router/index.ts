@@ -1,4 +1,80 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router"
+import { useAdminStore } from "../store/admin"
+
+export const noAuthRoutes = [
+  {
+    path: "/home",
+    name: "home",
+    component: () => import("../views/Home.vue"),
+    meta: {
+      title: "Home",
+      iconName: "home",
+    },
+  },
+]
+
+export const routes = [
+  {
+    path: "/home/maps",
+    name: "maps",
+    component: () => import("../views/Maps.vue"),
+    meta: {
+      menuItem: true,
+      title: "Maps",
+      iconName: "map",
+      requiresRole: "maps",
+    },
+  },
+  {
+    path: "/home/maps/:id",
+    name: "map",
+    component: () => import("../views/MapEditor.vue"),
+    meta: {
+      requiresRole: "maps",
+    },
+  },
+  {
+    path: "/home/maps/create",
+    name: "createmap",
+    component: () => import("../views/MapEditor.vue"),
+    meta: {
+      requiresRole: "maps",
+    },
+  },
+  {
+    path: "/home/servers",
+    name: "servers",
+    component: () => import("../views/Servers.vue"),
+    meta: {
+      menuItem: true,
+      title: "Servers",
+      iconName: "server",
+      requiresRole: "servers",
+    },
+  },
+  {
+    path: "/home/bans",
+    name: "bans",
+    component: () => import("../views/Bans.vue"),
+    meta: {
+      menuItem: true,
+      title: "Bans",
+      iconName: "ban",
+      requiresRole: "bans",
+    },
+  },
+  {
+    path: "/home/admin",
+    name: "admin",
+    component: () => import("../views/Admin.vue"),
+    meta: {
+      menuItem: true,
+      title: "Admin",
+      iconName: "person",
+      requiresRole: "admin",
+    },
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,42 +83,27 @@ const router = createRouter({
       path: "/",
       redirect: "/home",
     },
+    ...noAuthRoutes,
+    ...routes,
     {
-      path: "/home",
-      name: "home",
-      component: () => import("../views/Home.vue"),
-    },
-    {
-      path: "/home/maps",
-      name: "maps",
-      component: () => import("../views/Maps.vue"),
-    },
-    {
-      path: "/home/maps/:id",
-      name: "map",
-      component: () => import("../views/MapEditor.vue"),
-    },
-    {
-      path: '/home/maps/create',
-      name: 'createmap',
-      component: () => import('../views/MapEditor.vue')
-    },
-    {
-      path: "/home/servers",
-      name: "servers",
-      component: () => import("../views/Servers.vue"),
-    },
-    {
-      path: "/home/bans",
-      name: "bans",
-      component: () => import("../views/Bans.vue"),
-    },
-    {
-      path: "/home/jumpstats",
-      name: "jumpstats",
-      component: () => import("../views/Jumpstats.vue"),
+      path: "/:catchAll(.*)",
+      component: () => import("../views/NotFound.vue"),
     },
   ],
-});
+})
 
-export default router;
+router.beforeEach(async (to) => {
+  const adminStore = useAdminStore()
+  try {
+    await adminStore.fetchPermissions()
+    if (to.meta.requiresRole && to.name !== "home") {
+      const requiredRole = to.meta.requiresRole as string
+      // actually the roles is null until the permission request is done
+      if (!adminStore.roles?.includes(requiredRole)) return { name: "home" }
+    }
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+export default router

@@ -7,7 +7,7 @@
           <div class="flex">
             <NavBar />
             <div class="flex-1 bg-gray-900 p-4">
-              <div class="flex mb-4">
+              <div v-if="route.name" class="flex mb-4">
                 <div
                   class="flex items-center mr-1"
                   v-for="(part, index) in pathArray"
@@ -56,6 +56,8 @@ import { useAdminStore } from "./store/admin"
 
 const adminStore = useAdminStore()
 const route = useRoute()
+console.log(route.name)
+
 const loading = ref(false)
 
 onBeforeMount(async () => {

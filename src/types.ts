@@ -14,6 +14,7 @@ export type Tier =
   | "death"
   | "unfeasible"
   | "impossible"
+  
 export type Mode = "classic" | "vanilla"
 
 export type RankedStatus = "never" | "unranked" | "ranked"

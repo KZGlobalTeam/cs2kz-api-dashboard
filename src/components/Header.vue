@@ -4,10 +4,10 @@
   >
     <p class="text-xl font-semibold">CS2KZ-API</p>
 
-    <div v-if="props.loading">
+    <div v-if="loading">
       <n-button loading>LOADING</n-button>
     </div>
-    
+
     <div v-else>
       <div class="flex gap-4" v-if="adminStore.steamId">
         <!-- avatar -->
@@ -29,18 +29,34 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeMount, ref } from "vue"
 import { apiBaseUrl } from "../types"
 import { NButton } from "naive-ui"
-import { useRouter } from "vue-router";
+import { useRouter } from "vue-router"
 import { useAdminStore } from "../store/admin"
-import axiosClient from "../axios";
+import axiosClient from "../axios"
 
 const router = useRouter()
 const adminStore = useAdminStore()
 
-const props = defineProps<{
-  loading: boolean
-}>()
+const loading = ref(false)
+
+onBeforeMount(async () => {
+  loading.value = true
+  const playerCookie = getCookie("kz-player")
+  // console.log(playerCookie)
+
+  if (playerCookie) {
+    const kzPlayer = JSON.parse(playerCookie)
+
+    if (kzPlayer) {
+      adminStore.steamId = kzPlayer.steam_id
+      adminStore.avatar_url = kzPlayer.avatar_url
+    }
+  }
+
+  loading.value = false
+})
 
 async function handleSignIn() {
   try {
@@ -53,11 +69,23 @@ async function handleSignIn() {
 async function handleSignOut() {
   try {
     adminStore.$reset()
-    await axiosClient.get('/auth/steam/logout')
-    // document.cookie = "steam_id=; max-age=0; path=/;"
+    await axiosClient.get("/auth/steam/logout")
+    document.cookie = "kz-player=; max-age=0; path=/;"
+    document.cookie = "kz-auth=; max-age=0; path=/;"
     router.push("/")
   } catch (error) {
     console.log(error)
   }
+}
+
+function getCookie(name: string) {
+  let matches = document.cookie.match(
+    new RegExp(
+      "(?:^|; )" +
+        name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
+        "=([^;]*)"
+    )
+  )
+  return matches ? decodeURIComponent(matches[1]) : undefined
 }
 </script>

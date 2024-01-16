@@ -372,11 +372,12 @@ function saveMap() {
 async function putMap() {
   loading.value = true
   const mapToPut = {
+    globalStatus: globalStatus.value,
     workshop_id: parseInt(workshopId.value),
     mappers: mappers.value.map((mapper) => mapper.steam_id),
     courses: courses.value.map((course, index) => ({
-      stage: index,
-      name: course.name,
+      stage: index + 1,
+      name: course.name??null,
       filters: course.filters.map((filter) => ({
         mode: filter.mode,
         teleports: filter.teleports,
@@ -390,14 +391,15 @@ async function putMap() {
   try {
     console.log("map to put", mapToPut)
     await axiosClient.put("/maps", mapToPut)
-    loading.value = false
     message.success("Map saved", { duration: 3000 })
-    router.push({
-      name: "maps",
-    })
+    // router.push({
+    //   name: "maps",
+    // })
   } catch (error) {
     console.log(error)
-    message.error("Failed to create map", { duration: 3000 })
+    message.error("Failed to save map", { duration: 3000 })
+  } finally {
+    loading.value = false
   }
 }
 
@@ -410,7 +412,7 @@ async function patchMap() {
 
   const mapToPatch = {
     global_status: globalStatus.value,
-    workshop_id: parseInt(workshopId.value),
+    workshop_id: oldMap.workshop_id === parseInt(workshopId.value) ? null : parseInt(workshopId.value),
 
     added_mappers: mappers.value
       .filter(
@@ -484,7 +486,6 @@ async function patchMap() {
   try {
     console.log("map to patch", mapToPatch)
     await axiosClient.patch(`/maps/${oldMap.id}`, mapToPatch)
-    loading.value = false
     message.success("Map updated", { duration: 3000 })
     router.push({
       name: "maps",
@@ -492,6 +493,8 @@ async function patchMap() {
   } catch (error) {
     console.log(error)
     message.error("Failed to update map", { duration: 3000 })
+  } finally {
+    loading.value = false
   }
 }
 </script>
