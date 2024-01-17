@@ -56,7 +56,6 @@ import { useAdminStore } from "./store/admin"
 
 const adminStore = useAdminStore()
 const route = useRoute()
-console.log(route.name)
 
 const loading = ref(false)
 

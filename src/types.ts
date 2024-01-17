@@ -1,5 +1,5 @@
 export const apiBaseUrl = "http://127.0.0.1:42069"
-// export const apiBaseUrl = "http://106.14.107.95:42069"
+// export const apiBaseUrl = "http://207.154.231.20:81"
 export const steamApiUrl =
   "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2"
 
@@ -27,11 +27,13 @@ export interface Filter {
   teleports: boolean
   tier: Tier
   ranked_status: RankedStatus
+  notes: string
 }
 
 export interface Course {
   id: number
   name?: string
+  description: string
   filters: Filter[]
   mappers: Mapper[]
   stage: number
@@ -45,6 +47,7 @@ export interface Mapper {
 export interface Map {
   id: number
   name: string
+  description: string
   global_status: GlobalStatus
   checksum: number
   workshop_id: number

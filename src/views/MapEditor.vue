@@ -1,13 +1,24 @@
 <template>
   <div>
     <p v-if="editing" class="text-2xl font-semibold mb-2">{{ name }}</p>
-    <!-- id and global status -->
+
+    <!-- map info -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
+      <!-- workshop -->
       <div class="mb-4">
-        <p class="mb-2 font-medium">Workshop ID</p>
-        <n-input v-model:value="workshopId" placeholder="123456789" />
+        <p class="font-medium mb-2">Workshop ID</p>
+        <n-input
+          style="margin-bottom: 0.25rem"
+          v-model:value="workshopId"
+          placeholder="123456789"
+        />
+        <n-checkbox size="small" v-model:checked="checkSteam">
+          Update Workshop
+        </n-checkbox>
       </div>
-      <div>
+
+      <!-- global status -->
+      <div class="mb-4">
         <p class="mb-2 font-medium">Global Status</p>
         <n-space>
           <n-radio
@@ -33,7 +44,14 @@
           </n-radio>
         </n-space>
       </div>
+
+      <!-- description -->
+      <div class="mb-4">
+        <p class="mb-2 font-medium">Description</p>
+        <n-input type="textarea" autosize placeholder="" />
+      </div>
     </div>
+
     <!-- mappers -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
       <p class="my-2 font-medium">Mappers</p>
@@ -57,15 +75,15 @@
         </div>
       </n-dynamic-input>
     </div>
-    <!-- Courses -->
+
+    <!-- courses -->
     <div class="p-4 bg-gray-800 rounded-md mb-4">
-      <!-- Course X -->
       <div
         v-for="(course, courseIndex) in courses"
         :key="course.id"
         class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4"
       >
-        <!-- Course 1 [Delete] -->
+        <!-- course name -->
         <div
           class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
         >
@@ -83,64 +101,82 @@
             >Delete</n-button
           >
         </div>
-        <!-- Mappers -->
+
+        <!-- mappers -->
         <div class="mb-4">
           <p class="my-2">Mappers</p>
           <n-dynamic-input
-            v-model:value="courses[courseIndex].mappers"
+            v-model:value="course.mappers"
             item-style="margin-bottom: 1rem;"
             :on-create="onCreateMapper"
             #="{ index }"
           >
             <div class="flex gap-4">
               <n-input
-                v-model:value="courses[courseIndex].mappers[index].name"
+                v-model:value="course.mappers[index].name"
                 placeholder="Name"
                 @keydown.enter.prevent
               />
               <n-input
-                v-model:value="courses[courseIndex].mappers[index].steam_id"
+                v-model:value="course.mappers[index].steam_id"
                 placeholder="Steam ID"
                 @keydown.enter.prevent
               />
             </div>
           </n-dynamic-input>
         </div>
-        <!-- Filters [New Filter] -->
-        <div
-          class="flex items-center justify-between border-b border-slate-600 pb-2 mb-2"
-        >
-          <p>Filters</p>
+
+        <!-- filters -->
+        <!-- <div class="mb-4">
+          <p class="mb-2">Filters</p>
+          <n-table :bordered="false" :single-line="false" size="small">
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Type</th>
+                <th>Tier</th>
+                <th>Ranked Status</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="filter in course.filters" :key="filter.id">
+                <td>
+                  {{ filter.mode === "classic" ? "Classic" : "Vanilla" }}
+                </td>
+                <td>
+                  {{ filter.teleports ? "Standard" : "Pro" }}
+                </td>
+                <td>
+                  <n-select
+                    v-model:value="filter.tier"
+                    :options="tierOptions"
+                  />
+                </td>
+                <td>
+                  <n-select
+                    v-model:value="filter.ranked_status"
+                    :options="rankedStatusOptions"
+                  />
+                </td>
+                <td>
+                  <n-input v-model:value="filter.notes" placeholder="" />
+                </td>
+              </tr>
+            </tbody>
+          </n-table>
+        </div> -->
+
+        <!-- description -->
+        <div>
+          <p class="mb-2">Description</p>
+          <n-input
+            type="textarea"
+            v-model:value="courses[courseIndex].description"
+            autosize
+            placeholder=""
+          />
         </div>
-        <n-table :bordered="false" :single-line="false" size="small">
-          <thead>
-            <tr>
-              <th>Mode</th>
-              <th>Type</th>
-              <th>Tier</th>
-              <th>Ranked Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="filter in course.filters" :key="filter.id">
-              <td>
-                {{ filter.mode === "classic" ? "Classic" : "Vanilla" }}
-              </td>
-              <td>
-                {{ filter.teleports ? "Standard" : "Pro" }}
-              </td>
-              <td>
-                <n-select v-model:value="filter.tier" :options="tierOptions" />
-              </td>
-              <td>
-                <n-select
-                  v-model:value="filter.ranked_status"
-                  :options="rankedStatusOptions"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </n-table>
       </div>
       <!-- if we're creating a new map, then it's allowed -->
       <div v-if="!editing">
@@ -149,6 +185,8 @@
         >
       </div>
     </div>
+
+    <!-- save map -->
     <div class="p-4 bg-gray-800 rounded-md">
       <n-button
         @click.prevent="saveMap"
@@ -176,6 +214,7 @@ import {
   NDynamicInput,
   NSpace,
   NRadio,
+  NCheckbox,
   useMessage,
   useDialog,
 } from "naive-ui"
@@ -186,6 +225,7 @@ import { AxiosResponse } from "axios"
 
 let newCourseId = 1
 let oldMap: Map
+let inputTimerId = -1
 
 const router = useRouter()
 const route = useRoute()
@@ -202,8 +242,11 @@ const mappers = ref<Mapper[]>([{ name: "", steam_id: "" }])
 const courses = ref<Course[]>([])
 
 const loading = ref(false)
-
+// if the workshop id has changed
+// e.g. because someone re-uploaded the map, or the mapper updated the map to fix a bug and uploaded it as a new item
+// arguably this logic should be separate from updating the checksum
 const globalStatus = ref("global")
+const checkSteam = ref(false)
 
 const editing = computed(() => !!route.params.id)
 
@@ -265,6 +308,7 @@ function createCourse() {
     id: newCourseId++,
     stage: 0,
     name: "",
+    description: "",
     filters: [
       {
         id: 1,
@@ -272,6 +316,7 @@ function createCourse() {
         teleports: true,
         tier: "very_easy",
         ranked_status: "unranked",
+        notes: "",
       },
       {
         id: 2,
@@ -279,6 +324,7 @@ function createCourse() {
         teleports: false,
         tier: "very_easy",
         ranked_status: "unranked",
+        notes: "",
       },
       {
         id: 3,
@@ -286,6 +332,7 @@ function createCourse() {
         teleports: true,
         tier: "very_easy",
         ranked_status: "unranked",
+        notes: "",
       },
       {
         id: 4,
@@ -293,6 +340,7 @@ function createCourse() {
         teleports: false,
         tier: "very_easy",
         ranked_status: "unranked",
+        notes: "",
       },
     ],
     mappers: [{ name: "", steam_id: "" }],
@@ -372,12 +420,12 @@ function saveMap() {
 async function putMap() {
   loading.value = true
   const mapToPut = {
-    globalStatus: globalStatus.value,
+    global_status: globalStatus.value,
     workshop_id: parseInt(workshopId.value),
     mappers: mappers.value.map((mapper) => mapper.steam_id),
     courses: courses.value.map((course, index) => ({
       stage: index + 1,
-      name: course.name??null,
+      name: course.name ?? null,
       filters: course.filters.map((filter) => ({
         mode: filter.mode,
         teleports: filter.teleports,
@@ -412,7 +460,10 @@ async function patchMap() {
 
   const mapToPatch = {
     global_status: globalStatus.value,
-    workshop_id: oldMap.workshop_id === parseInt(workshopId.value) ? null : parseInt(workshopId.value),
+    workshop_id:
+      oldMap.workshop_id === parseInt(workshopId.value)
+        ? null
+        : parseInt(workshopId.value),
 
     added_mappers: mappers.value
       .filter(
