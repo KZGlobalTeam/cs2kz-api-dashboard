@@ -48,7 +48,12 @@
       <!-- description -->
       <div class="mb-4">
         <p class="mb-2 font-medium">Description</p>
-        <n-input type="textarea" autosize placeholder="" />
+        <n-input
+          v-model:value="description"
+          type="textarea"
+          autosize
+          placeholder=""
+        />
       </div>
     </div>
 
@@ -127,7 +132,7 @@
         </div>
 
         <!-- filters -->
-        <!-- <div class="mb-4">
+        <div class="mb-4">
           <p class="mb-2">Filters</p>
           <n-table :bordered="false" :single-line="false" size="small">
             <thead>
@@ -165,14 +170,14 @@
               </tr>
             </tbody>
           </n-table>
-        </div> -->
+        </div>
 
         <!-- description -->
         <div>
           <p class="mb-2">Description</p>
           <n-input
             type="textarea"
-            v-model:value="courses[courseIndex].description"
+            v-model.lazy:value="courses[courseIndex].description"
             autosize
             placeholder=""
           />
@@ -225,7 +230,6 @@ import { AxiosResponse } from "axios"
 
 let newCourseId = 1
 let oldMap: Map
-let inputTimerId = -1
 
 const router = useRouter()
 const route = useRoute()
@@ -235,6 +239,7 @@ const dialog = useDialog()
 
 const name = ref("")
 const workshopId = ref("")
+const description = ref("")
 
 // mappers input
 const mappers = ref<Mapper[]>([{ name: "", steam_id: "" }])
@@ -283,6 +288,7 @@ onBeforeMount(async () => {
       globalStatus.value = data.global_status
       name.value = data.name
       workshopId.value = data.workshop_id.toString()
+      description.value = data.description
       mappers.value = data.mappers
       courses.value = data.courses
     } catch (error) {
@@ -422,15 +428,18 @@ async function putMap() {
   const mapToPut = {
     global_status: globalStatus.value,
     workshop_id: parseInt(workshopId.value),
+    description: description.value,
     mappers: mappers.value.map((mapper) => mapper.steam_id),
     courses: courses.value.map((course, index) => ({
       stage: index + 1,
       name: course.name ?? null,
+      description: course.description,
       filters: course.filters.map((filter) => ({
         mode: filter.mode,
         teleports: filter.teleports,
         tier: filter.tier,
         ranked_status: filter.ranked_status,
+        notes: filter.notes,
       })),
       mappers: course.mappers.map((mapper) => mapper.steam_id),
     })),
@@ -457,9 +466,14 @@ async function patchMap() {
   courses.value.forEach((course, index) => {
     course.stage = index
   })
-
+  console.log('old desc',oldMap.description);
+  
+  console.log('map desc', description.value);
+  
   const mapToPatch = {
     global_status: globalStatus.value,
+    description:
+      description.value === oldMap.description ? null : description.value,
     workshop_id:
       oldMap.workshop_id === parseInt(workshopId.value)
         ? null
@@ -495,13 +509,17 @@ async function patchMap() {
         if (oldCourse) {
           return {
             id: course.id,
-
+            description:
+              course.description === oldCourse.description
+                ? null
+                : course.description,
             filter_updates: course.filters
               .filter((filter, index) => {
                 const oldFilter = oldCourse.filters[index]
                 return (
                   filter.tier !== oldFilter.tier ||
-                  filter.ranked_status !== oldFilter.ranked_status
+                  filter.ranked_status !== oldFilter.ranked_status ||
+                  filter.notes !== oldFilter.notes
                 )
               })
               .map((filter) => {
@@ -509,6 +527,7 @@ async function patchMap() {
                   id: filter.id,
                   tier: filter.tier,
                   ranked_status: filter.ranked_status,
+                  notes: filter.notes,
                 }
               }),
 
