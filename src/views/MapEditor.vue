@@ -1,9 +1,17 @@
 <template>
   <div>
-    <p v-if="editing" class="text-2xl font-semibold mb-2">{{ name }}</p>
-
     <!-- map info -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
+
+      <!-- description -->
+      <div class="mb-4">
+        <p class="mb-2 font-medium">Name</p>
+        <n-input
+          v-model:value="name"
+          placeholder="kz_aaaa"
+        />
+      </div>
+
       <!-- workshop -->
       <div class="mb-4">
         <p class="font-medium mb-2">Workshop ID</p>
@@ -12,7 +20,7 @@
           v-model:value="workshopId"
           placeholder="123456789"
         />
-        <n-checkbox size="small" v-model:checked="checkSteam">
+        <n-checkbox v-if="editing" size="small" v-model:checked="checkSteam">
           Update Workshop
         </n-checkbox>
       </div>
@@ -182,7 +190,7 @@
           <p class="mb-2">Description</p>
           <n-input
             type="textarea"
-            v-model.lazy:value="courses[courseIndex].description"
+            v-model:value="course.description"
             autosize
             placeholder=""
           />
@@ -219,7 +227,6 @@ import { useRouter, useRoute } from "vue-router"
 import {
   NInput,
   NButton,
-  NSelect,
   NTable,
   NDynamicInput,
   NSpace,
@@ -326,7 +333,7 @@ function createCourse() {
         mode: "vanilla",
         teleports: true,
         tier: "very_easy",
-        ranked_status: "unranked",
+        ranked_status: "ranked",
         notes: "",
       },
       {
@@ -334,7 +341,7 @@ function createCourse() {
         mode: "vanilla",
         teleports: false,
         tier: "very_easy",
-        ranked_status: "unranked",
+        ranked_status: "ranked",
         notes: "",
       },
       {
@@ -342,7 +349,7 @@ function createCourse() {
         mode: "classic",
         teleports: true,
         tier: "very_easy",
-        ranked_status: "unranked",
+        ranked_status: "ranked",
         notes: "",
       },
       {
@@ -350,7 +357,7 @@ function createCourse() {
         mode: "classic",
         teleports: false,
         tier: "very_easy",
-        ranked_status: "unranked",
+        ranked_status: "ranked",
         notes: "",
       },
     ],
@@ -454,9 +461,9 @@ async function putMap() {
     console.log("map to put", mapToPut)
     await axiosClient.put("/maps", mapToPut)
     message.success("Map saved", { duration: 3000 })
-    // router.push({
-    //   name: "maps",
-    // })
+    router.push({
+      name: "maps",
+    })
   } catch (error) {
     console.log(error)
     message.error("Failed to save map", { duration: 3000 })
