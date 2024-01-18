@@ -153,16 +153,21 @@
                   {{ filter.teleports ? "Standard" : "Pro" }}
                 </td>
                 <td>
-                  <n-select
-                    v-model:value="filter.tier"
-                    :options="tierOptions"
-                  />
+                  <select class="bg-[#303033] rounded-sm py-1 px-2" v-model="filter.tier">
+                    <option class="" v-for="option in tierOptions" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
                 </td>
                 <td>
-                  <n-select
-                    v-model:value="filter.ranked_status"
-                    :options="rankedStatusOptions"
-                  />
+                  <select class="bg-[#303033] rounded-sm py-1 px-2" v-model="filter.ranked_status">
+                    <option
+                      v-for="option in rankedStatusOptions"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
                 </td>
                 <td>
                   <n-input v-model:value="filter.notes" placeholder="" />
@@ -466,10 +471,7 @@ async function patchMap() {
   courses.value.forEach((course, index) => {
     course.stage = index
   })
-  console.log('old desc',oldMap.description);
-  
-  console.log('map desc', description.value);
-  
+
   const mapToPatch = {
     global_status: globalStatus.value,
     description:
