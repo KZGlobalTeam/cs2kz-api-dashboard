@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-800 rounded-md p-4 text-slate-200">
+  <div class="bg-gray-800 rounded-md p-4">
     <!-- selectors -->
     <div class="flex gap-4">
       <n-input
@@ -39,7 +39,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, onBeforeMount, computed, h } from "vue"
-import { NInput, NDatePicker, NDataTable, NButton, useMessage } from "naive-ui"
+import {
+  NInput,
+  NDatePicker,
+  NDataTable,
+  NButton,
+  NTag,
+  useMessage,
+} from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -137,7 +144,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
   {
     title: "Status",
     key: "status",
-    defaultFilterOptionValues: ["global", "in_testing", "not_global"],
+    defaultFilterOptionValues: ["global"],
     filterOptions: [
       {
         label: "Global",
@@ -157,25 +164,22 @@ const columns = ref<DataTableColumn<RowData>[]>([
     },
     render(rowData) {
       return h(
-        "div",
+        NTag,
         {
-          class: "w-20 py-0.5 flex items-center justify-center rounded-lg",
-          style: {
-            backgroundColor:
-              rowData.global_status === "global"
-                ? "#038a0e"
-                : rowData.global_status === "in_testing"
-                ? "#ab7105"
-                : "#858282",
-          },
+          type:
+            rowData.global_status === "global"
+              ? "success"
+              : rowData.global_status === "in_testing"
+              ? "warning"
+              : "default",
         },
         {
           default: () =>
-            rowData.global_status === "global"
-              ? "Global"
+            rowData.global_status === "not_global"
+              ? "Not Global"
               : rowData.global_status === "in_testing"
               ? "In Testing"
-              : "Not Global",
+              : "Global",
         }
       )
     },
@@ -195,16 +199,18 @@ const columns = ref<DataTableColumn<RowData>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return h(
-        NButton,
-        {
-          type: "default",
-          textColor: "#e2e8f0",
-          size: "tiny",
-          onClick: () => goToMap(rowData.id),
-        },
-        { default: () => "Edit" }
-      )
+      if (rowData.global_status !== "not_global") {
+        return h(
+          NButton,
+          {
+            type: "default",
+            textColor: "#e2e8f0",
+            size: "tiny",
+            onClick: () => goToMap(rowData.id),
+          },
+          { default: () => "Edit" }
+        )
+      }
     },
   },
 ])

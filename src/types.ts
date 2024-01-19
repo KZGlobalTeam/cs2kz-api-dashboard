@@ -14,12 +14,14 @@ export type Tier =
   | "death"
   | "unfeasible"
   | "impossible"
-  
+
 export type Mode = "classic" | "vanilla"
 
 export type RankedStatus = "never" | "unranked" | "ranked"
 
 export type GlobalStatus = "global" | "not_global" | "in_testing"
+
+export type Role = "none" | "maps" | "servers" | "bans" | "admin"
 
 export interface Filter {
   id: number
@@ -54,4 +56,10 @@ export interface Map {
   courses: Course[]
   mappers: Mapper[]
   created_on: string
+}
+
+export interface Admin {
+  name: string
+  steam_id: string
+  roles: Role[]
 }

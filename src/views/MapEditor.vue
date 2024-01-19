@@ -105,7 +105,7 @@
             @input="updateCourseName($event, courseIndex)"
             class="font-medium text-xl"
           >
-            {{ course.name ? course.name : `Course ${courseIndex}` }}
+            {{ course.name || `Course ${courseIndex}` }}
           </p>
           <n-button
             @click="deleteCourse(courseIndex)"
@@ -373,7 +373,6 @@ function deleteCourse(courseIndex: number) {
     negativeText: "Cancel",
     onPositiveClick: () => {
       courses.value.splice(courseIndex, 1)
-      // message.success("Course deleted", { duration: 1000 })
     },
   })
 }
@@ -518,6 +517,7 @@ async function patchMap() {
         if (oldCourse) {
           return {
             id: course.id,
+            name: course.name,
             description:
               course.description === oldCourse.description
                 ? null

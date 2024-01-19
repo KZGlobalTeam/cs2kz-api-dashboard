@@ -64,12 +64,12 @@ export const routes = [
     },
   },
   {
-    path: "/home/admin",
-    name: "admin",
-    component: () => import("../views/Admin.vue"),
+    path: "/home/admins",
+    name: "admins",
+    component: () => import("../views/Admins.vue"),
     meta: {
       menuItem: true,
-      title: "Admin",
+      title: "Admins",
       iconName: "person",
       requiresRole: "admin",
     },
