@@ -235,7 +235,7 @@ import {
   useMessage,
   useDialog,
 } from "naive-ui"
-import type { Mapper, Course, Map } from "../types"
+import type { Player, Course, Map } from "../types"
 import _ from "lodash"
 import axiosClient from "../axios"
 import { AxiosResponse } from "axios"
@@ -254,7 +254,7 @@ const workshopId = ref("")
 const description = ref("")
 
 // mappers input
-const mappers = ref<Mapper[]>([{ name: "", steam_id: "" }])
+const mappers = ref<Player[]>([{ name: "", steam_id: "", is_banned: false }])
 
 const courses = ref<Course[]>([])
 
@@ -361,7 +361,7 @@ function createCourse() {
         notes: "",
       },
     ],
-    mappers: [{ name: "", steam_id: "" }],
+    mappers: [{ name: "", steam_id: "", is_banned: false }],
   })
 }
 

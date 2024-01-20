@@ -37,13 +37,14 @@ export interface Course {
   name?: string
   description: string
   filters: Filter[]
-  mappers: Mapper[]
+  mappers: Player[]
   stage: number
 }
 
-export interface Mapper {
+export interface Player {
   name: string
   steam_id: string
+  is_banned: boolean
 }
 
 export interface Map {
@@ -54,7 +55,7 @@ export interface Map {
   checksum: number
   workshop_id: number
   courses: Course[]
-  mappers: Mapper[]
+  mappers: Player[]
   created_on: string
 }
 
@@ -62,4 +63,12 @@ export interface Admin {
   name: string
   steam_id: string
   roles: Role[]
+}
+
+export interface Server{
+  id: number
+  name: string
+  ip_address: string
+  owned_by: Player
+  approved_on: string
 }

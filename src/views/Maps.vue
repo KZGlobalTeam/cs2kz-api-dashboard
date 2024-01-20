@@ -199,18 +199,16 @@ const columns = ref<DataTableColumn<RowData>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      if (rowData.global_status !== "not_global") {
-        return h(
-          NButton,
-          {
-            type: "default",
-            textColor: "#e2e8f0",
-            size: "tiny",
-            onClick: () => goToMap(rowData.id),
-          },
-          { default: () => "Edit" }
-        )
-      }
+      return h(
+        NButton,
+        {
+          type: "default",
+          textColor: "#e2e8f0",
+          size: "tiny",
+          onClick: () => goToMap(rowData.id),
+        },
+        { default: () => "Edit" }
+      )
     },
   },
 ])

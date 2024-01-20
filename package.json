@@ -13,10 +13,12 @@
     "date-fns": "^2.30.0",
     "lodash": "^4.17.21",
     "pinia": "^2.1.7",
+    "steamid": "^2.0.0",
     "vue": "^3.3.11",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
+    "@types/steamid": "^2.0.3",
     "@vitejs/plugin-vue": "^4.5.2",
     "autoprefixer": "^10.4.16",
     "naive-ui": "^2.36.0",

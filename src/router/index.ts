@@ -53,6 +53,22 @@ export const routes = [
     },
   },
   {
+    path: "/home/servers/create",
+    name: "createserver",
+    component: () => import("../views/ServerEditor.vue"),
+    meta: {
+      requiresRole: "servers",
+    },
+  },
+  {
+    path: "/home/servers/:id",
+    name: "server",
+    component: () => import("../views/ServerEditor.vue"),
+    meta: {
+      requiresRole: "servers",
+    },
+  },
+  {
     path: "/home/bans",
     name: "bans",
     component: () => import("../views/Bans.vue"),

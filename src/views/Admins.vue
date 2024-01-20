@@ -50,6 +50,7 @@ import type {
 } from "naive-ui"
 import axiosClient from "../axios"
 import type { Admin } from "../types"
+import SteamId from "steamid"
 
 type RowData = {
   name: string
@@ -77,8 +78,21 @@ const columns = ref<DataTableColumn<RowData>[]>([
   {
     title: "Steam ID",
     key: "steam_id",
-    sortOrder: false,
-    sorter: false,
+    render(rowData) {
+      const steamId64 = new SteamId(rowData.steam_id).toString()
+      return h(
+        "a",
+        {
+          href: `https://steamcommunity.com/profiles/${steamId64}`,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          class: "border-b border-blue-400 text-blue-400",
+        },
+        {
+          default: () => rowData.steam_id,
+        }
+      )
+    },
   },
   {
     title: "Roles",

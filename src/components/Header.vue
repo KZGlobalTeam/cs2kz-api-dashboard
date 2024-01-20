@@ -69,9 +69,8 @@ async function handleSignIn() {
 async function handleSignOut() {
   try {
     adminStore.$reset()
-    await axiosClient.get("/auth/steam/logout")
     document.cookie = "kz-player=; max-age=0; path=/;"
-    document.cookie = "kz-auth=; max-age=0; path=/;"
+    await axiosClient.get("/auth/steam/logout")
     router.push("/")
   } catch (error) {
     console.log(error)

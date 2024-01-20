@@ -92,7 +92,7 @@ async function saveAdmin() {
       steam_id: steamId.value,
       roles: roles.value,
     }
-    console.log(data)
+    // console.log(data)
 
     await axiosClient.put("/auth/admins", data)
     message.success("Admin saved", { duration: 2000 })
@@ -105,3 +105,9 @@ async function saveAdmin() {
   }
 }
 </script>
+
+<style scoped>
+.saveButton {
+  font-size: 16px;
+}
+</style>
