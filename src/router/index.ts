@@ -74,6 +74,22 @@ export const routes = [
       requiresRole: "admin",
     },
   },
+  {
+    path: "/home/admins/create",
+    name: "createadmin",
+    component: () => import("../views/AdminEditor.vue"),
+    meta: {
+      requiresRole: "admin",
+    },
+  },
+  {
+    path: "/home/admins/:steam_id",
+    name: "admin",
+    component: () => import("../views/AdminEditor.vue"),
+    meta: {
+      requiresRole: "admin",
+    },
+  },
 ]
 
 const router = createRouter({
@@ -98,7 +114,6 @@ router.beforeEach(async (to) => {
     await adminStore.fetchPermissions()
     if (to.meta.requiresRole && to.name !== "home") {
       const requiredRole = to.meta.requiresRole as string
-      // actually the roles is null until the permission request is done
       if (!adminStore.roles?.includes(requiredRole)) return { name: "home" }
     }
   } catch (error) {

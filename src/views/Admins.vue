@@ -76,7 +76,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
   },
   {
     title: "Steam ID",
-    key: "id",
+    key: "steam_id",
     sortOrder: false,
     sorter: false,
   },
@@ -138,7 +138,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
             style: {
               marginRight: "0.5rem",
             },
-            onClick: () => editAdmin(rowData.steam_id),
+            onClick: () => goToAdmin(rowData.steam_id),
           },
           { default: () => "Edit" }
         ),
@@ -199,7 +199,7 @@ async function loadAdminsData() {
 
     data.value = result.data.map((v: Admin) => ({
       name: v.name,
-      id: v.steam_id,
+      steam_id: v.steam_id,
       roles: v.roles,
     }))
 
@@ -236,7 +236,7 @@ function deleteAdmin(steam_id: string) {
     onPositiveClick: (): Promise<void> => {
       return new Promise((resolve) => {
         axiosClient
-          .delete(`/auth/admin/${steam_id}`)
+          .delete(`/auth/admins/${steam_id}`)
           .then(() => {
             resolve()
             message.success("Admin removed", { duration: 2000 })
@@ -252,8 +252,13 @@ function deleteAdmin(steam_id: string) {
   })
 }
 
-function editAdmin(steam_id: string) {
-  
+function goToAdmin(steam_id: string) {
+  router.push({
+    name: "admin",
+    params: {
+      steam_id,
+    },
+  })
 }
 
 function handleSorterChange(sorter: DataTableSortState) {
