@@ -205,7 +205,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
           type: "default",
           textColor: "#e2e8f0",
           size: "tiny",
-          onClick: () => goToMap(rowData.id),
+          onClick: () => editMap(rowData.id),
         },
         { default: () => "Edit" }
       )
@@ -263,7 +263,7 @@ function createMap() {
   })
 }
 
-function goToMap(id: number) {
+function editMap(id: number) {
   router.push({
     name: "map",
     params: {

@@ -1,40 +1,35 @@
 <template>
-  <div>
-    <div class="p-4 bg-gray-800 mb-4 rounded-md">
-      <div v-if="editing" class="mb-4">
-        <p class="mb-2 font-semibold text-lg">{{ name }}</p>
-      </div>
-
-      <div class="mb-4">
-        <p class="mb-2">Steam ID</p>
-        <n-input v-model:value="steamId" placeholder="" />
-      </div>
-
-      <div class="">
-        <p class="mb-2 font-medium">Roles</p>
-        <n-select
-          v-model:value="roles"
-          multiple
-          placeholder="Select Role"
-          :options="roleOptions"
-        />
-      </div>
+  <div class="p-4 bg-gray-800 mb-4 rounded-md">
+    <div v-if="editing" class="mb-4">
+      <p class="mb-2 font-semibold text-lg">{{ name }}</p>
     </div>
 
-    <!-- save map -->
-    <div class="p-4 bg-gray-800 rounded-md">
-      <n-button
-        @click.prevent="saveAdmin"
-        :disabled="loading"
-        :loading="loading"
-        class="saveButton"
-        text-color="#3cc962"
-        size="large"
-        strong
-        bordered
-        >Save</n-button
-      >
+    <div class="mb-4">
+      <p class="mb-2">Steam ID</p>
+      <n-input v-model:value="steamId" placeholder="" />
     </div>
+
+    <div class="mb-4">
+      <p class="mb-2 font-medium">Roles</p>
+      <n-select
+        v-model:value="roles"
+        multiple
+        placeholder="Select Role"
+        :options="roleOptions"
+      />
+    </div>
+
+    <n-button
+      @click.prevent="saveAdmin"
+      :disabled="loading"
+      :loading="loading"
+      class="saveButton"
+      text-color="#3cc962"
+      size="large"
+      strong
+      bordered
+      >Save</n-button
+    >
   </div>
 </template>
 
@@ -99,7 +94,7 @@ async function saveAdmin() {
     router.push("/home/admins")
   } catch (error) {
     console.log(error)
-    message.error("Failed to save admin", { duration: 2000 })
+    message.error("Failed to save admin.", { duration: 2000 })
   } finally {
     loading.value = false
   }

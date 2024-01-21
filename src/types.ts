@@ -72,3 +72,23 @@ export interface Server{
   owned_by: Player
   approved_on: string
 }
+
+export interface Ban {
+  id: number
+  steam_id: string
+  ip_address: string
+  reason: string
+  server?: Server
+  plugin_version: string
+  banned_by: Player
+  created_on: string
+  expires_on: string
+  unban: Unban
+}
+
+export interface Unban {
+  id: number
+  reason: string
+  unbanned_by: Player
+  created_on: string
+}

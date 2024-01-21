@@ -152,7 +152,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
             style: {
               marginRight: "0.5rem",
             },
-            onClick: () => goToAdmin(rowData.steam_id),
+            onClick: () => editAdmin(rowData.steam_id),
           },
           { default: () => "Edit" }
         ),
@@ -266,7 +266,7 @@ function deleteAdmin(steam_id: string) {
   })
 }
 
-function goToAdmin(steam_id: string) {
+function editAdmin(steam_id: string) {
   router.push({
     name: "admin",
     params: {

@@ -122,7 +122,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
           type: "default",
           textColor: "#e2e8f0",
           size: "tiny",
-          onClick: () => goToServer(rowData.id),
+          onClick: () => editServer(rowData.id),
         },
         { default: () => "Edit" }
       )
@@ -206,7 +206,7 @@ function createServer() {
   })
 }
 
-function goToServer(id: number) {
+function editServer(id: number) {
   router.push({
     name: "server",
     params: {

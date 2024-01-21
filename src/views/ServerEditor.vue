@@ -31,7 +31,6 @@
       </div>
     </div>
 
-    <!-- save map -->
     <div class="p-4 bg-gray-800 rounded-md">
       <!-- api key -->
       <p class="mb-2 font-medium">API Key</p>
