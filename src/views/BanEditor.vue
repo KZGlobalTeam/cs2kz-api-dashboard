@@ -1,45 +1,79 @@
 <template>
-  <div class="p-4 bg-gray-800 mb-4 rounded-md">
-    <div class="mb-4">
-      <p class="mb-2">Steam ID</p>
-      <n-input v-model:value="steamId" placeholder="STEAM_1:1:XXXXXXXXXXX" />
+  <div>
+    <div class="p-4 bg-gray-800 mb-4 rounded-md">
+      <n-form ref="banForm" :model="ban" :rules="rules">
+        <n-form-item label="Steam ID" path="steamId">
+          <n-input
+            v-model:value="ban.steamId"
+            placeholder="STEAM_1:1:XXXXXXXXXXX"
+          />
+        </n-form-item>
+
+        <n-form-item label="Player IP" path="ipAddress">
+          <n-input v-model:value="ban.ipAddress" placeholder="127.0.0.1" />
+        </n-form-item>
+
+        <n-form-item label="reason" path="reason">
+          <n-input v-model:value="ban.reason" placeholder="Bhop Hack" />
+        </n-form-item>
+
+        <n-form-item v-if="editing" label="Ban Period" path="banPeriod">
+          <n-select v-model:value="ban.banPeriod" :options="banPeriodOptions" />
+        </n-form-item>
+      </n-form>
+
+      <div>
+        <n-button
+          @click.prevent="saveBan"
+          :disabled="loading"
+          :loading="loading"
+          class="saveButton"
+          text-color="#3cc962"
+          size="large"
+          strong
+          bordered
+          >Save</n-button
+        >
+      </div>
     </div>
 
-    <div class="mb-4">
-      <p class="mb-2">Player IP</p>
-      <n-input v-model:value="ipAddress" placeholder="127.0.0.1" />
-    </div>
+    <!-- unban -->
+    <div class="p-4 bg-gray-800 mb-4 rounded-md">
+      <div class="mb-4">
+        <p class="mb-2">Reason</p>
+        <n-input v-model:value="unban.reason" placeholder="" />
+      </div>
 
-    <div class="mb-4">
-      <p class="mb-2 font-medium">Reason</p>
-      <n-input v-model:value="reason" placeholder="Bhop Hack" />
-    </div>
-
-    <div v-if="editing" class="mb-4">
-      <p class="mb-2 font-medium">Ban Period</p>
-      <n-select v-model:value="banPeriod" :options="banPeriodOptions" />
-    </div>
-
-    <div>
-      <n-button
-        @click.prevent="saveBan"
-        :disabled="loading"
-        :loading="loading"
-        class="saveButton"
-        text-color="#3cc962"
-        size="large"
-        strong
-        bordered
-        >Save</n-button
-      >
+      <div>
+        <n-button
+          @click.prevent="revertBan"
+          :disabled="loadingUnban"
+          :loading="loadingUnban"
+          class="saveButton"
+          text-color="#3cc962"
+          size="large"
+          strong
+          bordered
+          >Unban</n-button
+        >
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeMount } from "vue"
+import { ref, reactive, computed, onBeforeMount } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { NButton, NInput, NSelect, useMessage } from "naive-ui"
+import {
+  NButton,
+  NInput,
+  NSelect,
+  NForm,
+  NFormItem,
+  useMessage,
+  useDialog,
+} from "naive-ui"
+import type { FormInst } from "naive-ui"
 import { Ban } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
@@ -47,31 +81,48 @@ import type { AxiosResponse } from "axios"
 const router = useRouter()
 const route = useRoute()
 const message = useMessage()
+const dialog = useDialog()
 
 const loading = ref(false)
+const loadingUnban = ref(false)
 
-const steamId = ref("")
-const ipAddress = ref("")
-const reason = ref("")
 const created_on = ref("")
 
-const banPeriod = ref(0)
+const banForm = ref<FormInst | null>(null)
 
-const options = [
-  { label: "Permanent", value: 0 },
+const ban = reactive({
+  steamId: "",
+  ipAddress: "",
+  reason: "",
+  banPeriod: 0,
+})
+
+const unban = reactive({
+  reason: "",
+})
+
+const banPeriodOptions = [
   { label: "1 Day", value: 1 },
   { label: "1 Week", value: 7 },
   { label: "1 Month", value: 30 },
   { label: "3 Months", value: 90 },
   { label: "6 Months", value: 180 },
   { label: "1 Year", value: 365 },
+  { label: "Permanent", value: 0 },
 ]
 
-const banPeriodOptions = computed(() => {
-  return options.filter(
-    (option) => option.value >= banPeriod.value || option.value === 0
-  )
-})
+const rules = {
+  steamId: {
+    required: true,
+    message: "Steam ID is required.",
+    trigger: ["input", "blur"],
+  },
+  reason: {
+    required: true,
+    message: "Ban reason is required.",
+    trigger: ["input", "blur"],
+  },
+}
 
 const editing = computed(() => {
   return route.params.id ? true : false
@@ -85,18 +136,11 @@ onBeforeMount(async () => {
       )) as AxiosResponse<Ban>
       // console.log(data);
 
-      steamId.value = data.steam_id
-      ipAddress.value = data.ip_address
-      reason.value = data.reason
+      ban.steamId = data.steam_id
+      ban.ipAddress = data.ip_address
+      ban.reason = data.reason
+
       created_on.value = data.created_on
-      let duration = Math.floor(
-        (new Date(data.expires_on).getTime() -
-          new Date(data.created_on).getTime()) /
-          (1000 * 60 * 60 * 24)
-      )
-      banPeriod.value = options.find((option) => option.value === duration)
-        ? duration
-        : 0
     } catch (error) {
       console.log(error)
     }
@@ -104,31 +148,39 @@ onBeforeMount(async () => {
 })
 
 async function saveBan() {
+  banForm.value?.validate((errors) => {
+    if (!errors) {
+      submitBan()
+    } else {
+      console.log(errors)
+    }
+  })
+}
+
+async function submitBan() {
   loading.value = true
 
   try {
     let expiresOn = null
-    if (banPeriod.value === 0) {
-      expiresOn = "9999-12-31T23:59:59.999Z"
+    if (ban.banPeriod === 0) {
+      expiresOn = new Date(0).toISOString()
     } else {
       expiresOn = new Date(
         new Date(created_on.value).getTime() +
-          banPeriod.value * 24 * 60 * 60 * 1000
+          ban.banPeriod * 24 * 60 * 60 * 1000
       ).toISOString()
     }
 
     if (route.params.id) {
       await axiosClient.patch(`/bans/${route.params.id}`, {
-        reason: reason.value,
+        reason: ban.reason,
         expires_on: expiresOn,
       })
     } else {
-      console.log(steamId.value, ipAddress.value, reason.value)
-
       await axiosClient.post("/bans", {
-        steam_id: steamId.value,
-        ip_address: ipAddress.value,
-        reason: reason.value,
+        steam_id: ban.steamId,
+        ip_address: ban.ipAddress || null,
+        reason: ban.reason,
       })
     }
 
@@ -140,6 +192,32 @@ async function saveBan() {
   } finally {
     loading.value = false
   }
+}
+
+function revertBan() {
+  dialog.warning({
+    title: "Warning",
+    content: "Are you sure you want to revert this ban?",
+    positiveText: "Yes",
+    negativeText: "Cancel",
+    onPositiveClick: (): Promise<void> => {
+      return new Promise((resolve) => {
+        const id = route.params.id
+        axiosClient
+          .delete(`/bans/${id}`, { data: { reason: unban.reason } })
+          .then(() => {
+            resolve()
+            message.success("Ban reverted", { duration: 2000 })
+            router.push("/home/bans")
+          })
+          .catch((error) => {
+            resolve()
+            message.error("Failed to revert ban", { duration: 2000 })
+            console.log(error)
+          })
+      })
+    },
+  })
 }
 </script>
 

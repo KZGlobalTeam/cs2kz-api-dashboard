@@ -4,7 +4,6 @@
     <div class="flex justify-between gap-4">
       <div class="flex gap-4">
         <n-input
-          @input="handleBanSearch"
           type="text"
           v-model:value="searchQuery"
           placeholder="STEAM_1:1:XXXXXXXXXX"
@@ -13,8 +12,8 @@
             <ion-icon name="search-sharp"></ion-icon>
           </template>
         </n-input>
-        <n-button @click="searchBan"> SEARCH </n-button>
-        <n-button @click="clearSearchQuery"> CLEAR </n-button>
+        <n-button @click="searchBan"> SEARCH</n-button>
+        <n-button @click="clearSearch"> CLEAR </n-button>
       </div>
       <div class="flex gap-4">
         <n-button @click="loadBansData">REFRESH</n-button>
@@ -40,7 +39,7 @@
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, useMessage, useDialog } from "naive-ui"
+import { NInput, NDataTable, NButton, useMessage } from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -53,13 +52,10 @@ import { format } from "date-fns"
 
 const router = useRouter()
 const message = useMessage()
-const dialog = useDialog()
 
 const loading = ref(false)
 
 const searchQuery = ref("")
-const searchValue = ref("")
-const queryTimeout = ref()
 
 const columns = ref<DataTableColumn<Ban>[]>([
   {
@@ -165,16 +161,6 @@ const columns = ref<DataTableColumn<Ban>[]>([
           },
           { default: () => "Details" }
         ),
-        h(
-          NButton,
-          {
-            type: "error",
-            size: "tiny",
-            textColor: "#e2e8f0",
-            onClick: () => deleteBan(rowData.id),
-          },
-          { default: () => "Delete" }
-        ),
       ]
     },
   },
@@ -231,45 +217,17 @@ function rowKey(rowData: Ban) {
   return rowData.id
 }
 
-function searchBan() {}
+function searchBan() {
 
-function clearSearchQuery() {}
+}
 
-function handleBanSearch() {
-  if (queryTimeout.value) clearTimeout(queryTimeout.value)
-  queryTimeout.value = setTimeout(() => {
-    searchValue.value = searchQuery.value
-  }, 500)
+function clearSearch() {
+
 }
 
 function createBan() {
   router.push({
     name: "createban",
-  })
-}
-
-function deleteBan(id: number) {
-  dialog.warning({
-    title: "Warning",
-    content: "Are you sure you want to delete this ban?",
-    positiveText: "Yes",
-    negativeText: "Cancel",
-    onPositiveClick: (): Promise<void> => {
-      return new Promise((resolve) => {
-        axiosClient
-          .delete(`/bans/${id}`)
-          .then(() => {
-            resolve()
-            message.success("Ban removed", { duration: 2000 })
-            loadBansData()
-          })
-          .catch((error) => {
-            resolve()
-            message.error("Failed to remove ban", { duration: 2000 })
-            console.log(error)
-          })
-      })
-    },
   })
 }
 
