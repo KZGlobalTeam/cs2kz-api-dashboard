@@ -69,7 +69,7 @@ import type {
 import type { Map, GlobalStatus } from "../types"
 import { useRouter } from "vue-router"
 import axiosClient from "../axios"
-import { toLocal } from "../utils"
+import { toLocal, renderWorkshopId } from "../utils"
 
 type RowData = {
   id: number
@@ -115,27 +115,6 @@ const options = [
 
 const columns = ref<DataTableColumn<RowData>[]>([
   {
-    type: "expand",
-    // expandable: (rowData) => rowData.name !== "Jim Green",
-    renderExpand: (rowData) => {
-      return h("div", [
-        h("p", `Workshop URL`),
-        h(
-          "a",
-          {
-            href: `https://steamcommunity.com/sharedfiles/filedetails/?id=${rowData.workshop_id}`,
-            target: "_blank",
-            class: "text-blue-600 underline",
-          },
-          {
-            default: () =>
-              `https://steamcommunity.com/sharedfiles/filedetails/?id=${rowData.workshop_id}`,
-          }
-        ),
-      ])
-    },
-  },
-  {
     title: "ID",
     key: "id",
     // if its sorted initially
@@ -151,6 +130,13 @@ const columns = ref<DataTableColumn<RowData>[]>([
     sortOrder: false,
     // use Array.sort
     sorter: "default",
+  },
+  {
+    title: "Workshop",
+    key: "workshop_id",
+    render(rowData) {
+      return renderWorkshopId(rowData.workshop_id)
+    },
   },
   {
     title: "Status",

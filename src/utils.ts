@@ -23,3 +23,18 @@ export function renderSteamID(steamId: string, isBanned?: boolean) {
     }
   )
 }
+
+export function renderWorkshopId(workshopId: number) {
+  return h(
+    "a",
+    {
+      href: `https://steamcommunity.com/sharedfiles/filedetails/?id=${workshopId}`,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      class: "border-b border-blue-400 text-blue-400",
+    },
+    {
+      default: () => workshopId,
+    }
+  )
+}
