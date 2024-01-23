@@ -1,7 +1,7 @@
 <template>
   <div class="bg-gray-800 rounded-md p-4">
     <!-- selectors -->
-    <div class="flex gap-4">
+    <div class="flex gap-4 mb-4">
       <n-input
         @input="handleAdminSearch"
         type="text"
@@ -12,13 +12,10 @@
           <ion-icon name="search-sharp"></ion-icon>
         </template>
       </n-input>
-
-      <n-button @click="loadAdminsData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="createAdmin">New Admin</n-button>
     </div>
 
-    <!-- maps table -->
-    <div class="mt-4">
+    <!-- admins table -->
+    <div class="mb-4">
       <n-data-table
         :columns="columns"
         :data="filteredData"
@@ -29,28 +26,26 @@
         @update:sorter="handleSorterChange"
       />
     </div>
+
+    <div class="flex justify-end gap-4">
+      <n-button @click="loadAdminsData">REFRESH</n-button>
+      <n-button text-color="#37ab56" @click="createAdmin">New Admin</n-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, h, computed, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import {
-  NInput,
-  NDataTable,
-  NButton,
-  NTag,
-  useMessage,
-  useDialog,
-} from "naive-ui"
+import { NInput, NDataTable, NButton, NTag, useMessage } from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
   DataTableColumn,
 } from "naive-ui"
 import axiosClient from "../axios"
-import type { Admin } from "../types"
-import SteamId from "steamid"
+import type { Admin, Role } from "../types"
+import { renderSteamID } from "../utils"
 
 type RowData = {
   name: string
@@ -60,7 +55,6 @@ type RowData = {
 
 const router = useRouter()
 const message = useMessage()
-const dialog = useDialog()
 
 const loading = ref(false)
 
@@ -68,7 +62,7 @@ const searchQuery = ref("")
 const searchValue = ref("")
 const queryTimeout = ref()
 
-const columns = ref<DataTableColumn<RowData>[]>([
+const columns = ref<DataTableColumn<Admin>[]>([
   {
     title: "Name",
     key: "name",
@@ -79,19 +73,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
     title: "Steam ID",
     key: "steam_id",
     render(rowData) {
-      const steamId64 = new SteamId(rowData.steam_id).toString()
-      return h(
-        "a",
-        {
-          href: `https://steamcommunity.com/profiles/${steamId64}`,
-          target: "_blank",
-          rel: "noopener noreferrer",
-          class: "border-b border-blue-400 text-blue-400",
-        },
-        {
-          default: () => rowData.steam_id,
-        }
-      )
+      return renderSteamID(rowData.steam_id)
     },
   },
   {
@@ -117,7 +99,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
       },
     ],
     filter(value, row) {
-      return row.roles.includes(value as string)
+      return row.roles.includes(value as Role)
     },
     render(row) {
       const tags = row.roles.map((role) => {
@@ -142,31 +124,19 @@ const columns = ref<DataTableColumn<RowData>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return [
-        h(
-          NButton,
-          {
-            type: "default",
-            textColor: "#e2e8f0",
-            size: "tiny",
-            style: {
-              marginRight: "0.5rem",
-            },
-            onClick: () => editAdmin(rowData.steam_id),
+      return h(
+        NButton,
+        {
+          type: "default",
+          textColor: "#e2e8f0",
+          size: "tiny",
+          style: {
+            marginRight: "0.5rem",
           },
-          { default: () => "Edit" }
-        ),
-        h(
-          NButton,
-          {
-            type: "error",
-            size: "tiny",
-            textColor: "#e2e8f0",
-            onClick: () => deleteAdmin(rowData.steam_id),
-          },
-          { default: () => "Delete" }
-        ),
-      ]
+          onClick: () => editAdmin(rowData.steam_id),
+        },
+        { default: () => "Edit" }
+      )
     },
   },
 ])
@@ -191,14 +161,13 @@ const pagination = reactive({
 const data = ref<RowData[]>([])
 
 const filteredData = computed<RowData[]>(() => {
-  let resultData = data.value.slice()
   if (searchValue.value) {
-    resultData = resultData.filter((v) =>
-      v.name.includes(searchValue.value.toLowerCase())
+    return data.value.filter((v) =>
+      v.name.toLowerCase().includes(searchValue.value.toLowerCase())
     )
   }
 
-  return resultData
+  return data.value
 })
 
 onBeforeMount(() => {
@@ -208,24 +177,16 @@ onBeforeMount(() => {
 async function loadAdminsData() {
   loading.value = true
   try {
-    const result = await axiosClient.get("/auth/admins")
+    const result = await axiosClient.get("/players/admins")
     // console.log(result.data)
 
-    data.value = result.data.map((v: Admin) => ({
-      name: v.name,
-      steam_id: v.steam_id,
-      roles: v.roles,
-    }))
-
-    loading.value = false
+    data.value = result.data || []
   } catch (error) {
     message.error("Failed to load admins", { duration: 3000 })
     console.log(error)
+  } finally {
+    loading.value = false
   }
-}
-
-function rowKey(rowData: RowData) {
-  return rowData.steam_id
 }
 
 function handleAdminSearch() {
@@ -235,37 +196,6 @@ function handleAdminSearch() {
   }, 500)
 }
 
-function createAdmin() {
-  router.push({
-    name: "createadmin",
-  })
-}
-
-function deleteAdmin(steam_id: string) {
-  dialog.warning({
-    title: "Warning",
-    content: "Are you sure you want to delete this admin?",
-    positiveText: "Yes",
-    negativeText: "Cancel",
-    onPositiveClick: (): Promise<void> => {
-      return new Promise((resolve) => {
-        axiosClient
-          .delete(`/auth/admins/${steam_id}`)
-          .then(() => {
-            resolve()
-            message.success("Admin removed", { duration: 2000 })
-            loadAdminsData()
-          })
-          .catch((error) => {
-            resolve()
-            message.error("Failed to remove admin", { duration: 2000 })
-            console.log(error)
-          })
-      })
-    },
-  })
-}
-
 function editAdmin(steam_id: string) {
   router.push({
     name: "admin",
@@ -273,6 +203,16 @@ function editAdmin(steam_id: string) {
       steam_id,
     },
   })
+}
+
+function createAdmin() {
+  router.push({
+    name: "createadmin",
+  })
+}
+
+function rowKey(rowData: RowData) {
+  return rowData.steam_id
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

@@ -1,28 +1,62 @@
 <template>
   <div class="bg-gray-800 rounded-md p-4">
-    <!-- selectors -->
-    <div class="flex justify-between gap-4">
-      <div class="flex gap-4">
+    <div class="flex justify-between gap-4 mb-4">
+      <!-- filters -->
+      <n-space align="center">
         <n-input
+          @keyup.enter="loadBansData"
           type="text"
-          v-model:value="searchQuery"
-          placeholder="STEAM_1:1:XXXXXXXXXX"
-        >
-          <template #prefix>
-            <ion-icon name="search-sharp"></ion-icon>
-          </template>
-        </n-input>
-        <n-button @click="searchBan"> SEARCH</n-button>
-        <n-button @click="clearSearch"> CLEAR </n-button>
-      </div>
+          v-model:value="banQuery.player"
+          placeholder="Player"
+        />
+
+        <n-input
+          @keyup.enter="loadBansData"
+          type="text"
+          v-model:value="banQuery.reason"
+          placeholder="Reason"
+        />
+
+        <n-input
+          @keyup.enter="loadBansData"
+          type="text"
+          v-model:value="banQuery.server"
+          placeholder="Server"
+        />
+
+        <n-input
+          @keyup.enter="loadBansData"
+          type="text"
+          v-model:value="banQuery.banned_by"
+          placeholder="Banned By"
+        />
+
+        <div>
+          <n-radio
+            :checked="banQuery.has_expired === true"
+            @change="handleExpiresChange"
+            value="expired"
+          >
+            Expired
+          </n-radio>
+          <n-radio
+            :checked="banQuery.has_expired === false"
+            @change="handleExpiresChange"
+            value="active"
+          >
+            Active
+          </n-radio>
+        </div>
+      </n-space>
+
       <div class="flex gap-4">
-        <n-button @click="loadBansData">REFRESH</n-button>
-        <n-button text-color="#37ab56" @click="createBan">New Ban</n-button>
+        <n-button @click="loadBansData"> APPLY FILTER</n-button>
+        <n-button @click="clearFilter"> CLEAR </n-button>
       </div>
     </div>
 
-    <!-- maps table -->
-    <div class="mt-4">
+    <!-- servers table -->
+    <div class="mb-4">
       <n-data-table
         :columns="columns"
         :data="data"
@@ -33,13 +67,25 @@
         @update:sorter="handleSorterChange"
       />
     </div>
+
+    <div class="flex justify-end gap-4">
+      <n-button @click="loadBansData">REFRESH</n-button>
+      <n-button text-color="#37ab56" @click="createBan">New Ban</n-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, useMessage } from "naive-ui"
+import {
+  NInput,
+  NDataTable,
+  NButton,
+  NRadio,
+  NSpace,
+  useMessage,
+} from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -47,15 +93,28 @@ import type {
 } from "naive-ui"
 import axiosClient from "../axios"
 import type { Ban } from "../types"
-import SteamId from "steamid"
-import { format } from "date-fns"
+import { toLocal, renderSteamID } from "../utils"
+
+type BanQuery = {
+  player: string
+  reason: string
+  server: string
+  banned_by: string
+  has_expired?: boolean
+}
 
 const router = useRouter()
 const message = useMessage()
 
 const loading = ref(false)
 
-const searchQuery = ref("")
+const banQuery = reactive<BanQuery>({
+  player: "",
+  reason: "",
+  server: "",
+  banned_by: "",
+  has_expired: undefined,
+})
 
 const columns = ref<DataTableColumn<Ban>[]>([
   {
@@ -68,19 +127,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Player ID",
     key: "steam_id",
     render(rowData) {
-      const steamId64 = new SteamId(rowData.steam_id).toString()
-      return h(
-        "a",
-        {
-          href: `https://steamcommunity.com/profiles/${steamId64}`,
-          target: "_blank",
-          rel: "noopener noreferrer",
-          class: "border-b border-blue-400 text-blue-400",
-        },
-        {
-          default: () => rowData.steam_id,
-        }
-      )
+      return renderSteamID(rowData.steam_id, true)
     },
   },
   {
@@ -88,23 +135,19 @@ const columns = ref<DataTableColumn<Ban>[]>([
     key: "reason",
   },
   {
+    title: "Server",
+    key: "server",
+    render(rowData) {
+      return rowData.server?.name || "-"
+    },
+  },
+  {
     title: "Banned By",
     key: "banned_by",
     render(rowData) {
-      const steamId64 = new SteamId(rowData.banned_by.steam_id).toString()
-      return h(
-        "a",
-        {
-          href: `https://steamcommunity.com/profiles/${steamId64}`,
-          target: "_blank",
-          rel: "noopener noreferrer",
-          class: rowData.banned_by.is_banned
-            ? "border-b border-red-400 text-red-400"
-            : "border-b border-green-400 text-green-400",
-        },
-        {
-          default: () => rowData.banned_by.steam_id,
-        }
+      return renderSteamID(
+        rowData.banned_by.steam_id,
+        rowData.banned_by.is_banned
       )
     },
   },
@@ -112,6 +155,9 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Exipres On",
     key: "expires_on",
     sortOrder: false,
+    render(rowData) {
+      return toLocal(rowData.expires_on)
+    },
     sorter(rowA, rowB) {
       return (
         new Date(rowA.expires_on).getTime() -
@@ -123,6 +169,9 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Created On",
     key: "created_on",
     sortOrder: false,
+    render(rowData) {
+      return toLocal(rowData.created_on)
+    },
     sorter(rowA, rowB) {
       return (
         new Date(rowA.created_on).getTime() -
@@ -192,37 +241,40 @@ onBeforeMount(() => {
 async function loadBansData() {
   loading.value = true
   try {
-    const result = await axiosClient.get("/bans")
-    // console.log(result.data)
-    if (result.data) {
-      data.value = result.data.map((v: Ban) => ({
-        id: v.id,
-        steam_id: v.steam_id,
-        reason: v.reason,
-        server: v.server,
-        banned_by: v.banned_by,
-        created_on: format(new Date(v.created_on), "yyyy-MM-dd HH:mm:ss"),
-        expires_on: format(new Date(v.expires_on), "yyyy-MM-dd HH:mm:ss"),
-      }))
+    const params = {
+      // typescript...
+      player: banQuery.player || null,
+      reason: banQuery.reason || null,
+      server: banQuery.server || null,
+      banned_by: banQuery.banned_by || null,
+      has_expired:
+        typeof banQuery.has_expired === "undefined"
+          ? null
+          : banQuery.has_expired,
     }
 
-    loading.value = false
+    // console.log(params)
+
+    const result = await axiosClient.get("/bans", {
+      params,
+    })
+
+    data.value = result.data || []
   } catch (error) {
     message.error("Failed to load bans", { duration: 3000 })
     console.log(error)
+  } finally {
+    loading.value = false
   }
 }
 
-function rowKey(rowData: Ban) {
-  return rowData.id
-}
-
-function searchBan() {
-
-}
-
-function clearSearch() {
-
+function clearFilter() {
+  banQuery.player = ""
+  banQuery.reason = ""
+  banQuery.server = ""
+  banQuery.banned_by = ""
+  banQuery.has_expired = undefined
+  loadBansData()
 }
 
 function createBan() {
@@ -247,6 +299,16 @@ function goToBan(id: number) {
       id,
     },
   })
+}
+
+function rowKey(rowData: Ban) {
+  return rowData.id
+}
+
+function handleExpiresChange(e: Event) {
+  banQuery.has_expired =
+    (e.target as HTMLInputElement).value === "expired" ? true : false
+  loadBansData()
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

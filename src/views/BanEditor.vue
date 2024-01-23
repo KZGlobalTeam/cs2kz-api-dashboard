@@ -39,10 +39,11 @@
 
     <!-- unban -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
-      <div class="mb-4">
-        <p class="mb-2">Reason</p>
-        <n-input v-model:value="unban.reason" placeholder="" />
-      </div>
+      <n-form ref="unbanForm" :model="unban" :rules="unbanRules">
+        <n-form-item label="Unban Reason" path="reason">
+          <n-input v-model:value="unban.reason" placeholder="" />
+        </n-form-item>
+      </n-form>
 
       <div>
         <n-button
@@ -71,17 +72,15 @@ import {
   NForm,
   NFormItem,
   useMessage,
-  useDialog,
 } from "naive-ui"
 import type { FormInst } from "naive-ui"
-import { Ban } from "../types"
+import type { Ban } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
 
 const router = useRouter()
 const route = useRoute()
 const message = useMessage()
-const dialog = useDialog()
 
 const loading = ref(false)
 const loadingUnban = ref(false)
@@ -89,6 +88,7 @@ const loadingUnban = ref(false)
 const created_on = ref("")
 
 const banForm = ref<FormInst | null>(null)
+const unbanForm = ref<FormInst | null>(null)
 
 const ban = reactive({
   steamId: "",
@@ -120,6 +120,14 @@ const rules = {
   reason: {
     required: true,
     message: "Ban reason is required.",
+    trigger: ["input", "blur"],
+  },
+}
+
+const unbanRules = {
+  reason: {
+    required: true,
+    message: "Unban reason is required.",
     trigger: ["input", "blur"],
   },
 }
@@ -195,29 +203,28 @@ async function submitBan() {
 }
 
 function revertBan() {
-  dialog.warning({
-    title: "Warning",
-    content: "Are you sure you want to revert this ban?",
-    positiveText: "Yes",
-    negativeText: "Cancel",
-    onPositiveClick: (): Promise<void> => {
-      return new Promise((resolve) => {
-        const id = route.params.id
-        axiosClient
-          .delete(`/bans/${id}`, { data: { reason: unban.reason } })
-          .then(() => {
-            resolve()
-            message.success("Ban reverted", { duration: 2000 })
-            router.push("/home/bans")
-          })
-          .catch((error) => {
-            resolve()
-            message.error("Failed to revert ban", { duration: 2000 })
-            console.log(error)
-          })
-      })
-    },
+  unbanForm.value?.validate((errors) => {
+    if (!errors) {
+      submitUnban()
+    } else {
+      console.log(errors)
+    }
   })
+}
+
+async function submitUnban() {
+  loading.value = true
+
+  const id = route.params.id
+
+  try {
+    await axiosClient.delete(`/bans/${id}`, { data: { reason: unban.reason } })
+    message.success("Ban reverted", { duration: 2000 })
+    router.push("/home/bans")
+  } catch (error) {
+    message.error("Failed to revert ban", { duration: 2000 })
+    console.log(error)
+  }
 }
 </script>
 

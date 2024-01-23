@@ -1,32 +1,40 @@
 <template>
   <div class="bg-gray-800 rounded-md p-4">
-    <!-- selectors -->
-    <div class="flex gap-4">
-      <n-input
-        @input="handleMapSearch"
-        type="text"
-        v-model:value="searchQuery"
-        placeholder="Search"
-      >
-        <template #prefix>
-          <ion-icon name="search-sharp"></ion-icon>
-        </template>
-      </n-input>
-      <n-date-picker
-        v-model:value="timestamp"
-        placeholder="Release"
-        type="month"
-        clearable
-      />
-      <n-button @click="loadMapsData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="createMap">New Map</n-button>
+    <div class="flex justify-between gap-4 mb-4">
+      <!-- filters -->
+      <n-space align="center">
+        <n-input
+          @keyup.enter="loadMapsData"
+          type="text"
+          v-model:value="mapQuery.name"
+          placeholder="Name"
+        />
+
+        <n-input
+          @keyup.enter="loadMapsData"
+          type="text"
+          v-model:value="mapQuery.mapper"
+          placeholder="Mapper"
+        />
+
+        <n-select
+          @update-value="handleStatusChange"
+          v-model:value="mapQuery.globalStatus"
+          :options="options"
+        />
+      </n-space>
+
+      <div class="flex gap-4">
+        <n-button @click="loadMapsData"> APPLY FILTER</n-button>
+        <n-button @click="clearFilter"> CLEAR </n-button>
+      </div>
     </div>
 
     <!-- maps table -->
-    <div class="mt-4">
+    <div class="mb-4">
       <n-data-table
         :columns="columns"
-        :data="filteredData"
+        :data="data"
         :loading="loading"
         :pagination="pagination"
         :row-key="rowKey"
@@ -34,17 +42,23 @@
         @update:sorter="handleSorterChange"
       />
     </div>
+
+    <div class="flex justify-end gap-4">
+      <n-button @click="loadMapsData">REFRESH</n-button>
+      <n-button text-color="#37ab56" @click="createMap">New Map</n-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeMount, computed, h } from "vue"
+import { ref, reactive, nextTick, onBeforeMount, h } from "vue"
 import {
   NInput,
-  NDatePicker,
   NDataTable,
   NButton,
   NTag,
+  NSpace,
+  NSelect,
   useMessage,
 } from "naive-ui"
 import type {
@@ -53,9 +67,9 @@ import type {
   DataTableColumn,
 } from "naive-ui"
 import type { Map, GlobalStatus } from "../types"
-import { format } from "date-fns"
 import { useRouter } from "vue-router"
 import axiosClient from "../axios"
+import { toLocal } from "../utils"
 
 type RowData = {
   id: number
@@ -63,44 +77,41 @@ type RowData = {
   created_on: string
   workshop_id: number
   global_status: GlobalStatus
+  courseCount: number
 }
+
+type MapQuery = {
+  name: string
+  mapper: string
+  globalStatus?: GlobalStatus
+}
+
 const router = useRouter()
 const message = useMessage()
 
 const loading = ref(true)
 const data = ref<RowData[]>([])
 
-const filteredData = computed<RowData[]>(() => {
-  let resultData = data.value.slice()
-  if (searchValue.value) {
-    resultData = resultData.filter((v) =>
-      v.name.includes(searchValue.value.toLowerCase())
-    )
-  }
-  if (timestamp.value) {
-    resultData = resultData.filter((v) => {
-      const date = new Date(v.created_on)
-      const time = new Date(timestamp.value as number)
-      return (
-        date.getFullYear() === time.getFullYear() &&
-        date.getMonth() === time.getMonth()
-      )
-    })
-  }
-
-  return resultData
+const mapQuery = reactive<MapQuery>({
+  name: "",
+  mapper: "",
+  globalStatus: "global",
 })
 
-const searchQuery = ref("")
-const searchValue = ref("")
-const queryTimeout = ref()
-
-function handleMapSearch() {
-  if (queryTimeout.value) clearTimeout(queryTimeout.value)
-  queryTimeout.value = setTimeout(() => {
-    searchValue.value = searchQuery.value
-  }, 500)
-}
+const options = [
+  {
+    label: "Global",
+    value: "global",
+  },
+  {
+    label: "In Testing",
+    value: "in_testing",
+  },
+  {
+    label: "Not Global",
+    value: "not_global",
+  },
+]
 
 const columns = ref<DataTableColumn<RowData>[]>([
   {
@@ -144,24 +155,6 @@ const columns = ref<DataTableColumn<RowData>[]>([
   {
     title: "Status",
     key: "status",
-    defaultFilterOptionValues: ["global"],
-    filterOptions: [
-      {
-        label: "Global",
-        value: "global",
-      },
-      {
-        label: "In Testing",
-        value: "in_testing",
-      },
-      {
-        label: "Not Global",
-        value: "not_global",
-      },
-    ],
-    filter(value, row) {
-      return row.global_status === value
-    },
     render(rowData) {
       return h(
         NTag,
@@ -185,9 +178,16 @@ const columns = ref<DataTableColumn<RowData>[]>([
     },
   },
   {
+    title: "Courses",
+    key: "courseCount",
+  },
+  {
     title: "Created",
     key: "created_on",
     sortOrder: false,
+    render(rowData) {
+      return toLocal(rowData.created_on)
+    },
     sorter(rowA, rowB) {
       return (
         new Date(rowA.created_on).getTime() -
@@ -230,8 +230,6 @@ const pagination = reactive({
   },
 })
 
-const timestamp = ref()
-
 onBeforeMount(() => {
   loadMapsData()
 })
@@ -239,22 +237,47 @@ onBeforeMount(() => {
 async function loadMapsData() {
   loading.value = true
   try {
-    const result = await axiosClient.get("/maps")
+    const params = {
+      // typescript...
+      name: mapQuery.name || null,
+      mapper: mapQuery.mapper || null,
+      global_status: mapQuery.globalStatus || null,
+    }
+
+    // console.log(params)
+
+    const result = await axiosClient.get("/maps", { params })
     // console.log(result.data)
 
-    data.value = result.data.map((v: Map) => ({
-      id: v.id,
-      name: v.name,
-      global_status: v.global_status,
-      created_on: format(new Date(v.created_on), "yyyy-MM-dd HH:mm:ss"),
-      workshop_id: v.workshop_id,
-    }))
-
-    loading.value = false
+    data.value = result.data
+      ? result.data.map((v: Map) => ({
+          id: v.id,
+          name: v.name,
+          global_status: v.global_status,
+          created_on: v.created_on,
+          workshop_id: v.workshop_id,
+          courseCount: v.courses.length,
+        }))
+      : []
   } catch (error) {
     message.error("Failed to load maps", { duration: 3000 })
     console.log(error)
+  } finally {
+    loading.value = false
   }
+}
+
+function handleStatusChange() {
+  nextTick(() => {
+    loadMapsData()
+  })
+}
+
+function clearFilter() {
+  mapQuery.name = ""
+  mapQuery.mapper = ""
+  mapQuery.globalStatus = "global"
+  loadMapsData()
 }
 
 function createMap() {

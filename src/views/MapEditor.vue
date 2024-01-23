@@ -443,7 +443,7 @@ async function putMap() {
     mappers: mappers.value.map((mapper) => mapper.steam_id),
     courses: courses.value.map((course, index) => ({
       stage: index + 1,
-      name: course.name ?? null,
+      name: course.name || null,
       description: course.description,
       filters: course.filters.map((filter) => ({
         mode: filter.mode,

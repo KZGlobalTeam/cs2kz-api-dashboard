@@ -1,27 +1,34 @@
 <template>
   <div class="bg-gray-800 rounded-md p-4">
-    <!-- selectors -->
-    <div class="flex gap-4">
-      <n-input
-        @input="handleServerSearch"
-        type="text"
-        v-model:value="searchQuery"
-        placeholder="Search by name, ip, owner"
-      >
-        <template #prefix>
-          <ion-icon name="search-sharp"></ion-icon>
-        </template>
-      </n-input>
+    <div class="flex justify-between gap-4 mb-4">
+      <!-- filters -->
+      <n-space align="center">
+        <n-input
+          @keyup.enter="loadServersData"
+          type="text"
+          v-model:value="serverQuery.name"
+          placeholder="Server Name, ID"
+        />
 
-      <n-button @click="loadServersData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="createServer">New Server</n-button>
+        <n-input
+          @keyup.enter="loadServersData"
+          type="text"
+          v-model:value="serverQuery.owner"
+          placeholder="Owner"
+        />
+      </n-space>
+
+      <div class="flex gap-4">
+        <n-button @click="loadServersData"> APPLY FILTER</n-button>
+        <n-button @click="clearFilter"> CLEAR </n-button>
+      </div>
     </div>
 
-    <!-- maps table -->
-    <div class="mt-4">
+    <!-- servers table -->
+    <div class="mb-4">
       <n-data-table
         :columns="columns"
-        :data="filteredData"
+        :data="data"
         :loading="loading"
         :pagination="pagination"
         :row-key="rowKey"
@@ -29,29 +36,36 @@
         @update:sorter="handleSorterChange"
       />
     </div>
+
+    <div class="flex justify-end gap-4">
+      <n-button @click="loadServersData">REFRESH</n-button>
+      <n-button text-color="#37ab56" @click="createServer">New Server</n-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h, computed, onBeforeMount } from "vue"
+import { ref, reactive, h, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, useMessage } from "naive-ui"
+import {
+  NInput,
+  NDataTable,
+  NButton,
+  NSpace,
+  useMessage,
+} from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
   DataTableColumn,
 } from "naive-ui"
 import axiosClient from "../axios"
-import type { Server, Player } from "../types"
-import SteamId from "steamid"
-import { format } from "date-fns"
+import type { Server } from "../types"
+import { toLocal, renderSteamID } from "../utils"
 
-type RowData = {
-  id: number
+type ServerQuery = {
   name: string
-  ip_address: string
-  owned_by: Player
-  approved_on: string
+  owner: string
 }
 
 const router = useRouter()
@@ -59,11 +73,12 @@ const message = useMessage()
 
 const loading = ref(false)
 
-const searchQuery = ref("")
-const searchValue = ref("")
-const queryTimeout = ref()
+const serverQuery = reactive<ServerQuery>({
+  name: "",
+  owner: "",
+})
 
-const columns = ref<DataTableColumn<RowData>[]>([
+const columns = ref<DataTableColumn<Server>[]>([
   {
     title: "ID",
     key: "id",
@@ -73,8 +88,6 @@ const columns = ref<DataTableColumn<RowData>[]>([
   {
     title: "Name",
     key: "name",
-    sortOrder: false,
-    sorter: "default",
   },
   {
     title: "IP",
@@ -84,27 +97,16 @@ const columns = ref<DataTableColumn<RowData>[]>([
     title: "Owner",
     key: "owned_by",
     render(rowData) {
-      const steamId64 = new SteamId(rowData.owned_by.steam_id).toString()
-      return h(
-        "a",
-        {
-          href: `https://steamcommunity.com/profiles/${steamId64}`,
-          target: "_blank",
-          rel: "noopener noreferrer",
-          class: rowData.owned_by.is_banned
-            ? "border-b border-red-400 text-red-400"
-            : "border-b border-green-400 text-green-400",
-        },
-        {
-          default: () => rowData.owned_by.steam_id,
-        }
-      )
+      return renderSteamID(rowData.owned_by.steam_id)
     },
   },
   {
     title: "Approved On",
     key: "approved_on",
     sortOrder: false,
+    render(rowData) {
+      return toLocal(rowData.approved_on)
+    },
     sorter(rowA, rowB) {
       return (
         new Date(rowA.approved_on).getTime() -
@@ -122,6 +124,9 @@ const columns = ref<DataTableColumn<RowData>[]>([
           type: "default",
           textColor: "#e2e8f0",
           size: "tiny",
+          style: {
+            marginRight: "0.5rem",
+          },
           onClick: () => editServer(rowData.id),
         },
         { default: () => "Edit" }
@@ -147,22 +152,7 @@ const pagination = reactive({
   },
 })
 
-const data = ref<RowData[]>([])
-
-const filteredData = computed<RowData[]>(() => {
-  let resultData = data.value.slice()
-  const regex = new RegExp(searchValue.value, "i")
-  if (searchValue.value) {
-    resultData = resultData.filter((v) => {
-      return (
-        regex.test(v.name) ||
-        regex.test(v.ip_address) ||
-        regex.test(v.owned_by.steam_id)
-      )
-    })
-  }
-  return resultData
-})
+const data = ref<Server[]>([])
 
 onBeforeMount(() => {
   loadServersData()
@@ -171,33 +161,31 @@ onBeforeMount(() => {
 async function loadServersData() {
   loading.value = true
   try {
-    const result = await axiosClient.get("/servers")
-    // console.log(result.data)
+    const params = {
+      // typescript...
+      name: serverQuery.name || null,
+      owner: serverQuery.owner || null,
+    }
 
-    data.value = result.data.map((v: Server) => ({
-      id: v.id,
-      name: v.name,
-      ip_address: v.ip_address,
-      owned_by: v.owned_by,
-      approved_on: format(new Date(v.approved_on), "yyyy-MM-dd HH:mm:ss"),
-    }))
+    // console.log(params)
 
-    loading.value = false
+    const result = await axiosClient.get("/servers", {
+      params,
+    })
+
+    data.value = result.data || []
   } catch (error) {
     message.error("Failed to load servers", { duration: 3000 })
     console.log(error)
+  } finally {
+    loading.value = false
   }
 }
 
-function rowKey(rowData: RowData) {
-  return rowData.id
-}
-
-function handleServerSearch() {
-  if (queryTimeout.value) clearTimeout(queryTimeout.value)
-  queryTimeout.value = setTimeout(() => {
-    searchValue.value = searchQuery.value
-  }, 500)
+function clearFilter() {
+  serverQuery.name = ""
+  serverQuery.owner = ""
+  loadServersData()
 }
 
 function createServer() {
@@ -213,6 +201,10 @@ function editServer(id: number) {
       id,
     },
   })
+}
+
+function rowKey(rowData: Server) {
+  return rowData.id
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

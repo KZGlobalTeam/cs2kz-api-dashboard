@@ -10,13 +10,15 @@ export const useAdminStore = defineStore("admin", {
   }),
   getters: {},
   actions: {
-    async fetchPermissions() {
+    async fetchRoles() {
       try {
         if (this.steamId) {
-          const { data } = await axiosClient.get(`/auth/admins/${this.steamId}`)
+          const { data } = await axiosClient.get(
+            `/players/${this.steamId}/roles`
+          )
 
           // console.log(data)
-          this.roles = data.roles
+          this.roles = data
           // this.roles = ["bans", "servers", "admin"]
         }
       } catch (error) {

@@ -1,20 +1,22 @@
 <template>
   <div>
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
-      <div class="mb-4">
-        <p class="mb-2">Name</p>
-        <n-input v-model:value="name" placeholder="" />
-      </div>
+      <n-form ref="serverForm" :model="server" :rules="rules">
+        <n-form-item label="Server Name" path="name">
+          <n-input v-model:value="server.name" placeholder="" />
+        </n-form-item>
 
-      <div class="mb-4">
-        <p class="mb-2">IP Address</p>
-        <n-input v-model:value="ipAddress" placeholder="0.0.0.0:27015" />
-      </div>
+        <n-form-item label="Server IP" path="ipAddress">
+          <n-input v-model:value="server.ipAddress" placeholder="127.0.0.1:27015" />
+        </n-form-item>
 
-      <div class="mb-4">
-        <p class="mb-2 font-medium">Owner</p>
-        <n-input v-model:value="ownedBy" placeholder="STEAM_1:1:XXXXXXXXXXX" />
-      </div>
+        <n-form-item label="Owner" path="ownedBy">
+          <n-input
+            v-model:value="server.ownedBy"
+            placeholder="STEAM_1:1:XXXXXXXXXXXX"
+          />
+        </n-form-item>
+      </n-form>
 
       <div>
         <n-button
@@ -34,7 +36,6 @@
     <div class="p-4 bg-gray-800 rounded-md">
       <!-- api key -->
       <p class="mb-2 font-medium">API Key</p>
-      <!-- two buttons for new key and revoke the current key -->
       <div class="flex gap-4">
         <n-button @click="newKey" text-color="#3cc962" strong>
           New Key
@@ -48,9 +49,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount } from "vue"
+import { ref, reactive, onBeforeMount } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { NButton, NInput, useMessage, useDialog } from "naive-ui"
+import {
+  NButton,
+  NInput,
+  NForm,
+  NFormItem,
+  useMessage,
+  useDialog,
+} from "naive-ui"
+import type { FormInst } from "naive-ui"
 import { Server } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
@@ -62,9 +71,31 @@ const dialog = useDialog()
 
 const loading = ref(false)
 
-const name = ref("")
-const ipAddress = ref("")
-const ownedBy = ref("")
+const serverForm = ref<FormInst | null>(null)
+
+const server = reactive({
+  name: "",
+  ipAddress: "",
+  ownedBy: "",
+})
+
+const rules = {
+  name: {
+    required: true,
+    message: "Name is required.",
+    trigger: ["input", "blur"],
+  },
+  ipAddress: {
+    required: true,
+    message: "IP address is required.",
+    trigger: ["input", "blur"],
+  },
+  ownedBy: {
+    required: true,
+    message: "Owner's steam ID is required.",
+    trigger: ["input", "blur"],
+  },
+}
 
 onBeforeMount(async () => {
   if (route.params.id) {
@@ -74,9 +105,9 @@ onBeforeMount(async () => {
       )) as AxiosResponse<Server>
       // console.log(data);
 
-      name.value = data.name
-      ipAddress.value = data.ip_address
-      ownedBy.value = data.owned_by.steam_id
+      server.name = data.name
+      server.ipAddress = data.ip_address
+      server.ownedBy = data.owned_by.steam_id
     } catch (error) {
       console.log(error)
     }
@@ -84,27 +115,37 @@ onBeforeMount(async () => {
 })
 
 async function saveServer() {
+  serverForm.value?.validate((errors) => {
+    if (!errors) {
+      submitServer()
+    } else {
+      console.log(errors)
+    }
+  })
+}
+
+async function submitServer() {
   loading.value = true
 
   try {
     const data = {
-      name: name.value,
-      ip_address: ipAddress.value,
-      owned_by: ownedBy.value,
+      name: server.name,
+      ip_address: server.ipAddress,
+      owned_by: server.ownedBy,
     }
-    console.log(data)
-
+    // console.log(data)
+    
     if (route.params.id) {
       await axiosClient.patch(`/servers/${route.params.id}`, data)
     } else {
       await axiosClient.post("/servers", data)
     }
 
-    message.success("Server saved", { duration: 2000 })
+    message.success("Server created", { duration: 2000 })
     router.push("/home/servers")
   } catch (error) {
     console.log(error)
-    message.error("Failed to save server", { duration: 2000 })
+    message.error("Failed to create server.", { duration: 2000 })
   } finally {
     loading.value = false
   }

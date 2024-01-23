@@ -60,7 +60,7 @@ onBeforeMount(async () => {
 
 async function handleSignIn() {
   try {
-    location.href = `${apiBaseUrl}/auth/steam/login?origin_url=${location.origin}`
+    location.href = `${apiBaseUrl}/auth/login?return_to=${location.origin}`
   } catch (error) {
     console.log(error)
   }
@@ -70,7 +70,7 @@ async function handleSignOut() {
   try {
     adminStore.$reset()
     document.cookie = "kz-player=; max-age=0; path=/;"
-    await axiosClient.get("/auth/steam/logout")
+    await axiosClient.get("/auth/logout")
     router.push("/")
   } catch (error) {
     console.log(error)

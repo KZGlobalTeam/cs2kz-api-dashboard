@@ -151,7 +151,7 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const adminStore = useAdminStore()
   try {
-    await adminStore.fetchPermissions()
+    await adminStore.fetchRoles()
     if (to.meta.requiresRole && to.name !== "home") {
       const requiredRole = to.meta.requiresRole as string
       if (!adminStore.roles?.includes(requiredRole)) return { name: "home" }
