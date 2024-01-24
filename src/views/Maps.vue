@@ -17,7 +17,7 @@
           placeholder="Mapper"
         />
 
-        <n-select
+        <n-select style="width: 8rem;"
           @update-value="handleStatusChange"
           v-model:value="mapQuery.globalStatus"
           :options="options"

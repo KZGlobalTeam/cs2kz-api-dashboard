@@ -124,10 +124,17 @@ const columns = ref<DataTableColumn<Ban>[]>([
     sorter: "default",
   },
   {
-    title: "Player ID",
+    title: "Name",
+    key: "name",
+    render(rowData) {
+      return rowData.player.name
+    },
+  },
+  {
+    title: "Steam ID",
     key: "steam_id",
     render(rowData) {
-      return renderSteamID(rowData.steam_id, true)
+      return renderSteamID(rowData.player.steam_id, true)
     },
   },
   {

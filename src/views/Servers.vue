@@ -95,7 +95,14 @@ const columns = ref<DataTableColumn<Server>[]>([
   },
   {
     title: "Owner",
-    key: "owned_by",
+    key: "owner_name",
+    render(rowData) {
+      return rowData.owned_by.name
+    },
+  },
+  {
+    title: "Owner ID",
+    key: "owner_id",
     render(rowData) {
       return renderSteamID(rowData.owned_by.steam_id)
     },

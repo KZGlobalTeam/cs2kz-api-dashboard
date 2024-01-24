@@ -65,7 +65,7 @@ export interface Admin {
   roles: Role[]
 }
 
-export interface Server{
+export interface Server {
   id: number
   name: string
   ip_address: string
@@ -75,8 +75,11 @@ export interface Server{
 
 export interface Ban {
   id: number
-  steam_id: string
-  ip_address: string
+  player: {
+    steam_id: string
+    name: string
+    ip_address: string
+  }
   reason: string
   server?: Server
   plugin_version: string

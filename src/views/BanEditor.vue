@@ -144,8 +144,8 @@ onBeforeMount(async () => {
       )) as AxiosResponse<Ban>
       // console.log(data);
 
-      ban.steamId = data.steam_id
-      ban.ipAddress = data.ip_address
+      ban.steamId = data.player.steam_id
+      ban.ipAddress = data.player.ip_address
       ban.reason = data.reason
 
       created_on.value = data.created_on

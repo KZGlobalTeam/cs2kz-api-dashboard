@@ -3,12 +3,12 @@
     <n-space vertical v-if="ban">
       <div>
         <p class="title">Player</p>
-        <p>{{ ban.steam_id }}</p>
+        <p>{{ `${ban.player.name}, ${ban.player.steam_id}` }}</p>
       </div>
 
       <div>
         <p class="title">Player IP</p>
-        <p>{{ ban.ip_address }}</p>
+        <p>{{ ban.player.ip_address }}</p>
       </div>
 
       <div>
