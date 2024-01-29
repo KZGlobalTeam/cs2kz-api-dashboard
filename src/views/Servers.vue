@@ -39,7 +39,11 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadServersData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="createServer">New Server</n-button>
+      <n-button
+        text-color="#37ab56"
+        @click="router.push({ name: 'createserver' })"
+        >New Server</n-button
+      >
     </div>
   </div>
 </template>
@@ -47,13 +51,7 @@
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import {
-  NInput,
-  NDataTable,
-  NButton,
-  NSpace,
-  useMessage,
-} from "naive-ui"
+import { NInput, NDataTable, NButton, NSpace, useMessage } from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -134,7 +132,14 @@ const columns = ref<DataTableColumn<Server>[]>([
           style: {
             marginRight: "0.5rem",
           },
-          onClick: () => editServer(rowData.id),
+          onClick: () => {
+            router.push({
+              name: "server",
+              params: {
+                id: rowData.id,
+              },
+            })
+          },
         },
         { default: () => "Edit" }
       )
@@ -193,21 +198,6 @@ function clearFilter() {
   serverQuery.name = ""
   serverQuery.owner = ""
   loadServersData()
-}
-
-function createServer() {
-  router.push({
-    name: "createserver",
-  })
-}
-
-function editServer(id: number) {
-  router.push({
-    name: "server",
-    params: {
-      id,
-    },
-  })
 }
 
 function rowKey(rowData: Server) {

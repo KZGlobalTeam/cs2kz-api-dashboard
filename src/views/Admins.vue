@@ -29,7 +29,11 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadAdminsData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="createAdmin">New Admin</n-button>
+      <n-button
+        text-color="#37ab56"
+        @click="router.push({ name: 'createadmin' })"
+        >New Admin</n-button
+      >
     </div>
   </div>
 </template>
@@ -133,7 +137,14 @@ const columns = ref<DataTableColumn<Admin>[]>([
           style: {
             marginRight: "0.5rem",
           },
-          onClick: () => editAdmin(rowData.steam_id),
+          onClick: () => {
+            router.push({
+              name: "admin",
+              params: {
+                steam_id: rowData.steam_id,
+              },
+            })
+          },
         },
         { default: () => "Edit" }
       )
@@ -194,21 +205,6 @@ function handleAdminSearch() {
   queryTimeout.value = setTimeout(() => {
     searchValue.value = searchQuery.value
   }, 500)
-}
-
-function editAdmin(steam_id: string) {
-  router.push({
-    name: "admin",
-    params: {
-      steam_id,
-    },
-  })
-}
-
-function createAdmin() {
-  router.push({
-    name: "createadmin",
-  })
 }
 
 function rowKey(rowData: RowData) {

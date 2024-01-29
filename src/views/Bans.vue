@@ -70,7 +70,9 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadBansData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="createBan">New Ban</n-button>
+      <n-button text-color="#37ab56" @click="router.push({ name: 'createban' })"
+        >New Ban</n-button
+      >
     </div>
   </div>
 </template>
@@ -200,7 +202,14 @@ const columns = ref<DataTableColumn<Ban>[]>([
             style: {
               marginRight: "0.5rem",
             },
-            onClick: () => editBan(rowData.id),
+            onClick: () => {
+              router.push({
+                name: "ban",
+                params: {
+                  id: rowData.id,
+                },
+              })
+            },
           },
           { default: () => "Edit" }
         ),
@@ -213,7 +222,14 @@ const columns = ref<DataTableColumn<Ban>[]>([
             style: {
               marginRight: "0.5rem",
             },
-            onClick: () => goToBan(rowData.id),
+            onClick: () => {
+              router.push({
+                name: "bandetails",
+                params: {
+                  id: rowData.id,
+                },
+              })
+            },
           },
           { default: () => "Details" }
         ),
@@ -282,30 +298,6 @@ function clearFilter() {
   banQuery.banned_by = ""
   banQuery.has_expired = undefined
   loadBansData()
-}
-
-function createBan() {
-  router.push({
-    name: "createban",
-  })
-}
-
-function editBan(id: number) {
-  router.push({
-    name: "ban",
-    params: {
-      id,
-    },
-  })
-}
-
-function goToBan(id: number) {
-  router.push({
-    name: "bandetails",
-    params: {
-      id,
-    },
-  })
 }
 
 function rowKey(rowData: Ban) {

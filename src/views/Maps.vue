@@ -17,7 +17,8 @@
           placeholder="Mapper"
         />
 
-        <n-select style="width: 8rem;"
+        <n-select
+          style="width: 8rem"
           @update-value="handleStatusChange"
           v-model:value="mapQuery.globalStatus"
           :options="options"
@@ -45,7 +46,9 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadMapsData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="createMap">New Map</n-button>
+      <n-button text-color="#37ab56" @click="router.push({ name: 'createmap' })"
+        >New Map</n-button
+      >
     </div>
   </div>
 </template>
@@ -191,7 +194,14 @@ const columns = ref<DataTableColumn<RowData>[]>([
           type: "default",
           textColor: "#e2e8f0",
           size: "tiny",
-          onClick: () => editMap(rowData.id),
+          onClick: () => {
+            router.push({
+              name: "map",
+              params: {
+                id: rowData.id,
+              },
+            })
+          },
         },
         { default: () => "Edit" }
       )
@@ -264,21 +274,6 @@ function clearFilter() {
   mapQuery.mapper = ""
   mapQuery.globalStatus = "global"
   loadMapsData()
-}
-
-function createMap() {
-  router.push({
-    name: "createmap",
-  })
-}
-
-function editMap(id: number) {
-  router.push({
-    name: "map",
-    params: {
-      id,
-    },
-  })
 }
 
 function rowKey(rowData: RowData) {
