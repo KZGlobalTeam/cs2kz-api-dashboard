@@ -1,8 +1,7 @@
 import axios from "axios";
-import { apiBaseUrl } from "./types";
 
 const axiosClient  = axios.create({
-	baseURL: apiBaseUrl,
+	baseURL: import.meta.env.VITE_API_URL,
 	// proxy: {
 	// 	host: '127.0.0.1',
 	// 	port: 7890,
