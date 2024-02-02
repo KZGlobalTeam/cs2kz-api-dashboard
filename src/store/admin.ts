@@ -14,11 +14,11 @@ export const useAdminStore = defineStore("admin", {
       try {
         if (this.steamId) {
           const { data } = await axiosClient.get(
-            `/players/${this.steamId}/roles`
+            `/admins/${this.steamId}`
           )
 
           // console.log(data)
-          this.roles = data
+          this.roles = data.roles
           // this.roles = ["bans", "servers", "admin"]
         }
       } catch (error) {

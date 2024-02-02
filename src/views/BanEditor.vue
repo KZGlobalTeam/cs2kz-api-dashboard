@@ -3,10 +3,7 @@
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
       <n-form ref="banForm" :model="ban" :rules="rules">
         <n-form-item label="Steam ID" path="steamId">
-          <n-input
-            v-model:value="ban.steamId"
-            placeholder="STEAM_1:1:XXXXXXXXXXX"
-          />
+          <n-input v-model:value="ban.steamId" placeholder="STEAM_1:1:XXXXXXXXXXX" />
         </n-form-item>
 
         <n-form-item label="Player IP" path="ipAddress">
@@ -23,17 +20,8 @@
       </n-form>
 
       <div>
-        <n-button
-          @click.prevent="saveBan"
-          :disabled="loading"
-          :loading="loading"
-          class="saveButton"
-          text-color="#3cc962"
-          size="large"
-          strong
-          bordered
-          >Save</n-button
-        >
+        <n-button @click.prevent="saveBan" :disabled="loading" :loading="loading" class="saveButton" text-color="#3cc962"
+          size="large" strong bordered>Save</n-button>
       </div>
     </div>
 
@@ -46,17 +34,8 @@
       </n-form>
 
       <div>
-        <n-button
-          @click.prevent="revertBan"
-          :disabled="loadingUnban"
-          :loading="loadingUnban"
-          class="saveButton"
-          text-color="#3cc962"
-          size="large"
-          strong
-          bordered
-          >Unban</n-button
-        >
+        <n-button @click.prevent="revertBan" :disabled="loadingUnban" :loading="loadingUnban" class="saveButton"
+          text-color="#3cc962" size="large" strong bordered>Unban</n-button>
       </div>
     </div>
   </div>
@@ -175,7 +154,7 @@ async function submitBan() {
     } else {
       expiresOn = new Date(
         new Date(created_on.value).getTime() +
-          ban.banPeriod * 24 * 60 * 60 * 1000
+        ban.banPeriod * 24 * 60 * 60 * 1000
       ).toISOString()
     }
 
@@ -183,13 +162,13 @@ async function submitBan() {
       await axiosClient.patch(`/bans/${route.params.id}`, {
         reason: ban.reason,
         expires_on: expiresOn,
-      })
+      }, { withCredentials: true })
     } else {
       await axiosClient.post("/bans", {
         steam_id: ban.steamId,
         ip_address: ban.ipAddress || null,
         reason: ban.reason,
-      })
+      }, { withCredentials: true })
     }
 
     message.success("Ban issued", { duration: 2000 })
@@ -218,7 +197,7 @@ async function submitUnban() {
   const id = route.params.id
 
   try {
-    await axiosClient.delete(`/bans/${id}`, { data: { reason: unban.reason } })
+    await axiosClient.delete(`/bans/${id}`, { data: { reason: unban.reason }, withCredentials: true })
     message.success("Ban reverted", { duration: 2000 })
     router.push("/home/bans")
   } catch (error) {

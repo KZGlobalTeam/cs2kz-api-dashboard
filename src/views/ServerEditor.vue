@@ -11,25 +11,13 @@
         </n-form-item>
 
         <n-form-item label="Owner" path="ownedBy">
-          <n-input
-            v-model:value="server.ownedBy"
-            placeholder="STEAM_1:1:XXXXXXXXXXXX"
-          />
+          <n-input v-model:value="server.ownedBy" placeholder="STEAM_1:1:XXXXXXXXXXXX" />
         </n-form-item>
       </n-form>
 
       <div>
-        <n-button
-          @click.prevent="saveServer"
-          :disabled="loading"
-          :loading="loading"
-          class="saveButton"
-          text-color="#3cc962"
-          size="large"
-          strong
-          bordered
-          >Save</n-button
-        >
+        <n-button @click.prevent="saveServer" :disabled="loading" :loading="loading" class="saveButton"
+          text-color="#3cc962" size="large" strong bordered>Save</n-button>
       </div>
     </div>
 
@@ -134,11 +122,11 @@ async function submitServer() {
       owned_by: server.ownedBy,
     }
     // console.log(data)
-    
+
     if (route.params.id) {
-      await axiosClient.patch(`/servers/${route.params.id}`, data)
+      await axiosClient.patch(`/servers/${route.params.id}`, data, { withCredentials: true })
     } else {
-      await axiosClient.post("/servers", data)
+      await axiosClient.post("/servers", data, { withCredentials: true })
     }
 
     message.success("Server created", { duration: 2000 })
@@ -161,7 +149,7 @@ function newKey() {
       return new Promise((resolve) => {
         const id = route.params.id
         axiosClient
-          .put(`/servers/${id}/key`)
+          .put(`/servers/${id}/key`, null, { withCredentials: true })
           .then(() => {
             resolve()
             message.success("new API key generated", { duration: 2000 })
@@ -186,7 +174,7 @@ function revokeKey() {
       return new Promise((resolve) => {
         const id = route.params.id
         axiosClient
-          .delete(`/servers/${id}/key`)
+          .delete(`/servers/${id}/key`, { withCredentials: true })
           .then(() => {
             resolve()
             message.success("API key revoked", { duration: 2000 })

@@ -188,7 +188,7 @@ onBeforeMount(() => {
 async function loadAdminsData() {
   loading.value = true
   try {
-    const result = await axiosClient.get("/players/admins")
+    const result = await axiosClient.get("/admins")
     // console.log(result.data)
 
     data.value = result.data || []

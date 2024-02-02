@@ -8,25 +8,11 @@
 
     <div class="mb-4">
       <p class="mb-2">Roles</p>
-      <n-select
-        v-model:value="admin.roles"
-        multiple
-        placeholder="Select Role"
-        :options="roleOptions"
-      />
+      <n-select v-model:value="admin.roles" multiple placeholder="Select Role" :options="roleOptions" />
     </div>
 
-    <n-button
-      @click.prevent="saveAdmin"
-      :disabled="loading"
-      :loading="loading"
-      class="saveButton"
-      text-color="#3cc962"
-      size="large"
-      strong
-      bordered
-      >Save</n-button
-    >
+    <n-button @click.prevent="saveAdmin" :disabled="loading" :loading="loading" class="saveButton" text-color="#3cc962"
+      size="large" strong bordered>Save</n-button>
   </div>
 </template>
 
@@ -79,11 +65,11 @@ onBeforeMount(async () => {
   let steamId = route.params.steam_id
   if (route.params.steam_id) {
     try {
-      const { data } = await axiosClient.get(`/players/${steamId}/roles`)
+      const { data } = await axiosClient.get(`/admins/${steamId}`)
       // console.log(data);
 
       admin.steamId = steamId as string
-      admin.roles = data
+      admin.roles = data.roles
     } catch (error) {
       console.log(error)
     }
@@ -108,7 +94,7 @@ async function submitAdmin() {
   loading.value = true
 
   try {
-    await axiosClient.put(`/players/${admin.steamId}/roles`, admin.roles)
+    await axiosClient.put(`/admins/${admin.steamId}`, admin.roles, { withCredentials: true })
     message.success("Admin saved", { duration: 2000 })
     router.push("/home/admins")
   } catch (error) {

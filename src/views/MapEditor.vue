@@ -6,20 +6,13 @@
       <!-- description -->
       <div class="mb-4">
         <p class="mb-2 font-medium">Name</p>
-        <n-input
-          v-model:value="name"
-          placeholder="kz_aaaa"
-        />
+        <n-input v-model:value="name" placeholder="kz_aaaa" />
       </div>
 
       <!-- workshop -->
       <div class="mb-4">
         <p class="font-medium mb-2">Workshop ID</p>
-        <n-input
-          style="margin-bottom: 0.25rem"
-          v-model:value="workshopId"
-          placeholder="123456789"
-        />
+        <n-input style="margin-bottom: 0.25rem" v-model:value="workshopId" placeholder="123456789" />
         <n-checkbox v-if="editing" size="small" v-model:checked="checkSteam">
           Update Workshop
         </n-checkbox>
@@ -29,25 +22,13 @@
       <div class="mb-4">
         <p class="mb-2 font-medium">Global Status</p>
         <n-space>
-          <n-radio
-            :checked="globalStatus === 'global'"
-            value="global"
-            @change="handleStatusChange"
-          >
+          <n-radio :checked="globalStatus === 'global'" value="global" @change="handleStatusChange">
             Global
           </n-radio>
-          <n-radio
-            :checked="globalStatus === 'in_testing'"
-            value="in_testing"
-            @change="handleStatusChange"
-          >
+          <n-radio :checked="globalStatus === 'in_testing'" value="in_testing" @change="handleStatusChange">
             In Testing
           </n-radio>
-          <n-radio
-            :checked="globalStatus === 'not_global'"
-            value="not_global"
-            @change="handleStatusChange"
-          >
+          <n-radio :checked="globalStatus === 'not_global'" value="not_global" @change="handleStatusChange">
             Not Global
           </n-radio>
         </n-space>
@@ -56,85 +37,42 @@
       <!-- description -->
       <div class="mb-4">
         <p class="mb-2 font-medium">Description</p>
-        <n-input
-          v-model:value="description"
-          type="textarea"
-          autosize
-          placeholder=""
-        />
+        <n-input v-model:value="description" type="textarea" autosize placeholder="" />
       </div>
     </div>
 
     <!-- mappers -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
       <p class="my-2 font-medium">Mappers</p>
-      <n-dynamic-input
-        v-model:value="mappers"
-        item-style="margin-bottom: 1rem;"
-        :on-create="onCreateMapper"
-        #="{ index }"
-      >
+      <n-dynamic-input v-model:value="mappers" item-style="margin-bottom: 1rem;" :on-create="onCreateMapper"
+        #="{ index }">
         <div class="flex gap-4">
-          <n-input
-            v-model:value="mappers[index].name"
-            placeholder="Name"
-            @keydown.enter.prevent
-          />
-          <n-input
-            v-model:value="mappers[index].steam_id"
-            placeholder="Steam ID"
-            @keydown.enter.prevent
-          />
+          <n-input v-model:value="mappers[index].name" placeholder="Name" @keydown.enter.prevent />
+          <n-input v-model:value="mappers[index].steam_id" placeholder="Steam ID" @keydown.enter.prevent />
         </div>
       </n-dynamic-input>
     </div>
 
     <!-- courses -->
     <div class="p-4 bg-gray-800 rounded-md mb-4">
-      <div
-        v-for="(course, courseIndex) in courses"
-        :key="course.id"
-        class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4"
-      >
+      <div v-for="(course, courseIndex) in courses" :key="course.id"
+        class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4">
         <!-- course name -->
-        <div
-          class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
-        >
-          <p
-            contenteditable="true"
-            @input="updateCourseName($event, courseIndex)"
-            class="font-medium text-xl"
-          >
+        <div class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2">
+          <p contenteditable="true" @input="updateCourseName($event, courseIndex)" class="font-medium text-xl">
             {{ course.name || `Course ${courseIndex}` }}
           </p>
-          <n-button
-            @click="deleteCourse(courseIndex)"
-            text-color="#e2e8f0"
-            type="error"
-            >Delete</n-button
-          >
+          <n-button @click="deleteCourse(courseIndex)" text-color="#e2e8f0" type="error">Delete</n-button>
         </div>
 
         <!-- mappers -->
         <div class="mb-4">
           <p class="my-2">Mappers</p>
-          <n-dynamic-input
-            v-model:value="course.mappers"
-            item-style="margin-bottom: 1rem;"
-            :on-create="onCreateMapper"
-            #="{ index }"
-          >
+          <n-dynamic-input v-model:value="course.mappers" item-style="margin-bottom: 1rem;" :on-create="onCreateMapper"
+            #="{ index }">
             <div class="flex gap-4">
-              <n-input
-                v-model:value="course.mappers[index].name"
-                placeholder="Name"
-                @keydown.enter.prevent
-              />
-              <n-input
-                v-model:value="course.mappers[index].steam_id"
-                placeholder="Steam ID"
-                @keydown.enter.prevent
-              />
+              <n-input v-model:value="course.mappers[index].name" placeholder="Name" @keydown.enter.prevent />
+              <n-input v-model:value="course.mappers[index].steam_id" placeholder="Steam ID" @keydown.enter.prevent />
             </div>
           </n-dynamic-input>
         </div>
@@ -169,10 +107,7 @@
                 </td>
                 <td>
                   <select class="bg-[#303033] rounded-sm py-1 px-2" v-model="filter.ranked_status">
-                    <option
-                      v-for="option in rankedStatusOptions"
-                      :value="option.value"
-                    >
+                    <option v-for="option in rankedStatusOptions" :value="option.value">
                       {{ option.label }}
                     </option>
                   </select>
@@ -188,35 +123,19 @@
         <!-- description -->
         <div>
           <p class="mb-2">Description</p>
-          <n-input
-            type="textarea"
-            v-model:value="course.description"
-            autosize
-            placeholder=""
-          />
+          <n-input type="textarea" v-model:value="course.description" autosize placeholder="" />
         </div>
       </div>
       <!-- if we're creating a new map, then it's allowed -->
       <div v-if="!editing">
-        <n-button @click="createCourse" text-color="#37ab56"
-          >New Course</n-button
-        >
+        <n-button @click="createCourse" text-color="#37ab56">New Course</n-button>
       </div>
     </div>
 
     <!-- save map -->
     <div class="p-4 bg-gray-800 rounded-md">
-      <n-button
-        @click.prevent="saveMap"
-        :disabled="loading"
-        :loading="loading"
-        class="saveButton"
-        text-color="#3cc962"
-        size="large"
-        strong
-        bordered
-        >Save</n-button
-      >
+      <n-button @click.prevent="saveMap" :disabled="loading" :loading="loading" class="saveButton" text-color="#3cc962"
+        size="large" strong bordered>Save</n-button>
     </div>
   </div>
 </template>
@@ -411,8 +330,7 @@ function saveMap() {
       course.mappers.forEach((mapper, mapperIndex) => {
         if (!mapper.steam_id) {
           message.error(
-            `Course ${courseIndex}: mapper ${
-              mapperIndex + 1
+            `Course ${courseIndex}: mapper ${mapperIndex + 1
             }: steam id is required`
           )
           validated = false
@@ -458,7 +376,7 @@ async function putMap() {
 
   try {
     console.log("map to put", mapToPut)
-    await axiosClient.put("/maps", mapToPut)
+    await axiosClient.put("/maps", mapToPut, { withCredentials: true })
     message.success("Map saved", { duration: 3000 })
     router.push({
       name: "maps",
@@ -564,7 +482,7 @@ async function patchMap() {
 
   try {
     console.log("map to patch", mapToPatch)
-    await axiosClient.patch(`/maps/${oldMap.id}`, mapToPatch)
+    await axiosClient.patch(`/maps/${oldMap.id}`, mapToPatch, { withCredentials: true })
     message.success("Map updated", { duration: 3000 })
     router.push({
       name: "maps",
