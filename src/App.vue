@@ -8,26 +8,13 @@
             <NavBar />
             <div class="flex-1 bg-gray-900 p-4">
               <div v-if="route.name" class="flex mb-4">
-                <div
-                  class="flex items-center mr-1"
-                  v-for="(part, index) in pathArray"
-                  :key="index"
-                >
-                  <RouterLink
-                    class="mr-1"
-                    :class="
-                      index !== pathArray.length - 1
-                        ? 'bg-gray-800 hover:bg-gray-700 text-blue-600 py-1 px-[10px] rounded-md'
-                        : 'cursor-default'
-                    "
-                    :to="getLink(index)"
-                    >{{ part }}
+                <div class="flex items-center mr-1" v-for="(part, index) in pathArray" :key="index">
+                  <RouterLink class="mr-1" :class="index !== pathArray.length - 1
+                    ? 'bg-gray-800 hover:bg-gray-700 text-blue-600 py-1 px-[10px] rounded-md'
+                    : 'cursor-default'
+                    " :to="getLink(index)">{{ part }}
                   </RouterLink>
-                  <ion-icon
-                    v-if="index !== pathArray.length - 1"
-                    size=""
-                    name="chevron-forward-sharp"
-                  ></ion-icon>
+                  <ion-icon v-if="index !== pathArray.length - 1" size="" name="chevron-forward-sharp"></ion-icon>
                 </div>
               </div>
               <RouterView />
@@ -44,7 +31,7 @@ import { ref } from "vue"
 import Header from "./components/Header.vue"
 import NavBar from "./components/NavBar.vue"
 import { RouterView, useRoute } from "vue-router"
-import { onBeforeMount, computed } from "vue"
+import { computed } from "vue"
 import {
   darkTheme,
   NConfigProvider,
@@ -53,28 +40,12 @@ import {
   enUS,
 } from "naive-ui"
 import { useAdminStore } from "./store/admin"
+import axiosClient from "./axios"
 
 const adminStore = useAdminStore()
 const route = useRoute()
 
 const loading = ref(false)
-
-onBeforeMount(async () => {
-  loading.value = true
-  const playerCookie = getCookie("kz-player")
-  // console.log(playerCookie)
-
-  if (playerCookie) {
-    const kzPlayer = JSON.parse(playerCookie)
-
-    if (kzPlayer) {
-      adminStore.steamId = kzPlayer.steam_id
-      adminStore.avatar_url = kzPlayer.avatar_url
-    }
-  }
-
-  loading.value = false
-})
 
 const pathArray = computed(() =>
   route.path
@@ -82,6 +53,30 @@ const pathArray = computed(() =>
     .filter((item) => item !== "")
     .map((item) => item.charAt(0).toUpperCase() + item.slice(1))
 )
+
+getAdmin()
+
+async function getAdmin() {
+  loading.value = true
+  const playerCookie = getCookie("kz-player")
+  // console.log(playerCookie)
+
+  if (playerCookie) {
+    const kzPlayer = JSON.parse(playerCookie)
+
+    const { data } = await axiosClient.get(
+      `/admins/${kzPlayer.steam_id}`
+    )
+
+    if (kzPlayer) {
+      adminStore.steamId = kzPlayer.steam_id
+      adminStore.avatar_url = kzPlayer.avatar_url
+      adminStore.roles = data.roles
+    }
+  }
+
+  loading.value = false
+}
 
 function getLink(index: number) {
   const path = pathArray.value
@@ -95,8 +90,8 @@ function getCookie(name: string) {
   let matches = document.cookie.match(
     new RegExp(
       "(?:^|; )" +
-        name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
-        "=([^;]*)"
+      name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
+      "=([^;]*)"
     )
   )
   return matches ? decodeURIComponent(matches[1]) : undefined
