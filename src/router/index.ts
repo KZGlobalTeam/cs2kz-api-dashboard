@@ -11,6 +11,15 @@ export const noAuthRoutes = [
       iconName: "home",
     },
   },
+  {
+    path: '/home/myservers',
+    name: 'myservers',
+    component: () => import('../views/MyServers.vue'),
+    meta: {
+      title: 'My Servers',
+      iconName: 'server'
+    }
+  }
 ]
 
 export const routes = [

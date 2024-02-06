@@ -14,7 +14,7 @@
                     : 'cursor-default'
                     " :to="getLink(index)">{{ part }}
                   </RouterLink>
-                  <ion-icon v-if="index !== pathArray.length - 1" size="" name="chevron-forward-sharp"></ion-icon>
+                  <img v-if="index !== pathArray.length - 1" src="/icons/arrow-forward-sharp.svg" class="w-4 auto"/>
                 </div>
               </div>
               <RouterView />

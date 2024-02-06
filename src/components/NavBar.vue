@@ -1,22 +1,14 @@
 <template>
   <div class="w-[200px] bg-gray-800 min-h-screen flex flex-col py-4 px-2">
-    <RouterLink
-      v-for="route in noAuthRoutes"
-      :key="route.name"
-      :to="route.path"
-      class="flex gap-4 items-center p-2 hover:bg-gray-700 rounded-md cursor-pointer"
-    >
-      <ion-icon :name="`${route.meta.iconName}-sharp`"></ion-icon>
+    <RouterLink v-for="route in noAuthRoutes" :key="route.name" :to="route.path"
+      class="flex gap-4 p-2 hover:bg-gray-700 rounded-md cursor-pointer">
+      <img :src="`/icons/${route.meta.iconName}-sharp.svg`" class="w-5 h-auto"/>
       <p class="font-medium">{{ route.meta?.title }}</p>
     </RouterLink>
 
-    <RouterLink
-      v-for="route in authRoutes"
-      :key="route.name"
-      :to="route.path"
-      class="flex gap-4 items-center p-2 hover:bg-gray-700 rounded-md cursor-pointer"
-    >
-      <ion-icon :name="`${route.meta.iconName}-sharp`"></ion-icon>
+    <RouterLink v-for="route in authRoutes" :key="route.name" :to="route.path"
+      class="flex gap-4 p-2 hover:bg-gray-700 rounded-md cursor-pointer">
+      <img :src="`/icons/${route.meta.iconName}-sharp.svg`" class="w-5 h-auto"/>
       <p class="font-medium">{{ route.meta?.title }}</p>
     </RouterLink>
   </div>
