@@ -33,18 +33,18 @@
 
         <div>
           <n-radio
-            :checked="banQuery.has_expired === true"
+            :checked="banQuery.unbanned === true"
             @change="handleExpiresChange"
-            value="expired"
+            value="unbanned"
           >
-            Expired
+            Unbanned
           </n-radio>
           <n-radio
-            :checked="banQuery.has_expired === false"
+            :checked="banQuery.unbanned === false"
             @change="handleExpiresChange"
-            value="active"
+            value="banned"
           >
-            Active
+            Banned
           </n-radio>
         </div>
       </n-space>
@@ -98,11 +98,14 @@ import type { Ban } from "../types"
 import { toLocal, renderSteamID } from "../utils"
 
 type BanQuery = {
-  player: string
-  reason: string
-  server: string
-  banned_by: string
-  has_expired?: boolean
+  player?: string,
+  server?: string | number,
+  reason?: string,
+  unbanned?: boolean,
+  banned_by?: string,
+  unbanned_by?: string,
+  created_after?: Date,
+  created_before?: Date,
 }
 
 const router = useRouter()
@@ -115,7 +118,7 @@ const banQuery = reactive<BanQuery>({
   reason: "",
   server: "",
   banned_by: "",
-  has_expired: undefined,
+  unbanned: undefined,
 })
 
 const columns = ref<DataTableColumn<Ban>[]>([
@@ -155,8 +158,8 @@ const columns = ref<DataTableColumn<Ban>[]>([
     key: "banned_by",
     render(rowData) {
       return renderSteamID(
-        rowData.banned_by.steam_id,
-        rowData.banned_by.is_banned
+        rowData.admin.steam_id,
+        rowData.admin.is_banned
       )
     },
   },
@@ -270,10 +273,10 @@ async function loadBansData() {
       reason: banQuery.reason || null,
       server: banQuery.server || null,
       banned_by: banQuery.banned_by || null,
-      has_expired:
-        typeof banQuery.has_expired === "undefined"
+      unbanned:
+        typeof banQuery.unbanned === "undefined"
           ? null
-          : banQuery.has_expired,
+          : banQuery.unbanned,
     }
 
     // console.log(params)
@@ -296,7 +299,7 @@ function clearFilter() {
   banQuery.reason = ""
   banQuery.server = ""
   banQuery.banned_by = ""
-  banQuery.has_expired = undefined
+  banQuery.unbanned = undefined
   loadBansData()
 }
 
@@ -305,8 +308,7 @@ function rowKey(rowData: Ban) {
 }
 
 function handleExpiresChange(e: Event) {
-  banQuery.has_expired =
-    (e.target as HTMLInputElement).value === "expired" ? true : false
+  banQuery.unbanned = (e.target as HTMLInputElement).value === "unbanned"
   loadBansData()
 }
 

@@ -40,7 +40,7 @@
 
       <div>
         <p class="title">Banned By</p>
-        <p>{{ `${ban.banned_by.name}, ${ban.banned_by.steam_id}` }}</p>
+        <p>{{ `${ban.admin.name}, ${ban.admin.steam_id}` }}</p>
       </div>
 
       <div>
@@ -65,7 +65,7 @@
         <p class="title">Unbanned By</p>
         <p>
           {{
-            `${ban.unban.unbanned_by.name}, ${ban.unban.unbanned_by.steam_id}`
+            `${ban.unban.admin.name}, ${ban.unban.admin.steam_id}`
           }}
         </p>
       </div>
