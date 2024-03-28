@@ -29,28 +29,26 @@ export interface Filter {
   teleports: boolean
   tier: Tier
   ranked_status: RankedStatus
-  notes: string
+  notes?: string
 }
 
 export interface Course {
   id: number
   name?: string
-  description: string
+  description?: string
   filters: Filter[]
   mappers: Player[]
-  stage: number
 }
 
 export interface Player {
   name: string
   steam_id: string
-  is_banned: boolean
 }
 
 export interface Map {
   id: number
   name: string
-  description: string
+  description?: string
   global_status: GlobalStatus
   checksum: number
   workshop_id: number
@@ -69,29 +67,24 @@ export interface Server {
   id: number
   name: string
   ip_address: string
-  owned_by: Player
-  approved_on: string
+  owner: Player
+  created_on: string
 }
 
 export interface Ban {
   id: number
-  player: {
-    steam_id: string
-    name: string
-    ip_address: string
-  }
+  player: Player
   reason: string
   server?: Server
-  plugin_version: string
-  banned_by: Player
+  admin?: Player
   created_on: string
-  expires_on: string
-  unban: Unban
+  expires_on?: string
+  unban?: Unban
 }
 
 export interface Unban {
   id: number
   reason: string
-  unbanned_by: Player
+  admin?: Player
   created_on: string
 }

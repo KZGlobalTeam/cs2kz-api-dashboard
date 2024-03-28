@@ -94,7 +94,7 @@ async function submitAdmin() {
   loading.value = true
 
   try {
-    await axiosClient.put(`/admins/${admin.steamId}`, admin.roles, { withCredentials: true })
+    await axiosClient.put(`/admins/${admin.steamId}`, { roles: admin.roles }, { withCredentials: true })
     message.success("Admin saved", { duration: 2000 })
     router.push("/home/admins")
   } catch (error) {

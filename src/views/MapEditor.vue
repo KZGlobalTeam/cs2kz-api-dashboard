@@ -423,7 +423,7 @@ async function patchMap() {
       )
       .map((mapper) => mapper.steam_id),
 
-    course_updates: courses.value
+    course_updates: Object.fromEntries(courses.value
       .filter((course) =>
         oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
       )
@@ -432,52 +432,38 @@ async function patchMap() {
           (oldCourse) => oldCourse.id === course.id
         )
 
-        if (oldCourse) {
-          return {
-            id: course.id,
-            name: course.name,
-            description:
-              course.description === oldCourse.description
-                ? null
-                : course.description,
-            filter_updates: course.filters
-              .filter((filter, index) => {
-                const oldFilter = oldCourse.filters[index]
-                return (
-                  filter.tier !== oldFilter.tier ||
-                  filter.ranked_status !== oldFilter.ranked_status ||
-                  filter.notes !== oldFilter.notes
-                )
-              })
-              .map((filter) => {
-                return {
-                  id: filter.id,
-                  tier: filter.tier,
-                  ranked_status: filter.ranked_status,
-                  notes: filter.notes,
-                }
-              }),
-
-            added_mappers: course.mappers
-              .filter(
-                (mapper) =>
-                  !oldCourse.mappers.some(
-                    (oldMapper) => oldMapper.steam_id === mapper.steam_id
-                  )
-              )
-              .map((mapper) => mapper.steam_id),
-
-            removed_mappers: oldCourse.mappers
-              .filter(
-                (oldMapper) =>
-                  !course.mappers.some(
-                    (mapper) => mapper.steam_id === oldMapper.steam_id
-                  )
-              )
-              .map((mapper) => mapper.steam_id),
-          }
+        if (!oldCourse) {
+          return null
         }
-      }),
+
+        const update = {
+          name: course.name,
+          description:
+            course.description === oldCourse.description
+              ? null
+              : course.description,
+
+          added_mappers: course.mappers
+            .filter(
+              (mapper) =>
+                !oldCourse.mappers.some(
+                  (oldMapper) => oldMapper.steam_id === mapper.steam_id
+                )
+            )
+            .map((mapper) => mapper.steam_id),
+
+          removed_mappers: oldCourse.mappers
+            .filter(
+              (oldMapper) =>
+                !course.mappers.some(
+                  (mapper) => mapper.steam_id === oldMapper.steam_id
+                )
+            )
+            .map((mapper) => mapper.steam_id),
+        }
+
+        return [course.id, update]
+      })),
   }
 
   try {

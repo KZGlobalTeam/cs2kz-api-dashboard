@@ -165,7 +165,7 @@ async function submitBan() {
       }, { withCredentials: true })
     } else {
       await axiosClient.post("/bans", {
-        steam_id: ban.steamId,
+        player_id: ban.steamId,
         ip_address: ban.ipAddress || null,
         reason: ban.reason,
       }, { withCredentials: true })

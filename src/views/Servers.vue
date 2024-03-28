@@ -95,27 +95,27 @@ const columns = ref<DataTableColumn<Server>[]>([
     title: "Owner",
     key: "owner_name",
     render(rowData) {
-      return rowData.owned_by.name
+      return rowData.owner.name
     },
   },
   {
     title: "Owner ID",
     key: "owner_id",
     render(rowData) {
-      return renderSteamID(rowData.owned_by.steam_id)
+      return renderSteamID(rowData.owner.steam_id)
     },
   },
   {
-    title: "Approved On",
-    key: "approved_on",
+    title: "Created On",
+    key: "created_on",
     sortOrder: false,
     render(rowData) {
-      return toLocal(rowData.approved_on)
+      return toLocal(rowData.created_on)
     },
     sorter(rowA, rowB) {
       return (
-        new Date(rowA.approved_on).getTime() -
-        new Date(rowB.approved_on).getTime()
+        new Date(rowA.created_on).getTime() -
+        new Date(rowB.created_on).getTime()
       )
     },
   },

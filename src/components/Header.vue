@@ -54,7 +54,7 @@ async function handleSignIn() {
   try {
     console.log(import.meta.env.VITE_API_URL);
 
-    location.href = `${import.meta.env.VITE_API_URL}/auth/login?return_to=${location.origin}`
+    location.href = `${import.meta.env.VITE_API_URL}/auth/login?redirect_to=${location.origin}`
   } catch (error) {
     console.log(error)
   }
@@ -64,7 +64,7 @@ async function handleSignOut() {
   try {
     adminStore.$reset()
     document.cookie = "kz-player=; max-age=0; path=/;"
-    await axiosClient.get("/auth/logout", { withCredentials: true })
+    await axiosClient.get(`/auth/logout?redirect_to=${location.origin}`, { withCredentials: true })
     router.push("/")
   } catch (error) {
     console.log(error)
