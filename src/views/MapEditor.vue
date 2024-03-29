@@ -161,7 +161,7 @@ import {
   useDialog,
 } from "naive-ui"
 import type { Player, Course, Map } from "../types"
-import _ from "lodash"
+import { cloneDeep, isEqual, omit } from "lodash-es"
 import axiosClient from "../axios"
 import { toErrorMsg } from '../utils'
 import type { AxiosResponse } from "axios"
@@ -221,7 +221,7 @@ onBeforeMount(async () => {
       // console.log(data);
 
       // save original map data for later comparison
-      oldMap = _.cloneDeep(data)
+      oldMap = cloneDeep(data)
 
       globalStatus.value = data.global_status
       name.value = data.name
@@ -379,13 +379,7 @@ async function putMap() {
       stage: index + 1,
       name: course.name || null,
       description: course.description,
-      filters: course.filters.map((filter) => ({
-        mode: filter.mode,
-        teleports: filter.teleports,
-        tier: filter.tier,
-        ranked_status: filter.ranked_status,
-        notes: filter.notes,
-      })),
+      filters: course.filters.map((filter) => (omit(filter, ['id']))),
       mappers: course.mappers.map((mapper) => mapper.steam_id),
     })),
   }
@@ -439,43 +433,64 @@ async function patchMap() {
       )
       .map((mapper) => mapper.steam_id),
 
-    course_updates: Object.fromEntries(courses.value
-      .filter((course) =>
-        oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
-      )
-      .map((course) => {
-        const oldCourse = oldMap.courses.find(
-          (oldCourse) => oldCourse.id === course.id
-        ) as Course
+    course_updates: Object.fromEntries(
+      courses.value
+        .filter((course) =>
+          oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
+        )
+        .map((course) => {
+          const oldCourse = oldMap.courses.find(
+            (oldCourse) => oldCourse.id === course.id
+          ) as Course
 
-        const update = {
-          name: course.name,
-          description:
-            course.description === oldCourse.description
-              ? null
-              : course.description,
+          if (isEqual(oldCourse, course)) {
+            return null
+          }
 
-          added_mappers: course.mappers
-            .filter(
-              (mapper) =>
-                !oldCourse.mappers.some(
-                  (oldMapper) => oldMapper.steam_id === mapper.steam_id
+          const update = {
+            name:
+              course.name === oldCourse.name
+                ? null
+                : course.name,
+            description:
+              course.description === oldCourse.description
+                ? null
+                : course.description,
+
+            added_mappers: course.mappers
+              .filter(
+                (mapper) =>
+                  !oldCourse.mappers.some(
+                    (oldMapper) => oldMapper.steam_id === mapper.steam_id
+                  )
+              )
+              .map((mapper) => mapper.steam_id),
+
+            removed_mappers: oldCourse.mappers
+              .filter(
+                (oldMapper) =>
+                  !course.mappers.some(
+                    (mapper) => mapper.steam_id === oldMapper.steam_id
+                  )
+              )
+              .map((mapper) => mapper.steam_id),
+
+            filter_updates: course.filters
+              .filter((filter, index) => {
+                const oldFilter = oldCourse.filters[index]
+                return (
+                  filter.tier !== oldFilter.tier ||
+                  filter.ranked_status !== oldFilter.ranked_status ||
+                  filter.notes !== oldFilter.notes
                 )
-            )
-            .map((mapper) => mapper.steam_id),
+              })
+              .map((filter) => (omit(filter, ['mode', 'teleports']))),
+          }
 
-          removed_mappers: oldCourse.mappers
-            .filter(
-              (oldMapper) =>
-                !course.mappers.some(
-                  (mapper) => mapper.steam_id === oldMapper.steam_id
-                )
-            )
-            .map((mapper) => mapper.steam_id),
-        }
-
-        return [course.id, update]
-      })),
+          return [course.id, update]
+        })
+        .filter(Boolean) as [key: any, value: any][]
+    ),
   }
 
   try {
