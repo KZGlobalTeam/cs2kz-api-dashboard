@@ -1,8 +1,3 @@
-export const apiBaseUrl = "http://127.0.0.1:42069"
-// export const apiBaseUrl = "http://207.154.231.20:81"
-export const steamApiUrl =
-  "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2"
-
 export type Tier =
   | "very_easy"
   | "easy"

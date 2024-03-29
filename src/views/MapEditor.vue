@@ -59,10 +59,15 @@
         class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4">
         <!-- course name -->
         <div class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2">
-          <p contenteditable="true" @input="updateCourseName($event, courseIndex)" class="font-medium text-xl">
-            {{ course.name || `Course ${courseIndex}` }}
+          <p class="font-medium text-xl">
+            {{ `Course ${courseIndex + 1}` }}
           </p>
           <n-button @click="deleteCourse(courseIndex)" text-color="#e2e8f0" type="error">Delete</n-button>
+        </div>
+
+        <div class="mb-4">
+          <p class="my-2">Name</p>
+          <n-input v-model:value="course.name" placeholder="" />
         </div>
 
         <!-- mappers -->
@@ -96,7 +101,7 @@
                   {{ filter.mode === "classic" ? "Classic" : "Vanilla" }}
                 </td>
                 <td>
-                  {{ filter.teleports ? "Standard" : "Pro" }}
+                  {{ filter.teleports ? "TP" : "Pro" }}
                 </td>
                 <td>
                   <select class="bg-[#303033] rounded-sm py-1 px-2" v-model="filter.tier">
@@ -173,7 +178,7 @@ const workshopId = ref("")
 const description = ref("")
 
 // mappers input
-const mappers = ref<Player[]>([{ name: "", steam_id: "", is_banned: false }])
+const mappers = ref<Player[]>([{ name: "", steam_id: "" }])
 
 const courses = ref<Course[]>([])
 
@@ -219,7 +224,7 @@ onBeforeMount(async () => {
       globalStatus.value = data.global_status
       name.value = data.name
       workshopId.value = data.workshop_id.toString()
-      description.value = data.description
+      description.value = data.description || ''
       mappers.value = data.mappers
       courses.value = data.courses
     } catch (error) {
@@ -243,7 +248,7 @@ function handleStatusChange(e: Event) {
 function createCourse() {
   courses.value.push({
     id: newCourseId++,
-    stage: 0,
+    // stage: 0,
     name: "",
     description: "",
     filters: [
@@ -280,7 +285,7 @@ function createCourse() {
         notes: "",
       },
     ],
-    mappers: [{ name: "", steam_id: "", is_banned: false }],
+    mappers: [{ name: "", steam_id: "" }],
   })
 }
 
@@ -341,7 +346,7 @@ function saveMap() {
 
   if (validated) {
     if (editing.value && oldMap.courses.length === courses.value.length) {
-      // map is not mutated on account of the amount of courses
+      // map is not mutated regarding the amount of courses
       patchMap()
     } else {
       // map is mutated or a new map
@@ -392,9 +397,9 @@ async function putMap() {
 async function patchMap() {
   loading.value = true
   // update stage
-  courses.value.forEach((course, index) => {
-    course.stage = index
-  })
+  // courses.value.forEach((course, index) => {
+  //   course.stage = index
+  // })
 
   const mapToPatch = {
     global_status: globalStatus.value,
@@ -424,17 +429,13 @@ async function patchMap() {
       .map((mapper) => mapper.steam_id),
 
     course_updates: Object.fromEntries(courses.value
-      .filter((course) =>
-        oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
-      )
+    .filter((course) =>
+      oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
+    )
       .map((course) => {
         const oldCourse = oldMap.courses.find(
           (oldCourse) => oldCourse.id === course.id
-        )
-
-        if (!oldCourse) {
-          return null
-        }
+        ) as Course
 
         const update = {
           name: course.name,
