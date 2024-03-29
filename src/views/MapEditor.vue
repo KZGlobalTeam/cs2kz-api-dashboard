@@ -96,7 +96,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="filter in course.filters" :key="filter.id">
+              <tr v-for="(filter, filterIndex) in course.filters" :key="filter.id">
                 <td>
                   {{ filter.mode === "classic" ? "Classic" : "Vanilla" }}
                 </td>
@@ -104,7 +104,7 @@
                   {{ filter.teleports ? "TP" : "Pro" }}
                 </td>
                 <td>
-                  <select class="bg-[#303033] rounded-sm py-1 px-2" v-model="filter.tier">
+                  <select class="bg-[#303033] rounded-sm py-1 px-2" @change="handleTierChange($event, courseIndex, filterIndex)" v-model="filter.tier">
                     <option class="" v-for="option in tierOptions" :value="option.value">
                       {{ option.label }}
                     </option>
@@ -146,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount, computed } from "vue"
+import { ref, onBeforeMount, computed, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import {
   NInput,
@@ -242,6 +242,15 @@ function onCreateMapper() {
 
 function handleStatusChange(e: Event) {
   globalStatus.value = (e.target as HTMLInputElement).value
+}
+
+function handleTierChange(e: Event, courseIndex: number, filterIndex: number){
+  const tier = (e.target as HTMLSelectElement).value as string
+  if(tier === 'unfeasible' || tier === 'impossible'){
+    nextTick(() => {
+      courses.value[courseIndex].filters[filterIndex].ranked_status = 'unranked'
+    })
+  }
 }
 
 // the stage number will be updated before map is submitted
