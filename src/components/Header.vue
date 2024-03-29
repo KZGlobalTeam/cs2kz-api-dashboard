@@ -19,26 +19,16 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount } from "vue"
 import { NButton } from "naive-ui"
 import { useRouter } from "vue-router"
 import { useAdminStore } from "../store/admin"
-import Cookies from "universal-cookie"
+import Cookies from 'universal-cookie'
 import axiosClient from "../axios"
 
 const router = useRouter()
 const adminStore = useAdminStore()
 
-const cookies = new Cookies(null, { path: '/' });
-
-onBeforeMount(() => {
-  const kzPlayer = cookies.get('kz-player')
-
-  if (kzPlayer) {
-    adminStore.steamId = kzPlayer.steam_id
-    adminStore.avatar_url = kzPlayer.avatar_url
-  }
-})
+const cookies = new Cookies(null, { path: '/' })
 
 async function handleSignIn() {
   location.href = `${import.meta.env.VITE_API_URL}/auth/login?redirect_to=${location.origin}`

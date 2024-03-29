@@ -3,18 +3,17 @@
     <n-config-provider :theme="darkTheme" :locale="enUS">
       <n-dialog-provider>
         <n-message-provider>
-          <Header :loading="loading" />
+          <Header />
           <div class="flex">
             <NavBar />
             <div class="flex-1 bg-gray-900 p-4">
               <div v-if="route.name" class="flex mb-4">
                 <div class="flex items-center mr-1" v-for="(part, index) in pathArray" :key="index">
-                  <RouterLink class="mr-1" :class="index !== pathArray.length - 1
-                    ? 'bg-gray-800 hover:bg-gray-700 text-blue-600 py-1 px-[10px] rounded-md'
-                    : 'cursor-default'
-                    " :to="getLink(index)">{{ part }}
+                  <RouterLink :to="getLink(index)" class="mr-1"
+                    :class="index !== pathArray.length - 1 ? 'bg-gray-800 hover:bg-gray-700 text-blue-600 py-1 px-[10px] rounded-md' : 'cursor-default'">
+                    {{ part }}
                   </RouterLink>
-                  <img v-if="index !== pathArray.length - 1" src="/icons/arrow-forward-sharp.svg" class="w-4 auto"/>
+                  <img v-if="index !== pathArray.length - 1" src="/icons/arrow-forward-sharp.svg" class="w-4 auto" />
                 </div>
               </div>
               <RouterView />
@@ -27,11 +26,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
 import Header from "./components/Header.vue"
 import NavBar from "./components/NavBar.vue"
 import { RouterView, useRoute } from "vue-router"
 import { computed } from "vue"
+import Cookies from 'universal-cookie'
 import {
   darkTheme,
   NConfigProvider,
@@ -45,7 +44,7 @@ import axiosClient from "./axios"
 const adminStore = useAdminStore()
 const route = useRoute()
 
-const loading = ref(false)
+const cookies = new Cookies(null, { path: '/' })
 
 const pathArray = computed(() =>
   route.path
@@ -57,25 +56,18 @@ const pathArray = computed(() =>
 getAdmin()
 
 async function getAdmin() {
-  loading.value = true
-  const playerCookie = getCookie("kz-player")
-  // console.log(playerCookie)
+  const kzPlayer = cookies.get("kz-player")
 
-  if (playerCookie) {
-    const kzPlayer = JSON.parse(playerCookie)
+  if (kzPlayer) {
+    adminStore.steamId = kzPlayer.steam_id
+    adminStore.avatar_url = kzPlayer.avatar_url
 
     const { data } = await axiosClient.get(
       `/admins/${kzPlayer.steam_id}`
     )
 
-    if (kzPlayer) {
-      adminStore.steamId = kzPlayer.steam_id
-      adminStore.avatar_url = kzPlayer.avatar_url
-      adminStore.roles = data.roles
-    }
+    adminStore.roles = data.roles
   }
-
-  loading.value = false
 }
 
 function getLink(index: number) {
@@ -84,17 +76,6 @@ function getLink(index: number) {
     .join("/")
     .toLowerCase()
   return "/" + path
-}
-
-function getCookie(name: string) {
-  let matches = document.cookie.match(
-    new RegExp(
-      "(?:^|; )" +
-      name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
-      "=([^;]*)"
-    )
-  )
-  return matches ? decodeURIComponent(matches[1]) : undefined
 }
 </script>
 
