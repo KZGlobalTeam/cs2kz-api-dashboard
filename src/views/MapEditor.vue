@@ -301,10 +301,6 @@ function deleteCourse(courseIndex: number) {
   })
 }
 
-function updateCourseName(e: Event, courseIndex: number) {
-  courses.value[courseIndex].name = (e.target as HTMLInputElement).innerText
-}
-
 function saveMap() {
   loading.value = true
   // validate map info
