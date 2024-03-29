@@ -104,7 +104,8 @@
                   {{ filter.teleports ? "TP" : "Pro" }}
                 </td>
                 <td>
-                  <select class="bg-[#303033] rounded-sm py-1 px-2" @change="handleTierChange($event, courseIndex, filterIndex)" v-model="filter.tier">
+                  <select class="bg-[#303033] rounded-sm py-1 px-2"
+                    @change="handleTierChange($event, courseIndex, filterIndex)" v-model="filter.tier">
                     <option class="" v-for="option in tierOptions" :value="option.value">
                       {{ option.label }}
                     </option>
@@ -162,7 +163,8 @@ import {
 import type { Player, Course, Map } from "../types"
 import _ from "lodash"
 import axiosClient from "../axios"
-import { AxiosResponse } from "axios"
+import { toErrorMsg } from '../utils'
+import type { AxiosResponse } from "axios"
 
 let newCourseId = 1
 let oldMap: Map
@@ -244,9 +246,9 @@ function handleStatusChange(e: Event) {
   globalStatus.value = (e.target as HTMLInputElement).value
 }
 
-function handleTierChange(e: Event, courseIndex: number, filterIndex: number){
+function handleTierChange(e: Event, courseIndex: number, filterIndex: number) {
   const tier = (e.target as HTMLSelectElement).value as string
-  if(tier === 'unfeasible' || tier === 'impossible'){
+  if (tier === 'unfeasible' || tier === 'impossible') {
     nextTick(() => {
       courses.value[courseIndex].filters[filterIndex].ranked_status = 'unranked'
     })
@@ -332,22 +334,26 @@ function saveMap() {
     })
   }
 
-  courses.value.forEach((course, courseIndex) => {
-    if (course.mappers.length === 0) {
-      message.error(`Course ${courseIndex}: at least one mapper is required`)
-      validated = false
-    } else {
-      course.mappers.forEach((mapper, mapperIndex) => {
-        if (!mapper.steam_id) {
-          message.error(
-            `Course ${courseIndex}: mapper ${mapperIndex + 1
-            }: steam id is required`
-          )
-          validated = false
-        }
-      })
-    }
-  })
+  if (courses.value.length === 0) {
+    message.error('No course created')
+  } else {
+    courses.value.forEach((course, courseIndex) => {
+      if (course.mappers.length === 0) {
+        message.error(`Course ${courseIndex + 1}: at least one mapper is required`)
+        validated = false
+      } else {
+        course.mappers.forEach((mapper, mapperIndex) => {
+          if (!mapper.steam_id) {
+            message.error(
+              `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1
+              }: steam id is required`
+            )
+            validated = false
+          }
+        })
+      }
+    })
+  }
 
   if (validated) {
     if (editing.value && oldMap.courses.length === courses.value.length) {
@@ -391,9 +397,9 @@ async function putMap() {
     router.push({
       name: "maps",
     })
-  } catch (error) {
+  } catch (error: any) {
     console.log(error)
-    message.error("Failed to save map", { duration: 3000 })
+    message.error(`Failed to save map: ${toErrorMsg(error)}`, { duration: 5000 })
   } finally {
     loading.value = false
   }
@@ -434,9 +440,9 @@ async function patchMap() {
       .map((mapper) => mapper.steam_id),
 
     course_updates: Object.fromEntries(courses.value
-    .filter((course) =>
-      oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
-    )
+      .filter((course) =>
+        oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
+      )
       .map((course) => {
         const oldCourse = oldMap.courses.find(
           (oldCourse) => oldCourse.id === course.id
@@ -479,9 +485,9 @@ async function patchMap() {
     router.push({
       name: "maps",
     })
-  } catch (error) {
+  } catch (error: any) {
     console.log(error)
-    message.error("Failed to update map", { duration: 3000 })
+    message.error(`Failed to update map: ${toErrorMsg(error)}`, { duration: 5000 })
   } finally {
     loading.value = false
   }

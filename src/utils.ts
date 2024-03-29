@@ -1,6 +1,7 @@
 import { format } from "date-fns"
 import { h } from "vue"
 import SteamID from "steamid"
+import { useMessage } from "naive-ui"
 
 export function toLocal(date: string) {
   return format(new Date(date), "yyyy-MM-dd HH:mm:ss")
@@ -37,4 +38,12 @@ export function renderWorkshopId(workshopId: number) {
       default: () => workshopId,
     }
   )
+}
+
+export function toErrorMsg(error: any){
+  if(typeof error.response.data === 'object'){
+    return `${error.response.data.debug_info}, ${error.response.data.message}`
+  }else{
+    return `${error.response.data}`
+  }
 }
