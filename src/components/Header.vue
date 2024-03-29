@@ -1,12 +1,9 @@
 <template>
-  <div class="flex items-center h-16 w-full justify-between py-2 px-8 bg-gray-900 border-b border-b-slate-700 shadow-md">
-    <p class="text-xl font-semibold">CS2KZ-API</p>
+  <div
+    class="flex items-center h-16 w-full justify-between py-2 px-8 bg-gray-900 border-b border-b-slate-700 shadow-md">
+    <p class="text-xl font-semibold">CS2KZ API</p>
 
-    <div v-if="loading">
-      <n-button loading>LOADING</n-button>
-    </div>
-
-    <div v-else>
+    <div>
       <div class="flex gap-4" v-if="adminStore.steamId">
         <!-- avatar -->
         <img class="w-8 h-8 rounded-full ring-2 ring-slate-700" :src="adminStore.avatar_url" />
@@ -22,63 +19,39 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, ref } from "vue"
+import { onBeforeMount } from "vue"
 import { NButton } from "naive-ui"
 import { useRouter } from "vue-router"
 import { useAdminStore } from "../store/admin"
+import Cookies from "universal-cookie"
 import axiosClient from "../axios"
 
 const router = useRouter()
 const adminStore = useAdminStore()
 
-const loading = ref(false)
+const cookies = new Cookies(null, { path: '/' });
 
-onBeforeMount(async () => {
-  loading.value = true
-  const playerCookie = getCookie("kz-player")
-  // console.log(playerCookie)
+onBeforeMount(() => {
+  const kzPlayer = cookies.get('kz-player')
 
-  if (playerCookie) {
-    const kzPlayer = JSON.parse(playerCookie)
-
-    if (kzPlayer) {
-      adminStore.steamId = kzPlayer.steam_id
-      adminStore.avatar_url = kzPlayer.avatar_url
-    }
+  if (kzPlayer) {
+    adminStore.steamId = kzPlayer.steam_id
+    adminStore.avatar_url = kzPlayer.avatar_url
   }
-
-  loading.value = false
 })
 
 async function handleSignIn() {
-  try {
-    console.log(import.meta.env.VITE_API_URL);
-
-    location.href = `${import.meta.env.VITE_API_URL}/auth/login?redirect_to=${location.origin}`
-  } catch (error) {
-    console.log(error)
-  }
+  location.href = `${import.meta.env.VITE_API_URL}/auth/login?redirect_to=${location.origin}`
 }
 
 async function handleSignOut() {
   try {
     adminStore.$reset()
-    document.cookie = "kz-player=; max-age=0; path=/;"
-    await axiosClient.get(`/auth/logout?redirect_to=${location.origin}`, { withCredentials: true })
+    cookies.remove('kz-player')
+    await axiosClient.get(`/auth/logout`, { withCredentials: true })
     router.push("/")
   } catch (error) {
     console.log(error)
   }
-}
-
-function getCookie(name: string) {
-  let matches = document.cookie.match(
-    new RegExp(
-      "(?:^|; )" +
-      name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") +
-      "=([^;]*)"
-    )
-  )
-  return matches ? decodeURIComponent(matches[1]) : undefined
 }
 </script>
