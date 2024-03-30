@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <div class="p-4 bg-gray-800 rounded-md">
+    <div v-if="route.params.id" class="p-4 bg-gray-800 rounded-md">
       <!-- api key -->
       <p class="mb-2 font-medium">API Key</p>
       <div class="flex gap-4">
@@ -58,6 +58,8 @@ const route = useRoute()
 const notification = useNotification()
 const dialog = useDialog()
 
+let oldServer: Record<string, string>
+
 const loading = ref(false)
 
 const serverForm = ref<FormInst | null>(null)
@@ -70,17 +72,17 @@ const server = reactive({
 
 const rules = {
   name: {
-    required: true,
+    required: route.params.id ? false : true,
     message: "Name is required.",
     trigger: ["input", "blur"],
   },
   ipAddress: {
-    required: true,
+    required: route.params.id ? false : true,
     message: "IP address is required.",
     trigger: ["input", "blur"],
   },
   ownedBy: {
-    required: true,
+    required: route.params.id ? false : true,
     message: "Owner's steam ID is required.",
     trigger: ["input", "blur"],
   },
@@ -93,10 +95,12 @@ onBeforeMount(async () => {
         `/servers/${route.params.id}`
       )) as AxiosResponse<Server>
       // console.log(data);
-
+      
       server.name = data.name
       server.ipAddress = data.ip_address
       server.ownedBy = data.owner.steam_id
+
+      oldServer = JSON.parse(JSON.stringify(server))
     } catch (error) {
       notification.error({ title: 'Failed to fetch servers', content: toErrorMsg(error) })
     }
@@ -104,34 +108,38 @@ onBeforeMount(async () => {
 })
 
 async function saveServer() {
-  serverForm.value?.validate((errors) => {
-    if (!errors) {
-      submitServer()
-    } else {
-      console.log(errors)
-    }
-  })
-}
-
-async function submitServer() {
   loading.value = true
 
   try {
-    const data = {
-      name: server.name,
-      ip_address: server.ipAddress,
-      owned_by: server.ownedBy,
-    }
-    // console.log(data)
-
     if (route.params.id) {
-      await axiosClient.patch(`/servers/${route.params.id}`, data, { withCredentials: true })
+      if (oldServer.name === server.name && oldServer.ipAddress === server.ipAddress && oldServer.ownedBy === server.ownedBy) {
+        notification.error({ title: 'No changes made' })
+      } else {
+        const data = {
+          name: oldServer.name === server.name ? null : server.name,
+          ip_address: oldServer.ipAddress === server.ipAddress ? null : server.ipAddress,
+          owned_by: oldServer.ownedBy === server.ownedBy ? null : server.ownedBy,
+        }
+        await axiosClient.patch(`/servers/${route.params.id}`, data, { withCredentials: true })
+        notification.success({ title: 'Server updated', duration: 3000 })
+        router.push("/home/servers")
+      }
     } else {
-      await axiosClient.post("/servers", data, { withCredentials: true })
+      serverForm.value?.validate(async (errors) => {
+        if (!errors) {
+          const data = {
+            name: server.name,
+            ip_address: server.ipAddress,
+            owned_by: server.ownedBy,
+          }
+          await axiosClient.post("/servers", data, { withCredentials: true })
+          notification.success({ title: 'Server created', duration: 3000 })
+          router.push("/home/servers")
+        } else {
+          notification.error({ title: 'Missing Fields' })
+        }
+      })
     }
-
-    notification.success({ title: 'Server created', duration: 3000 })
-    router.push("/home/servers")
   } catch (error) {
     notification.error({ title: 'Failed to create server', content: toErrorMsg(error) })
   } finally {

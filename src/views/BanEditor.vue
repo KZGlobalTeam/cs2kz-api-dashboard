@@ -2,11 +2,11 @@
   <div>
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
       <n-form ref="banForm" :model="ban" :rules="rules">
-        <n-form-item label="Steam ID" path="steamId">
+        <n-form-item v-if="!route.params.id" label="Steam ID" path="steamId">
           <n-input v-model:value="ban.steamId" placeholder="STEAM_1:1:XXXXXXXXXXX" />
         </n-form-item>
 
-        <n-form-item label="Player IP" path="ipAddress">
+        <n-form-item v-if="!route.params.id" label="Player IP" path="ipAddress">
           <n-input v-model:value="ban.ipAddress" placeholder="127.0.0.1" />
         </n-form-item>
 
@@ -14,8 +14,8 @@
           <n-select v-model:value="ban.reason" :options="banReasonOptions" />
         </n-form-item>
 
-        <n-form-item v-if="editing" label="Ban Period" path="banPeriod">
-          <n-select v-model:value="ban.banPeriod" :options="banPeriodOptions" />
+        <n-form-item v-if="route.params.id" label="Ban Duration" path="banDuration">
+          <n-select v-model:value="ban.banDuration" :options="banDurationOptions" />
         </n-form-item>
       </n-form>
 
@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onBeforeMount } from "vue"
+import { ref, reactive, onBeforeMount } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import {
   NButton,
@@ -44,21 +44,32 @@ import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
 import { toErrorMsg } from "../utils"
 
+interface BanExt {
+  steamId: string
+  ipAddress: string
+  reason: string | null
+  banDuration: number | null
+  created_on: string
+  expires_on?: string | null
+}
+
 const router = useRouter()
 const route = useRoute()
 const notification = useNotification()
 
 const loading = ref(false)
 
-const created_on = ref("")
-
 const banForm = ref<FormInst | null>(null)
 
-const ban = reactive({
+let oldBan: Record<string, string>
+
+const ban = reactive<BanExt>({
   steamId: "",
   ipAddress: "",
-  reason: "",
-  banPeriod: null,
+  reason: null,
+  banDuration: 1,
+  created_on: '',
+  expires_on: ''
 })
 
 const banReasonOptions = [
@@ -66,7 +77,7 @@ const banReasonOptions = [
   { label: 'Auto Strafe', value: 'auto_strafe' },
 ]
 
-const banPeriodOptions = [
+const banDurationOptions = [
   { label: "1 Day", value: 1 },
   { label: "1 Week", value: 7 },
   { label: "1 Month", value: 30 },
@@ -78,20 +89,24 @@ const banPeriodOptions = [
 
 const rules = {
   steamId: {
-    required: true,
+    key: 'steamid',
+    required: route.params.id ? false : true,
     message: "Steam ID is required.",
     trigger: ["input", "blur"],
   },
+  ipAddress: {
+    key: 'ipaddress',
+    required: false,
+    message: "Invalid ip address.",
+    min: 3
+  },
   reason: {
-    required: true,
+    key: 'reason',
+    required: route.params.id ? false : true,
     message: "Ban reason is required.",
     trigger: ["input", "blur"],
   },
 }
-
-const editing = computed(() => {
-  return route.params.id ? true : false
-})
 
 onBeforeMount(async () => {
   if (route.params.id) {
@@ -104,8 +119,10 @@ onBeforeMount(async () => {
       ban.steamId = data.player.steam_id
       ban.ipAddress = data.player?.ip_address || ''
       ban.reason = data.reason
+      ban.created_on = data.created_on
+      ban.expires_on = data.expires_on || null
 
-      created_on.value = data.created_on
+      oldBan = JSON.parse(JSON.stringify(ban))
     } catch (error) {
       notification.error({ title: 'Failed to fetch the ban', content: toErrorMsg(error) })
     }
@@ -113,48 +130,49 @@ onBeforeMount(async () => {
 })
 
 async function saveBan() {
-  banForm.value?.validate((errors) => {
-    if (!errors) {
-      submitBan()
-    } else {
-      notification.error({ title: 'Validation Failed' })
-    }
-  })
-}
-
-async function submitBan() {
   loading.value = true
 
+  let expiresOn
+  if (ban.banDuration === null) {
+    expiresOn = undefined
+  } else if (ban.banDuration === 365 * 100) {
+    expiresOn = null
+  } else {
+    expiresOn = new Date(
+      new Date(ban.created_on).getTime() + ban.banDuration * 24 * 60 * 60 * 1000
+    ).toISOString()
+  }
+
   try {
-    let expiresOn
-    if (ban.banPeriod === null) {
-      expiresOn = undefined
-    } else if (ban.banPeriod === 365 * 100) {
-      expiresOn = null
-    } else {
-      expiresOn = new Date(
-        new Date(created_on.value).getTime() +
-        ban.banPeriod * 24 * 60 * 60 * 1000
-      ).toISOString()
-    }
-
-    console.log(expiresOn)
-
     if (route.params.id) {
-      await axiosClient.patch(`/bans/${route.params.id}`, {
-        reason: ban.reason,
-        expires_on: expiresOn
-      }, { withCredentials: true })
+      if (oldBan.reason === ban.reason && oldBan.expires_on === expiresOn) {
+        notification.error({ title: 'No changes made' })
+      } else {
+        await axiosClient.patch(`/bans/${route.params.id}`, {
+          reason: oldBan.reason === ban.reason ? null : ban.reason,
+          expires_on: expiresOn
+        }, { withCredentials: true })
+        notification.success({ title: 'Ban issued', duration: 3000 })
+        router.push("/home/bans")
+      }
     } else {
-      await axiosClient.post("/bans", {
-        player_id: ban.steamId,
-        ip_address: ban.ipAddress || null,
-        reason: ban.reason,
-      }, { withCredentials: true })
+      banForm.value?.validate(async (errors) => {
+        if (!errors) {
+          await axiosClient.post("/bans", {
+            player_id: ban.steamId,
+            ip_address: ban.ipAddress || null,
+            reason: ban.reason,
+          }, { withCredentials: true })
+          notification.success({ title: 'Ban issued', duration: 3000 })
+          router.push("/home/bans")
+        } else {
+          notification.error({ title: 'Missing Fields' })
+        }
+      }, (rule) => {
+        // if ip field is empty, validate other fields otherwise validate all fields
+        return ban.ipAddress ? true : rule?.key !== 'ipaddress'
+      })
     }
-
-    notification.success({ title: 'Ban issued', duration: 3000 })
-    router.push("/home/bans")
   } catch (error) {
     notification.error({ title: 'Failed to issue the ban', content: toErrorMsg(error) })
   } finally {
