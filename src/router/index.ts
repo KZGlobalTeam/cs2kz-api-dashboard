@@ -97,15 +97,23 @@ export const routes = [
     },
   },
   {
-    path: "/home/bans/:id",
-    name: "ban",
+    path: "/home/bans/:id/edit",
+    name: "editban",
     component: () => import("../views/BanEditor.vue"),
     meta: {
       requiresRole: "bans",
     },
   },
   {
-    path: "/home/bans/:id/details",
+    path: "/home/bans/:id/unban",
+    name: "unban",
+    component: () => import("../views/UnbanEditor.vue"),
+    meta: {
+      requiresRole: "bans",
+    },
+  },
+  {
+    path: "/home/bans/:id",
     name: "bandetails",
     component: () => import("../views/BanDetails.vue"),
     meta: {

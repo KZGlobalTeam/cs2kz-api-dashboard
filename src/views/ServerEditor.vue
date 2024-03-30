@@ -44,17 +44,18 @@ import {
   NInput,
   NForm,
   NFormItem,
-  useMessage,
+  useNotification,
   useDialog,
 } from "naive-ui"
 import type { FormInst } from "naive-ui"
 import { Server } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
+import { toErrorMsg } from "../utils"
 
 const router = useRouter()
 const route = useRoute()
-const message = useMessage()
+const notification = useNotification()
 const dialog = useDialog()
 
 const loading = ref(false)
@@ -95,9 +96,9 @@ onBeforeMount(async () => {
 
       server.name = data.name
       server.ipAddress = data.ip_address
-      server.ownedBy = data.owned_by.steam_id
+      server.ownedBy = data.owner.steam_id
     } catch (error) {
-      console.log(error)
+      notification.error({ title: 'Failed to fetch servers', content: toErrorMsg(error) })
     }
   }
 })
@@ -129,11 +130,10 @@ async function submitServer() {
       await axiosClient.post("/servers", data, { withCredentials: true })
     }
 
-    message.success("Server created", { duration: 2000 })
+    notification.success({ title: 'Server created', duration: 3000 })
     router.push("/home/servers")
   } catch (error) {
-    console.log(error)
-    message.error("Failed to create server.", { duration: 2000 })
+    notification.error({ title: 'Failed to create server', content: toErrorMsg(error) })
   } finally {
     loading.value = false
   }
@@ -152,12 +152,11 @@ function newKey() {
           .put(`/servers/${id}/key`, null, { withCredentials: true })
           .then(() => {
             resolve()
-            message.success("new API key generated", { duration: 2000 })
+            notification.success({ title: 'New API key generated', duration: 3000 })
           })
           .catch((error) => {
             resolve()
-            message.error("Failed to generate new API key", { duration: 2000 })
-            console.log(error)
+            notification.error({ title: 'Failed to generate an API key', content: toErrorMsg(error) })
           })
       })
     },
@@ -177,12 +176,11 @@ function revokeKey() {
           .delete(`/servers/${id}/key`, { withCredentials: true })
           .then(() => {
             resolve()
-            message.success("API key revoked", { duration: 2000 })
+            notification.success({ title: 'API key revoked', duration: 3000 })
           })
           .catch((error) => {
             resolve()
-            message.error("Failed to revoke API key", { duration: 2000 })
-            console.log(error)
+            notification.error({ title: 'Failed to revoke API key', content: toErrorMsg(error) })
           })
       })
     },

@@ -62,7 +62,7 @@ import {
   NTag,
   NSpace,
   NSelect,
-  useMessage,
+  useNotification,
 } from "naive-ui"
 import type {
   DataTableSortState,
@@ -72,7 +72,7 @@ import type {
 import type { Map, GlobalStatus } from "../types"
 import { useRouter } from "vue-router"
 import axiosClient from "../axios"
-import { toLocal, renderWorkshopId } from "../utils"
+import { toLocal, renderWorkshopId, toErrorMsg } from "../utils"
 
 type RowData = {
   id: number
@@ -90,7 +90,7 @@ type MapQuery = {
 }
 
 const router = useRouter()
-const message = useMessage()
+const notification = useNotification()
 
 const loading = ref(true)
 const data = ref<RowData[]>([])
@@ -256,8 +256,7 @@ async function loadMapsData() {
         }))
       : []
   } catch (error) {
-    message.error("Failed to load maps", { duration: 3000 })
-    console.log(error)
+    notification.error({title: 'Failed to fetch maps', content: toErrorMsg(error)})
   } finally {
     loading.value = false
   }

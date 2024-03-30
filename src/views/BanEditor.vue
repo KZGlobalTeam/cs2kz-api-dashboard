@@ -10,8 +10,8 @@
           <n-input v-model:value="ban.ipAddress" placeholder="127.0.0.1" />
         </n-form-item>
 
-        <n-form-item label="reason" path="reason">
-          <n-input v-model:value="ban.reason" placeholder="Bhop Hack" />
+        <n-form-item label="Reason" path="reason">
+          <n-select v-model:value="ban.reason" :options="banReasonOptions" />
         </n-form-item>
 
         <n-form-item v-if="editing" label="Ban Period" path="banPeriod">
@@ -20,22 +20,8 @@
       </n-form>
 
       <div>
-        <n-button @click.prevent="saveBan" :disabled="loading" :loading="loading" class="saveButton" text-color="#3cc962"
-          size="large" strong bordered>Save</n-button>
-      </div>
-    </div>
-
-    <!-- unban -->
-    <div class="p-4 bg-gray-800 mb-4 rounded-md">
-      <n-form ref="unbanForm" :model="unban" :rules="unbanRules">
-        <n-form-item label="Unban Reason" path="reason">
-          <n-input v-model:value="unban.reason" placeholder="" />
-        </n-form-item>
-      </n-form>
-
-      <div>
-        <n-button @click.prevent="revertBan" :disabled="loadingUnban" :loading="loadingUnban" class="saveButton"
-          text-color="#3cc962" size="large" strong bordered>Unban</n-button>
+        <n-button @click.prevent="saveBan" :disabled="loading" :loading="loading" class="saveButton"
+          text-color="#3cc962" size="large" strong bordered>Ban</n-button>
       </div>
     </div>
   </div>
@@ -50,35 +36,35 @@ import {
   NSelect,
   NForm,
   NFormItem,
-  useMessage,
+  useNotification,
 } from "naive-ui"
 import type { FormInst } from "naive-ui"
 import type { Ban } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
+import { toErrorMsg } from "../utils"
 
 const router = useRouter()
 const route = useRoute()
-const message = useMessage()
+const notification = useNotification()
 
 const loading = ref(false)
-const loadingUnban = ref(false)
 
 const created_on = ref("")
 
 const banForm = ref<FormInst | null>(null)
-const unbanForm = ref<FormInst | null>(null)
 
 const ban = reactive({
   steamId: "",
   ipAddress: "",
   reason: "",
-  banPeriod: 0,
+  banPeriod: null,
 })
 
-const unban = reactive({
-  reason: "",
-})
+const banReasonOptions = [
+  { label: 'Auto Bhop', value: 'auto_bhop' },
+  { label: 'Auto Strafe', value: 'auto_strafe' },
+]
 
 const banPeriodOptions = [
   { label: "1 Day", value: 1 },
@@ -87,7 +73,7 @@ const banPeriodOptions = [
   { label: "3 Months", value: 90 },
   { label: "6 Months", value: 180 },
   { label: "1 Year", value: 365 },
-  { label: "Permanent", value: 0 },
+  { label: "Permanent", value: 365 * 100 },
 ]
 
 const rules = {
@@ -99,14 +85,6 @@ const rules = {
   reason: {
     required: true,
     message: "Ban reason is required.",
-    trigger: ["input", "blur"],
-  },
-}
-
-const unbanRules = {
-  reason: {
-    required: true,
-    message: "Unban reason is required.",
     trigger: ["input", "blur"],
   },
 }
@@ -124,12 +102,12 @@ onBeforeMount(async () => {
       // console.log(data);
 
       ban.steamId = data.player.steam_id
-      ban.ipAddress = data.player.ip_address
+      ban.ipAddress = data.player?.ip_address || ''
       ban.reason = data.reason
 
       created_on.value = data.created_on
     } catch (error) {
-      console.log(error)
+      notification.error({ title: 'Failed to fetch the ban', content: toErrorMsg(error) })
     }
   }
 })
@@ -139,7 +117,7 @@ async function saveBan() {
     if (!errors) {
       submitBan()
     } else {
-      console.log(errors)
+      notification.error({ title: 'Validation Failed' })
     }
   })
 }
@@ -148,9 +126,11 @@ async function submitBan() {
   loading.value = true
 
   try {
-    let expiresOn = null
-    if (ban.banPeriod === 0) {
-      expiresOn = new Date(0).toISOString()
+    let expiresOn
+    if (ban.banPeriod === null) {
+      expiresOn = undefined
+    } else if (ban.banPeriod === 365 * 100) {
+      expiresOn = null
     } else {
       expiresOn = new Date(
         new Date(created_on.value).getTime() +
@@ -158,10 +138,12 @@ async function submitBan() {
       ).toISOString()
     }
 
+    console.log(expiresOn)
+
     if (route.params.id) {
       await axiosClient.patch(`/bans/${route.params.id}`, {
         reason: ban.reason,
-        expires_on: expiresOn,
+        expires_on: expiresOn
       }, { withCredentials: true })
     } else {
       await axiosClient.post("/bans", {
@@ -171,38 +153,12 @@ async function submitBan() {
       }, { withCredentials: true })
     }
 
-    message.success("Ban issued", { duration: 2000 })
+    notification.success({ title: 'Ban issued', duration: 3000 })
     router.push("/home/bans")
   } catch (error) {
-    console.log(error)
-    message.error("Failed to issue ban.", { duration: 2000 })
+    notification.error({ title: 'Failed to issue the ban', content: toErrorMsg(error) })
   } finally {
     loading.value = false
-  }
-}
-
-function revertBan() {
-  unbanForm.value?.validate((errors) => {
-    if (!errors) {
-      submitUnban()
-    } else {
-      console.log(errors)
-    }
-  })
-}
-
-async function submitUnban() {
-  loading.value = true
-
-  const id = route.params.id
-
-  try {
-    await axiosClient.delete(`/bans/${id}`, { data: { reason: unban.reason }, withCredentials: true })
-    message.success("Ban reverted", { duration: 2000 })
-    router.push("/home/bans")
-  } catch (error) {
-    message.error("Failed to revert ban", { duration: 2000 })
-    console.log(error)
   }
 }
 </script>

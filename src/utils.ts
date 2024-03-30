@@ -1,7 +1,6 @@
 import { format } from "date-fns"
 import { h } from "vue"
 import SteamID from "steamid"
-import { useMessage } from "naive-ui"
 
 export function toLocal(date: string) {
   return format(new Date(date), "yyyy-MM-dd HH:mm:ss")

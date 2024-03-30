@@ -157,7 +157,7 @@ import {
   NSpace,
   NRadio,
   NCheckbox,
-  useMessage,
+  useNotification,
   useDialog,
 } from "naive-ui"
 import type { Player, Course, Map } from "../types"
@@ -172,7 +172,7 @@ let oldMap: Map
 const router = useRouter()
 const route = useRoute()
 
-const message = useMessage()
+const notification = useNotification()
 const dialog = useDialog()
 
 const name = ref("")
@@ -180,7 +180,7 @@ const workshopId = ref("")
 const description = ref("")
 
 // mappers input
-const mappers = ref<Player[]>([{ name: "", steam_id: "" }])
+const mappers = ref<Player[]>([{ name: "", steam_id: "", is_banned: false }])
 
 const courses = ref<Course[]>([])
 
@@ -230,7 +230,7 @@ onBeforeMount(async () => {
       mappers.value = data.mappers
       courses.value = data.courses
     } catch (error) {
-      console.log(error)
+      notification.error({ title: 'Failed to fetch maps', content: toErrorMsg(error) })
     }
   }
 })
@@ -296,7 +296,7 @@ function createCourse() {
         notes: "",
       },
     ],
-    mappers: [{ name: "", steam_id: "" }],
+    mappers: [{ name: "", steam_id: "", is_banned: false }],
   })
 }
 
@@ -318,36 +318,33 @@ function saveMap() {
   let validated = true
 
   if (!workshopId.value) {
-    message.error("Workshop ID is required")
+    notification.error({ title: 'Missing Fields', content: 'Workshop ID is required' })
     validated = false
   }
 
   if (mappers.value.length === 0) {
-    message.error("At least one mapper is required")
+    notification.error({ title: 'Missing Fields', content: 'At least one mapper is required' })
     validated = false
   } else {
     mappers.value.forEach((mapper, index) => {
       if (!mapper.steam_id) {
-        message.error(`Mapper ${index + 1}: steam id is required`)
+        notification.error({ title: 'Missing Fields', content: `Mapper ${index + 1}: Steam ID is required` })
         validated = false
       }
     })
   }
 
   if (courses.value.length === 0) {
-    message.error('No course created')
+    notification.error({ title: 'Missing Fields', content: 'No courses created' })
   } else {
     courses.value.forEach((course, courseIndex) => {
       if (course.mappers.length === 0) {
-        message.error(`Course ${courseIndex + 1}: at least one mapper is required`)
+        notification.error({ title: 'Missing Fields', content: `Course ${courseIndex + 1}: At least one mapper is required` })
         validated = false
       } else {
         course.mappers.forEach((mapper, mapperIndex) => {
           if (!mapper.steam_id) {
-            message.error(
-              `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1
-              }: steam id is required`
-            )
+            notification.error({ title: 'Missing Fields', content: `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1}: Steam ID is required` })
             validated = false
           }
         })
@@ -387,13 +384,12 @@ async function putMap() {
   try {
     console.log("map to put", mapToPut)
     await axiosClient.put("/maps", mapToPut, { withCredentials: true })
-    message.success("Map saved", { duration: 3000 })
+    notification.success({ title: 'Map saved', duration: 3000 })
     router.push({
       name: "maps",
     })
   } catch (error: any) {
-    console.log(error)
-    message.error(`Failed to save map: ${toErrorMsg(error)}`, { duration: 5000 })
+    notification.error({ title: 'Failed to save map', content: toErrorMsg(error) })
   } finally {
     loading.value = false
   }
@@ -496,13 +492,12 @@ async function patchMap() {
   try {
     console.log("map to patch", mapToPatch)
     await axiosClient.patch(`/maps/${oldMap.id}`, mapToPatch, { withCredentials: true })
-    message.success("Map updated", { duration: 3000 })
+    notification.success({ title: 'Map updated', duration: 3000 })
     router.push({
       name: "maps",
     })
   } catch (error: any) {
-    console.log(error)
-    message.error(`Failed to update map: ${toErrorMsg(error)}`, { duration: 5000 })
+    notification.error({ title: 'Failed to update map', content: toErrorMsg(error) })
   } finally {
     loading.value = false
   }

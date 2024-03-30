@@ -2,12 +2,7 @@
   <div class="bg-gray-800 rounded-md p-4">
     <!-- selectors -->
     <div class="flex gap-4 mb-4">
-      <n-input
-        @input="handleAdminSearch"
-        type="text"
-        v-model:value="searchQuery"
-        placeholder="Search"
-      >
+      <n-input @input="handleAdminSearch" type="text" v-model:value="searchQuery" placeholder="Search">
         <template #prefix>
           <ion-icon name="search-sharp"></ion-icon>
         </template>
@@ -16,24 +11,13 @@
 
     <!-- admins table -->
     <div class="mb-4">
-      <n-data-table
-        :columns="columns"
-        :data="filteredData"
-        :loading="loading"
-        :pagination="pagination"
-        :row-key="rowKey"
-        size="small"
-        @update:sorter="handleSorterChange"
-      />
+      <n-data-table :columns="columns" :data="filteredData" :loading="loading" :pagination="pagination"
+        :row-key="rowKey" size="small" @update:sorter="handleSorterChange" />
     </div>
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadAdminsData">REFRESH</n-button>
-      <n-button
-        text-color="#37ab56"
-        @click="router.push({ name: 'createadmin' })"
-        >New Admin</n-button
-      >
+      <n-button text-color="#37ab56" @click="router.push({ name: 'createadmin' })">New Admin</n-button>
     </div>
   </div>
 </template>
@@ -41,7 +25,7 @@
 <script setup lang="ts">
 import { ref, reactive, h, computed, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NTag, useMessage } from "naive-ui"
+import { NInput, NDataTable, NButton, NTag, useNotification } from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -49,7 +33,7 @@ import type {
 } from "naive-ui"
 import axiosClient from "../axios"
 import type { Admin, Role } from "../types"
-import { renderSteamID } from "../utils"
+import { renderSteamID, toErrorMsg } from "../utils"
 
 type RowData = {
   name: string
@@ -58,7 +42,7 @@ type RowData = {
 }
 
 const router = useRouter()
-const message = useMessage()
+const notification = useNotification()
 
 const loading = ref(false)
 
@@ -193,8 +177,7 @@ async function loadAdminsData() {
 
     data.value = result.data || []
   } catch (error) {
-    message.error("Failed to load admins", { duration: 3000 })
-    console.log(error)
+    notification.error({ title: 'Failed to fetch admins', content: toErrorMsg(error) })
   } finally {
     loading.value = false
   }

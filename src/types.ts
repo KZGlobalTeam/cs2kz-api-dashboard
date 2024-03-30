@@ -18,6 +18,15 @@ export type GlobalStatus = "global" | "not_global" | "in_testing"
 
 export type Role = "none" | "maps" | "servers" | "bans" | "admin"
 
+export type BanReason = 'auto_strafe' | 'auto_bhop'
+
+export interface Player {
+  name: string
+  steam_id: string
+  ip_address?: string
+  is_banned: boolean
+}
+
 export interface Filter {
   id: number
   mode: Mode
@@ -33,11 +42,6 @@ export interface Course {
   description?: string
   filters: Filter[]
   mappers: Player[]
-}
-
-export interface Player {
-  name: string
-  steam_id: string
 }
 
 export interface Map {
@@ -69,7 +73,7 @@ export interface Server {
 export interface Ban {
   id: number
   player: Player
-  reason: string
+  reason: BanReason
   server?: Server
   admin?: Player
   created_on: string

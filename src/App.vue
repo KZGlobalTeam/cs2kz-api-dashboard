@@ -2,7 +2,7 @@
   <div class="font-poppings text-slate-200">
     <n-config-provider :theme="darkTheme" :locale="enUS">
       <n-dialog-provider>
-        <n-message-provider>
+        <n-notification-provider>
           <Header />
           <div class="flex">
             <NavBar />
@@ -19,7 +19,7 @@
               <RouterView />
             </div>
           </div>
-        </n-message-provider>
+        </n-notification-provider>
       </n-dialog-provider>
     </n-config-provider>
   </div>
@@ -34,7 +34,7 @@ import Cookies from 'universal-cookie'
 import {
   darkTheme,
   NConfigProvider,
-  NMessageProvider,
+  NNotificationProvider,
   NDialogProvider,
   enUS,
 } from "naive-ui"

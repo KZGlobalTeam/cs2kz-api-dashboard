@@ -25,14 +25,15 @@ import {
   NInput,
   NForm,
   NFormItem,
-  useMessage,
+  useNotification,
 } from "naive-ui"
 import type { FormInst } from "naive-ui"
 import axiosClient from "../axios"
+import { toErrorMsg } from "../utils"
 
 const router = useRouter()
 const route = useRoute()
-const message = useMessage()
+const notification = useNotification()
 
 const loading = ref(false)
 
@@ -71,7 +72,7 @@ onBeforeMount(async () => {
       admin.steamId = steamId as string
       admin.roles = data.roles
     } catch (error) {
-      console.log(error)
+      notification.error({ title: 'Failed to fetch admins', content: toErrorMsg(error) })
     }
   }
 })
@@ -95,11 +96,10 @@ async function submitAdmin() {
 
   try {
     await axiosClient.put(`/admins/${admin.steamId}`, { roles: admin.roles }, { withCredentials: true })
-    message.success("Admin saved", { duration: 2000 })
+    notification.success({ title: 'Admin saved', duration: 3000 })
     router.push("/home/admins")
   } catch (error) {
-    console.log(error)
-    message.error("Failed to save admin", { duration: 2000 })
+    notification.error({ title: 'Failed to save admin', content: toErrorMsg(error) })
   } finally {
     loading.value = false
   }

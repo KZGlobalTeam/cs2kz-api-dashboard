@@ -3,19 +3,10 @@
     <div class="flex justify-between gap-4 mb-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input
-          @keyup.enter="loadServersData"
-          type="text"
-          v-model:value="serverQuery.name"
-          placeholder="Server Name, ID"
-        />
+        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.name"
+          placeholder="Server Name, ID" />
 
-        <n-input
-          @keyup.enter="loadServersData"
-          type="text"
-          v-model:value="serverQuery.owner"
-          placeholder="Owner"
-        />
+        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.owner" placeholder="Owner" />
       </n-space>
 
       <div class="flex gap-4">
@@ -26,24 +17,13 @@
 
     <!-- servers table -->
     <div class="mb-4">
-      <n-data-table
-        :columns="columns"
-        :data="data"
-        :loading="loading"
-        :pagination="pagination"
-        :row-key="rowKey"
-        size="small"
-        @update:sorter="handleSorterChange"
-      />
+      <n-data-table :columns="columns" :data="data" :loading="loading" :pagination="pagination" :row-key="rowKey"
+        size="small" @update:sorter="handleSorterChange" />
     </div>
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadServersData">REFRESH</n-button>
-      <n-button
-        text-color="#37ab56"
-        @click="router.push({ name: 'createserver' })"
-        >New Server</n-button
-      >
+      <n-button text-color="#37ab56" @click="router.push({ name: 'createserver' })">New Server</n-button>
     </div>
   </div>
 </template>
@@ -51,7 +31,7 @@
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NSpace, useMessage } from "naive-ui"
+import { NInput, NDataTable, NButton, NSpace, useNotification } from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -59,7 +39,7 @@ import type {
 } from "naive-ui"
 import axiosClient from "../axios"
 import type { Server } from "../types"
-import { toLocal, renderSteamID } from "../utils"
+import { toLocal, renderSteamID, toErrorMsg } from "../utils"
 
 type ServerQuery = {
   name: string
@@ -67,7 +47,7 @@ type ServerQuery = {
 }
 
 const router = useRouter()
-const message = useMessage()
+const notification = useNotification()
 
 const loading = ref(false)
 
@@ -187,8 +167,7 @@ async function loadServersData() {
 
     data.value = result.data || []
   } catch (error) {
-    message.error("Failed to load servers", { duration: 3000 })
-    console.log(error)
+    notification.error({ title: 'Failed to fetch servers', content: toErrorMsg(error) })
   } finally {
     loading.value = false
   }

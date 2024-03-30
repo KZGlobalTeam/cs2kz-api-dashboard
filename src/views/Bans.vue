@@ -3,50 +3,21 @@
     <div class="flex justify-between gap-4 mb-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input
-          @keyup.enter="loadBansData"
-          type="text"
-          v-model:value="banQuery.player"
-          placeholder="Player"
-        />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.player" placeholder="Player" />
 
-        <n-input
-          @keyup.enter="loadBansData"
-          type="text"
-          v-model:value="banQuery.reason"
-          placeholder="Reason"
-        />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.server" placeholder="Server" />
 
-        <n-input
-          @keyup.enter="loadBansData"
-          type="text"
-          v-model:value="banQuery.server"
-          placeholder="Server"
-        />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.bannedBy" placeholder="Banned By" />
 
-        <n-input
-          @keyup.enter="loadBansData"
-          type="text"
-          v-model:value="banQuery.banned_by"
-          placeholder="Banned By"
-        />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.unbannedBy" placeholder="Unbanned By" />
 
-        <div>
-          <n-radio
-            :checked="banQuery.unbanned === true"
-            @change="handleExpiresChange"
-            value="unbanned"
-          >
-            Unbanned
-          </n-radio>
-          <n-radio
-            :checked="banQuery.unbanned === false"
-            @change="handleExpiresChange"
-            value="banned"
-          >
-            Banned
-          </n-radio>
-        </div>
+        <n-select style="width: 8rem" @update-value="nextTick(loadBansData)" v-model:value="banQuery.reason"
+          :options="banReasonOptions" placeholder="Ban Reason" />
+
+        <n-select style="width: 8rem" @update-value="nextTick(loadBansData)" v-model:value="banQuery.status"
+          :options="statusOptions" placeholder="Status" />
+
+        <n-date-picker @update-value="nextTick(loadBansData)" v-model:value="banQuery.dateRange" type="daterange" clearable />
       </n-space>
 
       <div class="flex gap-4">
@@ -57,36 +28,28 @@
 
     <!-- servers table -->
     <div class="mb-4">
-      <n-data-table
-        :columns="columns"
-        :data="data"
-        :loading="loading"
-        :pagination="pagination"
-        :row-key="rowKey"
-        size="small"
-        @update:sorter="handleSorterChange"
-      />
+      <n-data-table :columns="columns" :data="data" :loading="loading" :pagination="pagination" :row-key="rowKey"
+        size="small" @update:sorter="handleSorterChange" />
     </div>
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadBansData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="router.push({ name: 'createban' })"
-        >New Ban</n-button
-      >
+      <n-button text-color="#37ab56" @click="router.push({ name: 'createban' })">New Ban</n-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h, onBeforeMount } from "vue"
+import { ref, reactive, h, onBeforeMount, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import {
   NInput,
   NDataTable,
   NButton,
-  NRadio,
   NSpace,
-  useMessage,
+  NSelect,
+  NDatePicker,
+  useNotification,
 } from "naive-ui"
 import type {
   DataTableSortState,
@@ -95,30 +58,41 @@ import type {
 } from "naive-ui"
 import axiosClient from "../axios"
 import type { Ban } from "../types"
-import { toLocal, renderSteamID } from "../utils"
+import { toLocal, renderSteamID, toErrorMsg } from "../utils"
 
-type BanQuery = {
+interface BanQuery {
   player?: string,
-  server?: string | number,
-  reason?: string,
-  unbanned?: boolean,
-  banned_by?: string,
-  unbanned_by?: string,
-  created_after?: Date,
-  created_before?: Date,
+  server?: string,
+  bannedBy?: string,
+  unbannedBy?: string,
+  reason?: string | null,
+  status?: string | null,
+  dateRange: [number, number]
 }
 
 const router = useRouter()
-const message = useMessage()
+const notification = useNotification()
+
+const banReasonOptions = [
+  { label: 'Auto Bhop', value: 'auto_bhop' },
+  { label: 'Auto Strafe', value: 'auto_strafe' },
+]
+
+const statusOptions = [
+  { label: 'Banned', value: 'banned' },
+  { label: 'Unbanned', value: 'unbanned' },
+]
 
 const loading = ref(false)
 
 const banQuery = reactive<BanQuery>({
   player: "",
-  reason: "",
   server: "",
-  banned_by: "",
-  unbanned: undefined,
+  bannedBy: "",
+  unbannedBy: "",
+  reason: null,
+  status: null,
+  dateRange: [1183135260000, Date.now()]
 })
 
 const columns = ref<DataTableColumn<Ban>[]>([
@@ -145,6 +119,9 @@ const columns = ref<DataTableColumn<Ban>[]>([
   {
     title: "Reason",
     key: "reason",
+    render(rowData) {
+      return rowData.reason.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
   },
   {
     title: "Server",
@@ -157,24 +134,9 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Banned By",
     key: "banned_by",
     render(rowData) {
-      return renderSteamID(
-        rowData.admin.steam_id,
-        rowData.admin.is_banned
-      )
-    },
-  },
-  {
-    title: "Exipres On",
-    key: "expires_on",
-    sortOrder: false,
-    render(rowData) {
-      return toLocal(rowData.expires_on)
-    },
-    sorter(rowA, rowB) {
-      return (
-        new Date(rowA.expires_on).getTime() -
-        new Date(rowB.expires_on).getTime()
-      )
+      return rowData.admin
+        ? renderSteamID(rowData.admin.steam_id)
+        : 'Anticheat'
     },
   },
   {
@@ -189,6 +151,16 @@ const columns = ref<DataTableColumn<Ban>[]>([
         new Date(rowA.created_on).getTime() -
         new Date(rowB.created_on).getTime()
       )
+    },
+  },
+  {
+    title: "Exipres On",
+    key: "expires_on",
+    sortOrder: false,
+    render(rowData) {
+      return rowData.expires_on
+        ? toLocal(rowData.expires_on)
+        : '-'
     },
   },
   {
@@ -207,7 +179,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
             },
             onClick: () => {
               router.push({
-                name: "ban",
+                name: "editban",
                 params: {
                   id: rowData.id,
                 },
@@ -215,6 +187,26 @@ const columns = ref<DataTableColumn<Ban>[]>([
             },
           },
           { default: () => "Edit" }
+        ),
+        h(
+          NButton,
+          {
+            type: "default",
+            textColor: "#e2e8f0",
+            size: "tiny",
+            style: {
+              marginRight: "0.5rem",
+            },
+            onClick: () => {
+              router.push({
+                name: "unban",
+                params: {
+                  id: rowData.id,
+                },
+              })
+            },
+          },
+          { default: () => "Unban" }
         ),
         h(
           NButton,
@@ -268,18 +260,17 @@ async function loadBansData() {
   loading.value = true
   try {
     const params = {
-      // typescript...
       player: banQuery.player || null,
-      reason: banQuery.reason || null,
       server: banQuery.server || null,
-      banned_by: banQuery.banned_by || null,
-      unbanned:
-        typeof banQuery.unbanned === "undefined"
-          ? null
-          : banQuery.unbanned,
+      banned_by: banQuery.bannedBy || null,
+      unbanned_by: banQuery.unbannedBy || null,
+      reason: banQuery.reason,
+      unbanned: banQuery.status === null
+        ? null
+        : (banQuery.status === 'banned' ? false : true),
+      created_after: new Date(banQuery.dateRange[0]).toISOString(),
+      created_before: new Date(banQuery.dateRange[1]).toISOString()
     }
-
-    // console.log(params)
 
     const result = await axiosClient.get("/bans", {
       params,
@@ -287,8 +278,7 @@ async function loadBansData() {
 
     data.value = result.data || []
   } catch (error) {
-    message.error("Failed to load bans", { duration: 3000 })
-    console.log(error)
+    notification.error({ title: 'Failed to fetch bans', content: toErrorMsg(error) })
   } finally {
     loading.value = false
   }
@@ -296,20 +286,17 @@ async function loadBansData() {
 
 function clearFilter() {
   banQuery.player = ""
-  banQuery.reason = ""
   banQuery.server = ""
-  banQuery.banned_by = ""
-  banQuery.unbanned = undefined
+  banQuery.bannedBy = ""
+  banQuery.unbannedBy = ""
+  banQuery.reason = null
+  banQuery.status = null
+  banQuery.dateRange = [1183135260000, Date.now()]
   loadBansData()
 }
 
 function rowKey(rowData: Ban) {
   return rowData.id
-}
-
-function handleExpiresChange(e: Event) {
-  banQuery.unbanned = (e.target as HTMLInputElement).value === "unbanned"
-  loadBansData()
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

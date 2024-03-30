@@ -7,11 +7,6 @@
       </div>
 
       <div>
-        <p class="title">Player IP</p>
-        <p>{{ ban.player.ip_address }}</p>
-      </div>
-
-      <div>
         <p class="title">Reason</p>
         <p>{{ ban.reason }}</p>
       </div>
@@ -29,16 +24,11 @@
       <div v-if="ban.server">
         <p class="title">Server Owner</p>
         <p>
-          {{ `${ban.server.owned_by.name}, ${ban.server.owned_by.steam_id}` }}
+          {{ `${ban.server.owner.name}, ${ban.server.owner.steam_id}` }}
         </p>
       </div>
 
-      <div>
-        <p class="title">Plugin Version</p>
-        <p>{{ ban.plugin_version }}</p>
-      </div>
-
-      <div>
+      <div v-if="ban.admin">
         <p class="title">Banned By</p>
         <p>{{ `${ban.admin.name}, ${ban.admin.steam_id}` }}</p>
       </div>
@@ -46,27 +36,21 @@
       <div>
         <p class="title">Created On</p>
         <p>
-          {{
-            format(new Date(ban.created_on as string), "yyyy-MM-dd HH:mm:ss")
-          }}
+          {{ format(new Date(ban.created_on as string), "yyyy-MM-dd HH:mm:ss") }}
         </p>
       </div>
 
       <div>
         <p class="title">Expires On</p>
         <p>
-          {{
-            format(new Date(ban.expires_on as string), "yyyy-MM-dd HH:mm:ss")
-          }}
+          {{ format(new Date(ban.expires_on as string), "yyyy-MM-dd HH:mm:ss") }}
         </p>
       </div>
 
-      <div v-if="ban.unban">
+      <div v-if="ban.unban?.admin">
         <p class="title">Unbanned By</p>
         <p>
-          {{
-            `${ban.unban.admin.name}, ${ban.unban.admin.steam_id}`
-          }}
+          {{ `${ban.unban.admin.name}, ${ban.unban.admin.steam_id}` }}
         </p>
       </div>
 
@@ -85,11 +69,14 @@ import { ref, onBeforeMount } from "vue"
 import { useRoute } from "vue-router"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
-import { NSpace } from "naive-ui"
+import { NSpace, useNotification } from "naive-ui"
 import { Ban } from "../types"
 import { format } from "date-fns"
+import { toErrorMsg } from "../utils"
 
 const route = useRoute()
+
+const notification = useNotification()
 
 const ban = ref<Ban>()
 
@@ -100,19 +87,20 @@ onBeforeMount(async () => {
         `/bans/${route.params.id}`
       )) as AxiosResponse<Ban>
       // console.log(data);
-      
+
       ban.value = data
     } catch (error) {
-      console.log(error)
+      notification.error({ title: 'Failed to fetch ban details', content: toErrorMsg(error) })
     }
   }
 })
 </script>
 
 <style scoped>
-.title{
+.title {
   font-weight: 500;
   font-size: 1rem;
   line-height: 1.55rem;
+  color: #ababab;
 }
 </style>
