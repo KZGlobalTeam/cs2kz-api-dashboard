@@ -3,23 +3,56 @@
     <div class="flex justify-between gap-4 mb-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.player" placeholder="Player" />
+        <n-input
+          @keyup.enter="loadBansData"
+          type="text"
+          v-model:value="banQuery.player"
+          placeholder="Player"
+        />
 
-        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.server" placeholder="Server" />
+        <n-input
+          @keyup.enter="loadBansData"
+          type="text"
+          v-model:value="banQuery.server"
+          placeholder="Server"
+        />
 
-        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.bannedBy" placeholder="Banned By" />
+        <n-input
+          @keyup.enter="loadBansData"
+          type="text"
+          v-model:value="banQuery.bannedBy"
+          placeholder="Banned By"
+        />
 
-        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.unbannedBy"
-          placeholder="Unbanned By" />
+        <n-input
+          @keyup.enter="loadBansData"
+          type="text"
+          v-model:value="banQuery.unbannedBy"
+          placeholder="Unbanned By"
+        />
 
-        <n-select style="width: 8rem" @update-value="nextTick(loadBansData)" v-model:value="banQuery.reason"
-          :options="banReasonOptions" placeholder="Ban Reason" />
+        <n-select
+          style="width: 8rem"
+          @update-value="nextTick(loadBansData)"
+          v-model:value="banQuery.reason"
+          :options="banReasonOptions"
+          placeholder="Ban Reason"
+        />
 
-        <n-select style="width: 8rem" @update-value="nextTick(loadBansData)" v-model:value="banQuery.status"
-          :options="statusOptions" placeholder="Status" />
+        <n-select
+          style="width: 8rem"
+          @update-value="nextTick(loadBansData)"
+          v-model:value="banQuery.status"
+          :options="statusOptions"
+          placeholder="Status"
+        />
 
-        <n-date-picker @update-value="nextTick(loadBansData)" v-model:value="banQuery.dateRange" type="daterange"
-          clearable />
+        <n-date-picker
+          @update-value="nextTick(loadBansData)"
+          v-model:value="banQuery.dateRange"
+          type="daterange"
+          clearable
+        />
       </n-space>
 
       <div class="flex gap-4">
@@ -30,13 +63,22 @@
 
     <!-- servers table -->
     <div class="mb-4">
-      <n-data-table :columns="columns" :data="data" :loading="loading" :pagination="pagination" :row-key="rowKey"
-        size="small" @update:sorter="handleSorterChange" />
+      <n-data-table
+        :columns="columns"
+        :data="data"
+        :loading="loading"
+        :pagination="pagination"
+        :row-key="rowKey"
+        size="small"
+        @update:sorter="handleSorterChange"
+      />
     </div>
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadBansData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="router.push({ name: 'createban' })">New Ban</n-button>
+      <n-button text-color="#37ab56" @click="router.push({ name: 'createban' })"
+        >New Ban</n-button
+      >
     </div>
   </div>
 </template>
@@ -64,12 +106,12 @@ import type { Ban } from "../types"
 import { toLocal, renderSteamID, toErrorMsg } from "../utils"
 
 interface BanQuery {
-  player?: string,
-  server?: string,
-  bannedBy?: string,
-  unbannedBy?: string,
-  reason?: string | null,
-  status?: string | null,
+  player?: string
+  server?: string
+  bannedBy?: string
+  unbannedBy?: string
+  reason?: string | null
+  status?: string | null
   dateRange: [number, number]
 }
 
@@ -77,13 +119,13 @@ const router = useRouter()
 const notification = useNotification()
 
 const banReasonOptions = [
-  { label: 'Auto Bhop', value: 'auto_bhop' },
-  { label: 'Auto Strafe', value: 'auto_strafe' },
+  { label: "Auto Bhop", value: "auto_bhop" },
+  { label: "Auto Strafe", value: "auto_strafe" },
 ]
 
 const statusOptions = [
-  { label: 'Banned', value: 'banned' },
-  { label: 'Unbanned', value: 'unbanned' },
+  { label: "Banned", value: "banned" },
+  { label: "Unbanned", value: "unbanned" },
 ]
 
 const loading = ref(false)
@@ -95,7 +137,7 @@ const banQuery = reactive<BanQuery>({
   unbannedBy: "",
   reason: null,
   status: null,
-  dateRange: [1183135260000, Date.now()]
+  dateRange: [1183135260000, Date.now()],
 })
 
 const columns = ref<DataTableColumn<Ban>[]>([
@@ -123,8 +165,10 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Reason",
     key: "reason",
     render(rowData) {
-      return rowData.reason.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    }
+      return rowData.reason
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+    },
   },
   {
     title: "Status",
@@ -133,11 +177,11 @@ const columns = ref<DataTableColumn<Ban>[]>([
       return h(
         NTag,
         {
-          type: rowData.unban ? "success" : 'error'
+          type: rowData.unban ? "success" : "error",
         },
         {
-          default: () => rowData.unban ? 'unbanned' : 'banned'
-        }
+          default: () => (rowData.unban ? "unbanned" : "banned"),
+        },
       )
     },
   },
@@ -152,9 +196,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Banned By",
     key: "banned_by",
     render(rowData) {
-      return rowData.admin
-        ? rowData.admin.name
-        : 'Anticheat'
+      return rowData.admin ? rowData.admin.name : "Anticheat"
     },
   },
   {
@@ -176,9 +218,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
     key: "expires_on",
     sortOrder: false,
     render(rowData) {
-      return rowData.expires_on
-        ? toLocal(rowData.expires_on)
-        : '-'
+      return rowData.expires_on ? toLocal(rowData.expires_on) : "-"
     },
   },
   {
@@ -186,46 +226,48 @@ const columns = ref<DataTableColumn<Ban>[]>([
     key: "actions",
     render(rowData) {
       return [
-        !rowData.unban && h(
-          NButton,
-          {
-            type: "default",
-            textColor: "#e2e8f0",
-            size: "tiny",
-            style: {
-              marginRight: "0.5rem",
+        !rowData.unban &&
+          h(
+            NButton,
+            {
+              type: "default",
+              textColor: "#e2e8f0",
+              size: "tiny",
+              style: {
+                marginRight: "0.5rem",
+              },
+              onClick: () => {
+                router.push({
+                  name: "updateban",
+                  params: {
+                    id: rowData.id,
+                  },
+                })
+              },
             },
-            onClick: () => {
-              router.push({
-                name: "updateban",
-                params: {
-                  id: rowData.id,
-                },
-              })
+            { default: () => "Update" },
+          ),
+        !rowData.unban &&
+          h(
+            NButton,
+            {
+              type: "default",
+              textColor: "#e2e8f0",
+              size: "tiny",
+              style: {
+                marginRight: "0.5rem",
+              },
+              onClick: () => {
+                router.push({
+                  name: "unban",
+                  params: {
+                    id: rowData.id,
+                  },
+                })
+              },
             },
-          },
-          { default: () => "Update" }
-        ),
-        !rowData.unban && h(
-          NButton,
-          {
-            type: "default",
-            textColor: "#e2e8f0",
-            size: "tiny",
-            style: {
-              marginRight: "0.5rem",
-            },
-            onClick: () => {
-              router.push({
-                name: "unban",
-                params: {
-                  id: rowData.id,
-                },
-              })
-            },
-          },
-          { default: () => "Unban" }
-        ),
+            { default: () => "Unban" },
+          ),
         h(
           NButton,
           {
@@ -244,7 +286,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
               })
             },
           },
-          { default: () => "Details" }
+          { default: () => "Details" },
         ),
       ]
     },
@@ -283,11 +325,14 @@ async function loadBansData() {
       banned_by: banQuery.bannedBy || null,
       unbanned_by: banQuery.unbannedBy || null,
       reason: banQuery.reason,
-      unbanned: banQuery.status === null
-        ? null
-        : (banQuery.status === 'banned' ? false : true),
+      unbanned:
+        banQuery.status === null
+          ? null
+          : banQuery.status === "banned"
+            ? false
+            : true,
       created_after: new Date(banQuery.dateRange[0]).toISOString(),
-      created_before: new Date(banQuery.dateRange[1]).toISOString()
+      created_before: new Date(banQuery.dateRange[1]).toISOString(),
     }
 
     const result = await axiosClient.get("/bans", {
@@ -296,7 +341,10 @@ async function loadBansData() {
 
     data.value = result.data || []
   } catch (error) {
-    notification.error({ title: 'Failed to fetch bans', content: toErrorMsg(error) })
+    notification.error({
+      title: "Failed to fetch bans",
+      content: toErrorMsg(error),
+    })
   } finally {
     loading.value = false
   }

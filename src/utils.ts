@@ -21,7 +21,7 @@ export function renderSteamID(steamId: string, isBanned?: boolean) {
     },
     {
       default: () => steamId,
-    }
+    },
   )
 }
 
@@ -36,7 +36,7 @@ export function renderWorkshopId(workshopId: number) {
     },
     {
       default: () => workshopId,
-    }
+    },
   )
 }
 

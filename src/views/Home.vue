@@ -1,9 +1,5 @@
 <template>
-  <div class="text-slate-200">
-    KREEDZ.
-  </div>
+  <div class="text-slate-200">KREEDZ.</div>
 </template>
 
-<script setup lang="ts">
-
-</script>
+<script setup lang="ts"></script>

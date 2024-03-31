@@ -3,10 +3,19 @@
     <div class="flex justify-between gap-4 mb-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.name"
-          placeholder="Server Name, ID" />
+        <n-input
+          @keyup.enter="loadServersData"
+          type="text"
+          v-model:value="serverQuery.name"
+          placeholder="Server Name, ID"
+        />
 
-        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.owner" placeholder="Owner" />
+        <n-input
+          @keyup.enter="loadServersData"
+          type="text"
+          v-model:value="serverQuery.owner"
+          placeholder="Owner"
+        />
       </n-space>
 
       <div class="flex gap-4">
@@ -17,13 +26,24 @@
 
     <!-- servers table -->
     <div class="mb-4">
-      <n-data-table :columns="columns" :data="data" :loading="loading" :pagination="pagination" :row-key="rowKey"
-        size="small" @update:sorter="handleSorterChange" />
+      <n-data-table
+        :columns="columns"
+        :data="data"
+        :loading="loading"
+        :pagination="pagination"
+        :row-key="rowKey"
+        size="small"
+        @update:sorter="handleSorterChange"
+      />
     </div>
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadServersData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="router.push({ name: 'createserver' })">New Server</n-button>
+      <n-button
+        text-color="#37ab56"
+        @click="router.push({ name: 'createserver' })"
+        >New Server</n-button
+      >
     </div>
   </div>
 </template>
@@ -121,7 +141,7 @@ const columns = ref<DataTableColumn<Server>[]>([
             })
           },
         },
-        { default: () => "Update" }
+        { default: () => "Update" },
       )
     },
   },
@@ -167,7 +187,10 @@ async function loadServersData() {
 
     data.value = result.data || []
   } catch (error) {
-    notification.error({ title: 'Failed to fetch servers', content: toErrorMsg(error) })
+    notification.error({
+      title: "Failed to fetch servers",
+      content: toErrorMsg(error),
+    })
   } finally {
     loading.value = false
   }

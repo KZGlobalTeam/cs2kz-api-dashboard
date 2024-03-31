@@ -8,12 +8,25 @@
 
       <div class="mb-4">
         <p class="mb-2 font-medium">Ban Duration</p>
-        <n-select v-model:value="ban.banDuration" :options="banDurationOptions" />
+        <n-select
+          v-model:value="ban.banDuration"
+          :options="banDurationOptions"
+        />
       </div>
 
       <div>
-        <n-button @click.prevent="updateBan" :disabled="loading" :loading="loading" class="saveButton"
-          text-color="#3cc962" style="font-size: 16px" size="large" strong bordered>Update</n-button>
+        <n-button
+          @click.prevent="updateBan"
+          :disabled="loading"
+          :loading="loading"
+          class="saveButton"
+          text-color="#3cc962"
+          style="font-size: 16px"
+          size="large"
+          strong
+          bordered
+          >Update</n-button
+        >
       </div>
     </div>
   </div>
@@ -22,11 +35,7 @@
 <script setup lang="ts">
 import { ref, reactive, onBeforeMount, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import {
-  NButton,
-  NSelect,
-  useNotification,
-} from "naive-ui"
+import { NButton, NSelect, useNotification } from "naive-ui"
 import type { Ban } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
@@ -46,14 +55,14 @@ const ban = reactive<{
   banDuration: number | string
   createdOn: string
 }>({
-  reason: '',
+  reason: "",
   banDuration: 1,
-  createdOn: ''
+  createdOn: "",
 })
 
 const banReasonOptions = [
-  { label: 'Auto Bhop', value: 'auto_bhop' },
-  { label: 'Auto Strafe', value: 'auto_strafe' },
+  { label: "Auto Bhop", value: "auto_bhop" },
+  { label: "Auto Strafe", value: "auto_strafe" },
 ]
 
 const banDurationOptions = [
@@ -64,14 +73,14 @@ const banDurationOptions = [
   { label: "3 Months", value: 90 },
   { label: "6 Months", value: 180 },
   { label: "1 Year", value: 365 },
-  { label: "Permanent", value: 'permanent' },
+  { label: "Permanent", value: "permanent" },
 ]
 
 onBeforeMount(async () => {
   if (route.params.id) {
     try {
       const { data } = (await axiosClient.get(
-        `/bans/${route.params.id}`
+        `/bans/${route.params.id}`,
       )) as AxiosResponse<Ban>
       // console.log(data);
 
@@ -81,24 +90,28 @@ onBeforeMount(async () => {
 
       oldBan = JSON.parse(JSON.stringify(ban))
     } catch (error) {
-      notification.error({ title: 'Failed to fetch the ban', content: toErrorMsg(error) })
+      notification.error({
+        title: "Failed to fetch the ban",
+        content: toErrorMsg(error),
+      })
     }
   }
 })
 
 async function updateBan() {
   if (isEqual(oldBan, toRaw(ban))) {
-    notification.error({ title: 'No changes made' })
+    notification.error({ title: "No changes made" })
   } else {
     const diff = getDiff(oldBan, toRaw(ban))
     let update = diff
 
-    if ('banDuration' in diff) {
-      if (ban.banDuration === 'permanent') {
+    if ("banDuration" in diff) {
+      if (ban.banDuration === "permanent") {
         update = { ...diff, expires_on: null }
       } else {
         const expires_on = new Date(
-          new Date(ban.createdOn).getTime() + (ban.banDuration as number) * 24 * 60 * 60 * 1000
+          new Date(ban.createdOn).getTime() +
+            (ban.banDuration as number) * 24 * 60 * 60 * 1000,
         ).toISOString()
         update = { ...diff, expires_on }
       }
@@ -107,12 +120,17 @@ async function updateBan() {
     loading.value = true
 
     try {
-      await axiosClient.patch(`/bans/${route.params.id}`, update, { withCredentials: true })
-      notification.success({ title: 'Ban issued', duration: 3000 })
+      await axiosClient.patch(`/bans/${route.params.id}`, update, {
+        withCredentials: true,
+      })
+      notification.success({ title: "Ban issued", duration: 3000 })
       router.push("/home/bans")
     } catch (error) {
       loading.value = false
-      notification.error({ title: 'Failed to issue the ban', content: toErrorMsg(error) })
+      notification.error({
+        title: "Failed to issue the ban",
+        content: toErrorMsg(error),
+      })
     }
   }
 }

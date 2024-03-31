@@ -2,7 +2,12 @@
   <div class="bg-gray-800 rounded-md p-4">
     <!-- selectors -->
     <div class="flex gap-4 mb-4">
-      <n-input @input="handleAdminSearch" type="text" v-model:value="searchQuery" placeholder="Search">
+      <n-input
+        @input="handleAdminSearch"
+        type="text"
+        v-model:value="searchQuery"
+        placeholder="Search"
+      >
         <template #prefix>
           <ion-icon name="search-sharp"></ion-icon>
         </template>
@@ -11,13 +16,24 @@
 
     <!-- admins table -->
     <div class="mb-4">
-      <n-data-table :columns="columns" :data="filteredData" :loading="loading" :pagination="pagination"
-        :row-key="rowKey" size="small" @update:sorter="handleSorterChange" />
+      <n-data-table
+        :columns="columns"
+        :data="filteredData"
+        :loading="loading"
+        :pagination="pagination"
+        :row-key="rowKey"
+        size="small"
+        @update:sorter="handleSorterChange"
+      />
     </div>
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadAdminsData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="router.push({ name: 'createadmin' })">New Admin</n-button>
+      <n-button
+        text-color="#37ab56"
+        @click="router.push({ name: 'createadmin' })"
+        >New Admin</n-button
+      >
     </div>
   </div>
 </template>
@@ -102,7 +118,7 @@ const columns = ref<DataTableColumn<Admin>[]>([
           },
           {
             default: () => role,
-          }
+          },
         )
       })
       return tags
@@ -130,7 +146,7 @@ const columns = ref<DataTableColumn<Admin>[]>([
             })
           },
         },
-        { default: () => "Edit" }
+        { default: () => "Edit" },
       )
     },
   },
@@ -158,7 +174,7 @@ const data = ref<RowData[]>([])
 const filteredData = computed<RowData[]>(() => {
   if (searchValue.value) {
     return data.value.filter((v) =>
-      v.name.toLowerCase().includes(searchValue.value.toLowerCase())
+      v.name.toLowerCase().includes(searchValue.value.toLowerCase()),
     )
   }
 
@@ -177,7 +193,10 @@ async function loadAdminsData() {
 
     data.value = result.data || []
   } catch (error) {
-    notification.error({ title: 'Failed to fetch admins', content: toErrorMsg(error) })
+    notification.error({
+      title: "Failed to fetch admins",
+      content: toErrorMsg(error),
+    })
   } finally {
     loading.value = false
   }

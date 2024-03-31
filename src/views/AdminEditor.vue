@@ -8,11 +8,25 @@
 
     <div class="mb-4">
       <p class="mb-2">Roles</p>
-      <n-select v-model:value="admin.roles" multiple placeholder="Select Role" :options="roleOptions" />
+      <n-select
+        v-model:value="admin.roles"
+        multiple
+        placeholder="Select Role"
+        :options="roleOptions"
+      />
     </div>
 
-    <n-button @click.prevent="saveAdmin" :disabled="loading" :loading="loading" class="saveButton" text-color="#3cc962"
-      size="large" strong bordered>Save</n-button>
+    <n-button
+      @click.prevent="saveAdmin"
+      :disabled="loading"
+      :loading="loading"
+      class="saveButton"
+      text-color="#3cc962"
+      size="large"
+      strong
+      bordered
+      >Save</n-button
+    >
   </div>
 </template>
 
@@ -72,7 +86,10 @@ onBeforeMount(async () => {
       admin.steamId = steamId as string
       admin.roles = data.roles
     } catch (error) {
-      notification.error({ title: 'Failed to fetch admins', content: toErrorMsg(error) })
+      notification.error({
+        title: "Failed to fetch admins",
+        content: toErrorMsg(error),
+      })
     }
   }
 })
@@ -95,11 +112,18 @@ async function submitAdmin() {
   loading.value = true
 
   try {
-    await axiosClient.put(`/admins/${admin.steamId}`, { roles: admin.roles }, { withCredentials: true })
-    notification.success({ title: 'Admin saved', duration: 3000 })
+    await axiosClient.put(
+      `/admins/${admin.steamId}`,
+      { roles: admin.roles },
+      { withCredentials: true },
+    )
+    notification.success({ title: "Admin saved", duration: 3000 })
     router.push("/home/admins")
   } catch (error) {
-    notification.error({ title: 'Failed to save admin', content: toErrorMsg(error) })
+    notification.error({
+      title: "Failed to save admin",
+      content: toErrorMsg(error),
+    })
   } finally {
     loading.value = false
   }

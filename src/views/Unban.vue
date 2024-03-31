@@ -7,19 +7,29 @@
     </n-form>
 
     <div>
-      <n-button @click.prevent="revertBan" :disabled="loading" :loading="loading" class="saveButton"
-        text-color="#3cc962" style="font-size: 16px;" size="large" strong bordered>Unban</n-button>
+      <n-button
+        @click.prevent="revertBan"
+        :disabled="loading"
+        :loading="loading"
+        class="saveButton"
+        text-color="#3cc962"
+        style="font-size: 16px"
+        size="large"
+        strong
+        bordered
+        >Unban</n-button
+      >
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { NForm, NFormItem, NButton, NInput, useNotification } from 'naive-ui';
+import { ref, reactive } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import { NForm, NFormItem, NButton, NInput, useNotification } from "naive-ui"
 import type { FormInst } from "naive-ui"
-import axiosClient from '../axios';
-import { toErrorMsg } from '../utils';
+import axiosClient from "../axios"
+import { toErrorMsg } from "../utils"
 
 const route = useRoute()
 const router = useRouter()
@@ -48,16 +58,22 @@ async function revertBan() {
   unbanForm.value?.validate(async (errors) => {
     if (!errors) {
       try {
-        await axiosClient.delete(`/bans/${route.params.id}`, { data: unban, withCredentials: true })
-        notification.success({ title: 'Ban reverted', duration: 3000 })
+        await axiosClient.delete(`/bans/${route.params.id}`, {
+          data: unban,
+          withCredentials: true,
+        })
+        notification.success({ title: "Ban reverted", duration: 3000 })
         router.push("/home/bans")
       } catch (error) {
         loading.value = false
-        notification.error({ title: 'Failed to revert the ban', content: toErrorMsg(error) })
+        notification.error({
+          title: "Failed to revert the ban",
+          content: toErrorMsg(error),
+        })
       }
     } else {
       loading.value = false
-      notification.error({ title: 'Missing Fields' })
+      notification.error({ title: "Missing Fields" })
     }
   })
 }

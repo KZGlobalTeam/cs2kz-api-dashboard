@@ -8,7 +8,13 @@
 
       <div>
         <p class="title">Reason</p>
-        <p>{{ ban.reason.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) }}</p>
+        <p>
+          {{
+            ban.reason
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())
+          }}
+        </p>
       </div>
 
       <div v-if="ban.server">
@@ -43,7 +49,7 @@
       <div>
         <p class="title">Expires On</p>
         <p>
-          {{ ban.expires_on ? toLocal(ban.expires_on) : 'Permanent' }}
+          {{ ban.expires_on ? toLocal(ban.expires_on) : "Permanent" }}
         </p>
       </div>
 
@@ -88,13 +94,16 @@ onBeforeMount(async () => {
   if (route.params.id) {
     try {
       const { data } = (await axiosClient.get(
-        `/bans/${route.params.id}`
+        `/bans/${route.params.id}`,
       )) as AxiosResponse<Ban>
       // console.log(data);
 
       ban.value = data
     } catch (error) {
-      notification.error({ title: 'Failed to fetch ban details', content: toErrorMsg(error) })
+      notification.error({
+        title: "Failed to fetch ban details",
+        content: toErrorMsg(error),
+      })
     }
   }
 })

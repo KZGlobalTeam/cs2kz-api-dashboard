@@ -18,7 +18,7 @@ export type GlobalStatus = "global" | "not_global" | "in_testing"
 
 export type Role = "none" | "maps" | "servers" | "bans" | "admin"
 
-export type BanReason = 'auto_strafe' | 'auto_bhop'
+export type BanReason = "auto_strafe" | "auto_bhop"
 
 export interface Player {
   name: string

@@ -12,14 +12,14 @@ export const noAuthRoutes = [
     },
   },
   {
-    path: '/home/myservers',
-    name: 'myservers',
-    component: () => import('../views/MyServers.vue'),
+    path: "/home/myservers",
+    name: "myservers",
+    component: () => import("../views/MyServers.vue"),
     meta: {
-      title: 'My Servers',
-      iconName: 'server'
-    }
-  }
+      title: "My Servers",
+      iconName: "server",
+    },
+  },
 ]
 
 export const routes = [

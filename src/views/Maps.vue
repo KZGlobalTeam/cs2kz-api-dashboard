@@ -152,17 +152,17 @@ const columns = ref<DataTableColumn<RowData>[]>([
             rowData.global_status === "global"
               ? "success"
               : rowData.global_status === "in_testing"
-              ? "warning"
-              : "default",
+                ? "warning"
+                : "default",
         },
         {
           default: () =>
             rowData.global_status === "not_global"
               ? "Not Global"
               : rowData.global_status === "in_testing"
-              ? "In Testing"
-              : "Global",
-        }
+                ? "In Testing"
+                : "Global",
+        },
       )
     },
   },
@@ -203,7 +203,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
             })
           },
         },
-        { default: () => "Update" }
+        { default: () => "Update" },
       )
     },
   },
@@ -256,7 +256,10 @@ async function loadMapsData() {
         }))
       : []
   } catch (error) {
-    notification.error({title: 'Failed to fetch maps', content: toErrorMsg(error)})
+    notification.error({
+      title: "Failed to fetch maps",
+      content: toErrorMsg(error),
+    })
   } finally {
     loading.value = false
   }
