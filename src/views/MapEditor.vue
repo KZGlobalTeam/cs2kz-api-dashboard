@@ -11,8 +11,16 @@
       <!-- workshop -->
       <div class="mb-4">
         <p class="font-medium mb-2">Workshop ID</p>
-        <n-input style="margin-bottom: 0.25rem" v-model:value="workshopId" placeholder="123456789" />
-        <n-checkbox v-if="route.params.id" size="small" v-model:checked="checkSteam">
+        <n-input
+          style="margin-bottom: 0.25rem"
+          v-model:value="workshopId"
+          placeholder="123456789"
+        />
+        <n-checkbox
+          v-if="route.params.id"
+          size="small"
+          v-model:checked="checkSteam"
+        >
           Update Workshop
         </n-checkbox>
       </div>
@@ -21,13 +29,25 @@
       <div class="mb-4">
         <p class="mb-2 font-medium">Global Status</p>
         <n-space>
-          <n-radio :checked="globalStatus === 'global'" value="global" @change="handleStatusChange">
+          <n-radio
+            :checked="globalStatus === 'global'"
+            value="global"
+            @change="handleStatusChange"
+          >
             Global
           </n-radio>
-          <n-radio :checked="globalStatus === 'in_testing'" value="in_testing" @change="handleStatusChange">
+          <n-radio
+            :checked="globalStatus === 'in_testing'"
+            value="in_testing"
+            @change="handleStatusChange"
+          >
             In Testing
           </n-radio>
-          <n-radio :checked="globalStatus === 'not_global'" value="not_global" @change="handleStatusChange">
+          <n-radio
+            :checked="globalStatus === 'not_global'"
+            value="not_global"
+            @change="handleStatusChange"
+          >
             Not Global
           </n-radio>
         </n-space>
@@ -36,32 +56,59 @@
       <!-- description -->
       <div class="mb-4">
         <p class="mb-2 font-medium">Description</p>
-        <n-input v-model:value="description" type="textarea" autosize placeholder="" />
+        <n-input
+          v-model:value="description"
+          type="textarea"
+          autosize
+          placeholder=""
+        />
       </div>
     </div>
 
     <!-- mappers -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
       <p class="my-2 font-medium">Mappers</p>
-      <n-dynamic-input v-model:value="mappers" item-style="margin-bottom: 1rem;" :on-create="onCreateMapper"
-        #="{ index }">
+      <n-dynamic-input
+        v-model:value="mappers"
+        item-style="margin-bottom: 1rem;"
+        :on-create="onCreateMapper"
+        #="{ index }"
+      >
         <div class="flex gap-4">
-          <n-input v-model:value="mappers[index].name" placeholder="Name" @keydown.enter.prevent />
-          <n-input v-model:value="mappers[index].steam_id" placeholder="Steam ID" @keydown.enter.prevent />
+          <n-input
+            v-model:value="mappers[index].name"
+            placeholder="Name"
+            @keydown.enter.prevent
+          />
+          <n-input
+            v-model:value="mappers[index].steam_id"
+            placeholder="Steam ID"
+            @keydown.enter.prevent
+          />
         </div>
       </n-dynamic-input>
     </div>
 
     <!-- courses -->
     <div class="p-4 bg-gray-800 rounded-md mb-4">
-      <div v-for="(course, courseIndex) in courses" :key="course.id"
-        class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4">
+      <div
+        v-for="(course, courseIndex) in courses"
+        :key="course.id"
+        class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4"
+      >
         <!-- course name -->
-        <div class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2">
+        <div
+          class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
+        >
           <p class="font-medium text-xl">
             {{ `Course ${courseIndex + 1}` }}
           </p>
-          <n-button @click="deleteCourse(courseIndex)" text-color="#e2e8f0" type="error">Delete</n-button>
+          <n-button
+            @click="deleteCourse(courseIndex)"
+            text-color="#e2e8f0"
+            type="error"
+            >Delete</n-button
+          >
         </div>
 
         <div class="mb-4">
@@ -72,11 +119,23 @@
         <!-- mappers -->
         <div class="mb-4">
           <p class="my-2">Mappers</p>
-          <n-dynamic-input v-model:value="course.mappers" item-style="margin-bottom: 1rem;" :on-create="onCreateMapper"
-            #="{ index }">
+          <n-dynamic-input
+            v-model:value="course.mappers"
+            item-style="margin-bottom: 1rem;"
+            :on-create="onCreateMapper"
+            #="{ index }"
+          >
             <div class="flex gap-4">
-              <n-input v-model:value="course.mappers[index].name" placeholder="Name" @keydown.enter.prevent />
-              <n-input v-model:value="course.mappers[index].steam_id" placeholder="Steam ID" @keydown.enter.prevent />
+              <n-input
+                v-model:value="course.mappers[index].name"
+                placeholder="Name"
+                @keydown.enter.prevent
+              />
+              <n-input
+                v-model:value="course.mappers[index].steam_id"
+                placeholder="Steam ID"
+                @keydown.enter.prevent
+              />
             </div>
           </n-dynamic-input>
         </div>
@@ -95,7 +154,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(filter, filterIndex) in course.filters" :key="filter.id">
+              <tr
+                v-for="(filter, filterIndex) in course.filters"
+                :key="filter.id"
+              >
                 <td>
                   {{ filter.mode === "classic" ? "Classic" : "Vanilla" }}
                 </td>
@@ -103,16 +165,29 @@
                   {{ filter.teleports ? "TP" : "Pro" }}
                 </td>
                 <td>
-                  <select class="bg-[#303033] rounded-sm py-1 px-2"
-                    @change="handleTierChange($event, courseIndex, filterIndex)" v-model="filter.tier">
-                    <option class="" v-for="option in tierOptions" :value="option.value">
+                  <select
+                    class="bg-[#303033] rounded-sm py-1 px-2"
+                    @change="handleTierChange($event, courseIndex, filterIndex)"
+                    v-model="filter.tier"
+                  >
+                    <option
+                      class=""
+                      v-for="option in tierOptions"
+                      :value="option.value"
+                    >
                       {{ option.label }}
                     </option>
                   </select>
                 </td>
                 <td>
-                  <select class="bg-[#303033] rounded-sm py-1 px-2" v-model="filter.ranked_status">
-                    <option v-for="option in rankedStatusOptions" :value="option.value">
+                  <select
+                    class="bg-[#303033] rounded-sm py-1 px-2"
+                    v-model="filter.ranked_status"
+                  >
+                    <option
+                      v-for="option in rankedStatusOptions"
+                      :value="option.value"
+                    >
                       {{ option.label }}
                     </option>
                   </select>
@@ -128,19 +203,36 @@
         <!-- description -->
         <div>
           <p class="mb-2">Description</p>
-          <n-input type="textarea" v-model:value="course.description" autosize placeholder="" />
+          <n-input
+            type="textarea"
+            v-model:value="course.description"
+            autosize
+            placeholder=""
+          />
         </div>
       </div>
       <!-- if we're creating a new map, then it's allowed -->
       <div v-if="!route.params.id">
-        <n-button @click="createCourse" text-color="#37ab56">New Course</n-button>
+        <n-button @click="createCourse" text-color="#37ab56"
+          >New Course</n-button
+        >
       </div>
     </div>
 
     <!-- save map -->
     <div class="p-4 bg-gray-800 rounded-md">
-      <n-button @click.prevent="saveMap" :disabled="loading" :loading="loading" class="saveButton" text-color="#3cc962"
-        style="font-size: 16px" size="large" strong bordered>{{ route.params.id ? 'Update' : 'Create' }}</n-button>
+      <n-button
+        @click.prevent="saveMap"
+        :disabled="loading"
+        :loading="loading"
+        class="saveButton"
+        text-color="#3cc962"
+        style="font-size: 16px"
+        size="large"
+        strong
+        bordered
+        >{{ route.params.id ? "Update" : "Create" }}</n-button
+      >
     </div>
   </div>
 </template>
@@ -213,7 +305,7 @@ onBeforeMount(async () => {
   if (route.params.id) {
     try {
       const { data } = (await axiosClient.get(
-        `/maps/${route.params.id}`
+        `/maps/${route.params.id}`,
       )) as AxiosResponse<Map>
       // console.log(data);
 
@@ -361,8 +453,9 @@ function saveMap() {
           if (!mapper.steam_id) {
             notification.error({
               title: "Missing Fields",
-              content: `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1
-                }: Steam ID is required`,
+              content: `Course ${courseIndex + 1}: Mapper ${
+                mapperIndex + 1
+              }: Steam ID is required`,
             })
             validated = false
           }
@@ -423,9 +516,9 @@ async function patchMap() {
 
   try {
     console.log("map to patch", update)
-    // await axiosClient.patch(`/maps/${oldMap.id}`, update, {
-    //   withCredentials: true,
-    // })
+    await axiosClient.patch(`/maps/${oldMap.id}`, update, {
+      withCredentials: true,
+    })
     notification.success({ title: "Map updated", duration: 3000 })
     router.push({
       name: "maps",
@@ -443,21 +536,24 @@ async function patchMap() {
 function generateUpdate(): any {
   const update: any = {}
 
-  if (oldMap.description !== description.value) update.description = description.value
+  if (oldMap.description !== description.value)
+    update.description = description.value
 
-  if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
+  if (oldMap.workshop_id !== Number(workshopId.value))
+    update.workshop_id = Number(workshopId.value)
 
-  if (oldMap.global_status !== globalStatus.value) update.global_status = globalStatus.value
+  if (oldMap.global_status !== globalStatus.value)
+    update.global_status = globalStatus.value
 
   update.check_steam = checkSteam.value
 
   const oldMappers = new Set(oldMap.mappers.map((mapper) => mapper.steam_id))
   const newMappers = new Set(mappers.value.map((mapper) => mapper.steam_id))
   update.added_mappers = Array.from(
-    new Set([...newMappers].filter((x) => !oldMappers.has(x)))
+    new Set([...newMappers].filter((x) => !oldMappers.has(x))),
   )
   update.removed_mappers = Array.from(
-    new Set([...oldMappers].filter((x) => !newMappers.has(x)))
+    new Set([...oldMappers].filter((x) => !newMappers.has(x))),
   )
 
   update.course_updates = {}
@@ -467,21 +563,26 @@ function generateUpdate(): any {
     if (!isEqual(oldCourse, toRaw(course))) {
       const courseUpdate: any = {}
 
-      if (oldCourse.name !== course.name && course.name !== '') courseUpdate.name = course.name
+      if (oldCourse.name !== course.name && course.name !== "")
+        courseUpdate.name = course.name
 
-      if (oldCourse.description !== course.description && course.description !== '') courseUpdate.description = course.description
+      if (
+        oldCourse.description !== course.description &&
+        course.description !== ""
+      )
+        courseUpdate.description = course.description
 
       const oldMappers = new Set(
-        oldCourse.mappers.map((mapper) => mapper.steam_id)
+        oldCourse.mappers.map((mapper) => mapper.steam_id),
       )
       const newMappers = new Set(
-        course.mappers.map((mapper) => mapper.steam_id)
+        course.mappers.map((mapper) => mapper.steam_id),
       )
       courseUpdate.added_mappers = Array.from(
-        new Set([...newMappers].filter((x) => !oldMappers.has(x)))
+        new Set([...newMappers].filter((x) => !oldMappers.has(x))),
       )
       courseUpdate.removed_mappers = Array.from(
-        new Set([...oldMappers].filter((x) => !newMappers.has(x)))
+        new Set([...oldMappers].filter((x) => !newMappers.has(x))),
       )
 
       courseUpdate.filter_updates = {}
@@ -492,9 +593,11 @@ function generateUpdate(): any {
 
           if (oldFilter.tier !== filter.tier) filterUpdate.tier = filter.tier
 
-          if (oldFilter.ranked_status !== filter.ranked_status) filterUpdate.ranked_status = filter.ranked_status
+          if (oldFilter.ranked_status !== filter.ranked_status)
+            filterUpdate.ranked_status = filter.ranked_status
 
-          if (oldFilter.notes !== filter.notes) filterUpdate.notes = filter.notes
+          if (oldFilter.notes !== filter.notes)
+            filterUpdate.notes = filter.notes
 
           if (Object.keys(filterUpdate).length > 0) {
             courseUpdate.filter_updates[filter.id] = filterUpdate
