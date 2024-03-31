@@ -2,7 +2,6 @@
   <div>
     <!-- map info -->
     <div class="p-4 bg-gray-800 mb-4 rounded-md">
-
       <!-- description -->
       <div class="mb-4">
         <p class="mb-2 font-medium">Name</p>
@@ -147,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount, computed, nextTick } from "vue"
+import { ref, onBeforeMount, computed, nextTick, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import {
   NInput,
@@ -163,7 +162,7 @@ import {
 import type { Player, Course, Map } from "../types"
 import { cloneDeep, isEqual, omit } from "lodash-es"
 import axiosClient from "../axios"
-import { toErrorMsg } from '../utils'
+import { toErrorMsg } from "../utils"
 import type { AxiosResponse } from "axios"
 
 let newCourseId = 1
@@ -226,11 +225,14 @@ onBeforeMount(async () => {
       globalStatus.value = data.global_status
       name.value = data.name
       workshopId.value = data.workshop_id.toString()
-      description.value = data.description || ''
+      description.value = data.description || ""
       mappers.value = data.mappers
       courses.value = data.courses
     } catch (error) {
-      notification.error({ title: 'Failed to fetch maps', content: toErrorMsg(error) })
+      notification.error({
+        title: "Failed to fetch maps",
+        content: toErrorMsg(error),
+      })
     }
   }
 })
@@ -248,9 +250,9 @@ function handleStatusChange(e: Event) {
 
 function handleTierChange(e: Event, courseIndex: number, filterIndex: number) {
   const tier = (e.target as HTMLSelectElement).value as string
-  if (tier === 'unfeasible' || tier === 'impossible') {
+  if (tier === "unfeasible" || tier === "impossible") {
     nextTick(() => {
-      courses.value[courseIndex].filters[filterIndex].ranked_status = 'unranked'
+      courses.value[courseIndex].filters[filterIndex].ranked_status = "unranked"
     })
   }
 }
@@ -318,33 +320,52 @@ function saveMap() {
   let validated = true
 
   if (!workshopId.value) {
-    notification.error({ title: 'Missing Fields', content: 'Workshop ID is required' })
+    notification.error({
+      title: "Missing Fields",
+      content: "Workshop ID is required",
+    })
     validated = false
   }
 
   if (mappers.value.length === 0) {
-    notification.error({ title: 'Missing Fields', content: 'At least one mapper is required' })
+    notification.error({
+      title: "Missing Fields",
+      content: "At least one mapper is required",
+    })
     validated = false
   } else {
     mappers.value.forEach((mapper, index) => {
       if (!mapper.steam_id) {
-        notification.error({ title: 'Missing Fields', content: `Mapper ${index + 1}: Steam ID is required` })
+        notification.error({
+          title: "Missing Fields",
+          content: `Mapper ${index + 1}: Steam ID is required`,
+        })
         validated = false
       }
     })
   }
 
   if (courses.value.length === 0) {
-    notification.error({ title: 'Missing Fields', content: 'No courses created' })
+    notification.error({
+      title: "Missing Fields",
+      content: "No courses created",
+    })
   } else {
     courses.value.forEach((course, courseIndex) => {
       if (course.mappers.length === 0) {
-        notification.error({ title: 'Missing Fields', content: `Course ${courseIndex + 1}: At least one mapper is required` })
+        notification.error({
+          title: "Missing Fields",
+          content: `Course ${courseIndex + 1}: At least one mapper is required`,
+        })
         validated = false
       } else {
         course.mappers.forEach((mapper, mapperIndex) => {
           if (!mapper.steam_id) {
-            notification.error({ title: 'Missing Fields', content: `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1}: Steam ID is required` })
+            notification.error({
+              title: "Missing Fields",
+              content: `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1
+                }: Steam ID is required`,
+            })
             validated = false
           }
         })
@@ -372,24 +393,26 @@ async function putMap() {
     workshop_id: parseInt(workshopId.value),
     description: description.value,
     mappers: mappers.value.map((mapper) => mapper.steam_id),
-    courses: courses.value.map((course, index) => ({
-      stage: index + 1,
+    courses: courses.value.map((course) => ({
       name: course.name || null,
-      description: course.description,
-      filters: course.filters.map((filter) => (omit(filter, ['id']))),
+      description: course.description || null,
+      filters: course.filters.map((filter) => omit(filter, ["id"])),
       mappers: course.mappers.map((mapper) => mapper.steam_id),
     })),
   }
 
   try {
-    console.log("map to put", mapToPut)
+    console.log("map to create", mapToPut)
     await axiosClient.put("/maps", mapToPut, { withCredentials: true })
-    notification.success({ title: 'Map saved', duration: 3000 })
+    notification.success({ title: "Map saved", duration: 3000 })
     router.push({
       name: "maps",
     })
   } catch (error: any) {
-    notification.error({ title: 'Failed to save map', content: toErrorMsg(error) })
+    notification.error({
+      title: "Failed to save map",
+      content: toErrorMsg(error),
+    })
   } finally {
     loading.value = false
   }
@@ -397,110 +420,105 @@ async function putMap() {
 
 async function patchMap() {
   loading.value = true
-  // update stage
-  // courses.value.forEach((course, index) => {
-  //   course.stage = index
-  // })
 
-  const mapToPatch = {
-    global_status: globalStatus.value,
-    description:
-      description.value === oldMap.description ? null : description.value,
-    workshop_id:
-      oldMap.workshop_id === parseInt(workshopId.value)
-        ? null
-        : parseInt(workshopId.value),
-
-    added_mappers: mappers.value
-      .filter(
-        (mapper) =>
-          !oldMap.mappers.some(
-            (oldMapper) => oldMapper.steam_id === mapper.steam_id
-          )
-      )
-      .map((mapper) => mapper.steam_id),
-
-    removed_mappers: oldMap.mappers
-      .filter(
-        (oldMapper) =>
-          !mappers.value.some(
-            (mapper) => mapper.steam_id === oldMapper.steam_id
-          )
-      )
-      .map((mapper) => mapper.steam_id),
-
-    course_updates: Object.fromEntries(
-      courses.value
-        .filter((course) =>
-          oldMap.courses.some((oldCourse) => oldCourse.id === course.id)
-        )
-        .map((course) => {
-          const oldCourse = oldMap.courses.find(
-            (oldCourse) => oldCourse.id === course.id
-          ) as Course
-
-          if (isEqual(oldCourse, course)) {
-            return null
-          }
-
-          const update = {
-            name:
-              course.name === oldCourse.name
-                ? null
-                : course.name,
-            description:
-              course.description === oldCourse.description
-                ? null
-                : course.description,
-
-            added_mappers: course.mappers
-              .filter(
-                (mapper) =>
-                  !oldCourse.mappers.some(
-                    (oldMapper) => oldMapper.steam_id === mapper.steam_id
-                  )
-              )
-              .map((mapper) => mapper.steam_id),
-
-            removed_mappers: oldCourse.mappers
-              .filter(
-                (oldMapper) =>
-                  !course.mappers.some(
-                    (mapper) => mapper.steam_id === oldMapper.steam_id
-                  )
-              )
-              .map((mapper) => mapper.steam_id),
-
-            filter_updates: course.filters
-              .filter((filter, index) => {
-                const oldFilter = oldCourse.filters[index]
-                return (
-                  filter.tier !== oldFilter.tier ||
-                  filter.ranked_status !== oldFilter.ranked_status ||
-                  filter.notes !== oldFilter.notes
-                )
-              })
-              .map((filter) => (omit(filter, ['mode', 'teleports']))),
-          }
-
-          return [course.id, update]
-        })
-        .filter(Boolean) as [key: any, value: any][]
-    ),
-  }
+  const update = generateUpdate()
 
   try {
-    console.log("map to patch", mapToPatch)
-    await axiosClient.patch(`/maps/${oldMap.id}`, mapToPatch, { withCredentials: true })
-    notification.success({ title: 'Map updated', duration: 3000 })
+    console.log("map to patch", update)
+    await axiosClient.patch(`/maps/${oldMap.id}`, update, {
+      withCredentials: true,
+    })
+    notification.success({ title: "Map updated", duration: 3000 })
     router.push({
       name: "maps",
     })
   } catch (error: any) {
-    notification.error({ title: 'Failed to update map', content: toErrorMsg(error) })
+    notification.error({
+      title: "Failed to update map",
+      content: toErrorMsg(error),
+    })
   } finally {
     loading.value = false
   }
+}
+
+function generateUpdate(): any {
+  const update: any = {}
+
+  if (oldMap.description !== description.value) update.description = description.value
+
+  if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
+
+  if (oldMap.global_status !== globalStatus.value) update.global_status = globalStatus.value
+
+  update.check_steam = checkSteam.value
+
+  const oldMappers = new Set(oldMap.mappers.map((mapper) => mapper.steam_id))
+  const newMappers = new Set(mappers.value.map((mapper) => mapper.steam_id))
+  update.added_mappers = Array.from(
+    new Set([...newMappers].filter((x) => !oldMappers.has(x)))
+  )
+  update.removed_mappers = Array.from(
+    new Set([...oldMappers].filter((x) => !newMappers.has(x)))
+  )
+
+  update.course_updates = {}
+  courses.value.forEach((course, index) => {
+    const oldCourse = oldMap.courses[index]
+
+    if (!isEqual(oldCourse, toRaw(course))) {
+      const courseUpdate: any = {}
+
+      if (oldCourse.name !== course.name && course.name !== '') courseUpdate.name = course.name
+
+      if (oldCourse.description !== course.description && course.description !== '') courseUpdate.description = course.description
+
+      const oldMappers = new Set(
+        oldCourse.mappers.map((mapper) => mapper.steam_id)
+      )
+      const newMappers = new Set(
+        course.mappers.map((mapper) => mapper.steam_id)
+      )
+      courseUpdate.added_mappers = Array.from(
+        new Set([...newMappers].filter((x) => !oldMappers.has(x)))
+      )
+      courseUpdate.removed_mappers = Array.from(
+        new Set([...oldMappers].filter((x) => !newMappers.has(x)))
+      )
+
+      courseUpdate.filter_updates = course.filters
+        .map((filter) => {
+          const oldFilter = oldCourse.filters.find((f) => f.id === filter.id)
+          if (oldFilter) {
+            const filterUpdate: any = {}
+
+            if (oldFilter.tier !== filter.tier) filterUpdate.tier = filter.tier
+
+            if (oldFilter.ranked_status !== filter.ranked_status) filterUpdate.ranked_status = filter.ranked_status
+
+            if (oldFilter.notes !== filter.notes) filterUpdate.notes = filter.notes
+
+            if (Object.keys(filterUpdate).length > 0) {
+              filterUpdate.id = filter.id
+              return filterUpdate
+            }
+          }
+          return null
+        })
+        .filter(Boolean) as {
+          id: number
+          tier?: string
+          ranked_status?: string
+          notes?: string
+        }[]
+
+      if (Object.keys(courseUpdate).length > 0) {
+        update.course_updates[course.id] = courseUpdate
+      }
+    }
+  })
+
+  return update
 }
 </script>
 

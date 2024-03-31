@@ -39,8 +39,8 @@ export function renderWorkshopId(workshopId: number) {
   )
 }
 
-export function toErrorMsg(error: any){
-  if (typeof error.response.data !== 'object') {
+export function toErrorMsg(error: any) {
+  if (typeof error.response.data !== "object") {
     return `${error.response.data}`
   }
 
@@ -49,4 +49,28 @@ export function toErrorMsg(error: any){
   }
 
   return `${error.response.data.message}`
+}
+
+export function getDiff(obj1: Record<string, any>, obj2: Record<string, any>) {
+  const diffObj: Record<string, any> = {}
+
+  for (const prop in obj1) {
+    if (obj1.hasOwnProperty(prop) && obj2.hasOwnProperty(prop)) {
+      if (
+        typeof obj1[prop] === "object" &&
+        typeof obj2[prop] === "object" &&
+        obj1[prop] !== null &&
+        obj2[prop] !== null
+      ) {
+        const nestedDiff = getDiff(obj1[prop], obj2[prop])
+        if (Object.keys(nestedDiff).length > 0) {
+          diffObj[prop] = nestedDiff
+        }
+      } else if (obj1[prop] !== obj2[prop]) {
+        diffObj[prop] = obj2[prop]
+      }
+    }
+  }
+
+  return diffObj
 }
