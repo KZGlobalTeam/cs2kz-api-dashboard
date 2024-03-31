@@ -64,15 +64,15 @@ export const routes = [
   {
     path: "/home/servers/create",
     name: "createserver",
-    component: () => import("../views/ServerEditor.vue"),
+    component: () => import("../views/CreateServer.vue"),
     meta: {
       requiresRole: "servers",
     },
   },
   {
-    path: "/home/servers/:id",
-    name: "server",
-    component: () => import("../views/ServerEditor.vue"),
+    path: "/home/servers/:id/update",
+    name: "updateserver",
+    component: () => import("../views/UpdateServer.vue"),
     meta: {
       requiresRole: "servers",
     },
@@ -91,15 +91,15 @@ export const routes = [
   {
     path: "/home/bans/create",
     name: "createban",
-    component: () => import("../views/BanEditor.vue"),
+    component: () => import("../views/CreateBan.vue"),
     meta: {
       requiresRole: "bans",
     },
   },
   {
-    path: "/home/bans/:id/edit",
-    name: "editban",
-    component: () => import("../views/BanEditor.vue"),
+    path: "/home/bans/:id/update",
+    name: "updateban",
+    component: () => import("../views/UpdateBan.vue"),
     meta: {
       requiresRole: "bans",
     },
@@ -107,7 +107,7 @@ export const routes = [
   {
     path: "/home/bans/:id/unban",
     name: "unban",
-    component: () => import("../views/UnbanEditor.vue"),
+    component: () => import("../views/Unban.vue"),
     meta: {
       requiresRole: "bans",
     },

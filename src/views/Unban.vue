@@ -8,7 +8,7 @@
 
     <div>
       <n-button @click.prevent="revertBan" :disabled="loading" :loading="loading" class="saveButton"
-        text-color="#3cc962" size="large" strong bordered>Unban</n-button>
+        text-color="#3cc962" style="font-size: 16px;" size="large" strong bordered>Unban</n-button>
     </div>
   </div>
 </template>
@@ -34,38 +34,31 @@ const unban = reactive({
   reason: "",
 })
 
-
-function revertBan() {
-  unbanForm.value?.validate((errors) => {
-    if (!errors) {
-      submitUnban()
-    } else {
-      console.log(errors)
-    }
-  })
-}
-
-async function submitUnban() {
-  loading.value = true
-
-  const id = route.params.id
-
-  try {
-    await axiosClient.delete(`/bans/${id}`, { data: { reason: unban.reason }, withCredentials: true })
-    notification.success({ title: 'Ban reverted', duration: 3000 })
-    router.push("/home/bans")
-  } catch (error) {
-    notification.error({ title: 'Failed to revert the ban', content: toErrorMsg(error) })
-  } finally {
-    loading.value = false
-  }
-}
-
 const unbanRules = {
   reason: {
     required: true,
     message: "Unban reason is required.",
     trigger: ["input", "blur"],
   },
+}
+
+async function revertBan() {
+  loading.value = true
+
+  unbanForm.value?.validate(async (errors) => {
+    if (!errors) {
+      try {
+        await axiosClient.delete(`/bans/${route.params.id}`, { data: unban, withCredentials: true })
+        notification.success({ title: 'Ban reverted', duration: 3000 })
+        router.push("/home/bans")
+      } catch (error) {
+        loading.value = false
+        notification.error({ title: 'Failed to revert the ban', content: toErrorMsg(error) })
+      }
+    } else {
+      loading.value = false
+      notification.error({ title: 'Missing Fields' })
+    }
+  })
 }
 </script>

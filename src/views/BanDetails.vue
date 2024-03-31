@@ -8,7 +8,7 @@
 
       <div>
         <p class="title">Reason</p>
-        <p>{{ ban.reason }}</p>
+        <p>{{ ban.reason.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) }}</p>
       </div>
 
       <div v-if="ban.server">
@@ -36,15 +36,20 @@
       <div>
         <p class="title">Created On</p>
         <p>
-          {{ format(new Date(ban.created_on as string), "yyyy-MM-dd HH:mm:ss") }}
+          {{ toLocal(ban.created_on) }}
         </p>
       </div>
 
       <div>
         <p class="title">Expires On</p>
         <p>
-          {{ format(new Date(ban.expires_on as string), "yyyy-MM-dd HH:mm:ss") }}
+          {{ ban.expires_on ? toLocal(ban.expires_on) : 'Permanent' }}
         </p>
+      </div>
+
+      <div v-if="ban.unban">
+        <p class="title">Unban Created On</p>
+        <p>{{ toLocal(ban.unban.created_on) }}</p>
       </div>
 
       <div v-if="ban.unban?.admin">
@@ -71,8 +76,7 @@ import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
 import { NSpace, useNotification } from "naive-ui"
 import { Ban } from "../types"
-import { format } from "date-fns"
-import { toErrorMsg } from "../utils"
+import { toErrorMsg, toLocal } from "../utils"
 
 const route = useRoute()
 

@@ -9,7 +9,8 @@
 
         <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.bannedBy" placeholder="Banned By" />
 
-        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.unbannedBy" placeholder="Unbanned By" />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.unbannedBy"
+          placeholder="Unbanned By" />
 
         <n-select style="width: 8rem" @update-value="nextTick(loadBansData)" v-model:value="banQuery.reason"
           :options="banReasonOptions" placeholder="Ban Reason" />
@@ -17,7 +18,8 @@
         <n-select style="width: 8rem" @update-value="nextTick(loadBansData)" v-model:value="banQuery.status"
           :options="statusOptions" placeholder="Status" />
 
-        <n-date-picker @update-value="nextTick(loadBansData)" v-model:value="banQuery.dateRange" type="daterange" clearable />
+        <n-date-picker @update-value="nextTick(loadBansData)" v-model:value="banQuery.dateRange" type="daterange"
+          clearable />
       </n-space>
 
       <div class="flex gap-4">
@@ -49,6 +51,7 @@ import {
   NSpace,
   NSelect,
   NDatePicker,
+  NTag,
   useNotification,
 } from "naive-ui"
 import type {
@@ -124,6 +127,21 @@ const columns = ref<DataTableColumn<Ban>[]>([
     }
   },
   {
+    title: "Status",
+    key: "status",
+    render(rowData) {
+      return h(
+        NTag,
+        {
+          type: rowData.unban ? "success" : 'error'
+        },
+        {
+          default: () => rowData.unban ? 'unbanned' : 'banned'
+        }
+      )
+    },
+  },
+  {
     title: "Server",
     key: "server",
     render(rowData) {
@@ -135,7 +153,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
     key: "banned_by",
     render(rowData) {
       return rowData.admin
-        ? renderSteamID(rowData.admin.steam_id)
+        ? rowData.admin.name
         : 'Anticheat'
     },
   },
@@ -168,7 +186,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
     key: "actions",
     render(rowData) {
       return [
-        h(
+        !rowData.unban && h(
           NButton,
           {
             type: "default",
@@ -179,16 +197,16 @@ const columns = ref<DataTableColumn<Ban>[]>([
             },
             onClick: () => {
               router.push({
-                name: "editban",
+                name: "updateban",
                 params: {
                   id: rowData.id,
                 },
               })
             },
           },
-          { default: () => "Edit" }
+          { default: () => "Update" }
         ),
-        h(
+        !rowData.unban && h(
           NButton,
           {
             type: "default",

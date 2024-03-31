@@ -114,14 +114,14 @@ const columns = ref<DataTableColumn<Server>[]>([
           },
           onClick: () => {
             router.push({
-              name: "server",
+              name: "updateserver",
               params: {
                 id: rowData.id,
               },
             })
           },
         },
-        { default: () => "Edit" }
+        { default: () => "Update" }
       )
     },
   },

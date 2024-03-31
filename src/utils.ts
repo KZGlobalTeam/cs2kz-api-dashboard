@@ -1,6 +1,7 @@
 import { format } from "date-fns"
 import { h } from "vue"
 import SteamID from "steamid"
+import { Ban } from "./types"
 
 export function toLocal(date: string) {
   return format(new Date(date), "yyyy-MM-dd HH:mm:ss")
@@ -51,26 +52,30 @@ export function toErrorMsg(error: any) {
   return `${error.response.data.message}`
 }
 
-export function getDiff(obj1: Record<string, any>, obj2: Record<string, any>) {
-  const diffObj: Record<string, any> = {}
+export function getDiff(obj1: any, obj2: any) {
+  const diff: any = {}
 
   for (const prop in obj1) {
     if (obj1.hasOwnProperty(prop) && obj2.hasOwnProperty(prop)) {
-      if (
-        typeof obj1[prop] === "object" &&
-        typeof obj2[prop] === "object" &&
-        obj1[prop] !== null &&
-        obj2[prop] !== null
-      ) {
-        const nestedDiff = getDiff(obj1[prop], obj2[prop])
-        if (Object.keys(nestedDiff).length > 0) {
-          diffObj[prop] = nestedDiff
-        }
-      } else if (obj1[prop] !== obj2[prop]) {
-        diffObj[prop] = obj2[prop]
+      if (obj1[prop] !== obj2[prop]) {
+        diff[prop] = obj2[prop]
       }
     }
   }
 
-  return diffObj
+  return diff
+}
+
+export function calcBanDuration(ban: Ban) {
+  const createdDate = new Date(ban.created_on)
+  if (!ban.expires_on) {
+    return "permanent"
+  }
+  const expiresDate = new Date(ban.expires_on)
+
+  const diffInMs = expiresDate.getTime() - createdDate.getTime()
+
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
+
+  return Math.round(diffInDays)
 }
