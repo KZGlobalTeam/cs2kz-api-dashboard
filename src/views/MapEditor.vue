@@ -12,7 +12,7 @@
       <div class="mb-4">
         <p class="font-medium mb-2">Workshop ID</p>
         <n-input style="margin-bottom: 0.25rem" v-model:value="workshopId" placeholder="123456789" />
-        <n-checkbox v-if="editing" size="small" v-model:checked="checkSteam">
+        <n-checkbox v-if="route.params.id" size="small" v-model:checked="checkSteam">
           Update Workshop
         </n-checkbox>
       </div>
@@ -132,7 +132,7 @@
         </div>
       </div>
       <!-- if we're creating a new map, then it's allowed -->
-      <div v-if="!editing">
+      <div v-if="!route.params.id">
         <n-button @click="createCourse" text-color="#37ab56">New Course</n-button>
       </div>
     </div>
@@ -140,13 +140,13 @@
     <!-- save map -->
     <div class="p-4 bg-gray-800 rounded-md">
       <n-button @click.prevent="saveMap" :disabled="loading" :loading="loading" class="saveButton" text-color="#3cc962"
-        size="large" strong bordered>Save</n-button>
+        style="font-size: 16px" size="large" strong bordered>{{ route.params.id ? 'Update' : 'Create' }}</n-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount, computed, nextTick, toRaw } from "vue"
+import { ref, onBeforeMount, nextTick, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import {
   NInput,
@@ -189,8 +189,6 @@ const loading = ref(false)
 // arguably this logic should be separate from updating the checksum
 const globalStatus = ref("global")
 const checkSteam = ref(false)
-
-const editing = computed(() => !!route.params.id)
 
 const tierOptions = [
   { label: "Very Easy", value: "very_easy" },
@@ -374,7 +372,7 @@ function saveMap() {
   }
 
   if (validated) {
-    if (editing.value && oldMap.courses.length === courses.value.length) {
+    if (route.params.id && oldMap.courses.length === courses.value.length) {
       // map is not mutated regarding the amount of courses
       patchMap()
     } else {
@@ -425,9 +423,9 @@ async function patchMap() {
 
   try {
     console.log("map to patch", update)
-    await axiosClient.patch(`/maps/${oldMap.id}`, update, {
-      withCredentials: true,
-    })
+    // await axiosClient.patch(`/maps/${oldMap.id}`, update, {
+    //   withCredentials: true,
+    // })
     notification.success({ title: "Map updated", duration: 3000 })
     router.push({
       name: "maps",
@@ -486,31 +484,23 @@ function generateUpdate(): any {
         new Set([...oldMappers].filter((x) => !newMappers.has(x)))
       )
 
-      courseUpdate.filter_updates = course.filters
-        .map((filter) => {
-          const oldFilter = oldCourse.filters.find((f) => f.id === filter.id)
-          if (oldFilter) {
-            const filterUpdate: any = {}
+      courseUpdate.filter_updates = {}
+      course.filters.forEach((filter, index) => {
+        const oldFilter = oldCourse.filters[index]
+        if (!isEqual(oldFilter, toRaw(filter))) {
+          const filterUpdate: any = {}
 
-            if (oldFilter.tier !== filter.tier) filterUpdate.tier = filter.tier
+          if (oldFilter.tier !== filter.tier) filterUpdate.tier = filter.tier
 
-            if (oldFilter.ranked_status !== filter.ranked_status) filterUpdate.ranked_status = filter.ranked_status
+          if (oldFilter.ranked_status !== filter.ranked_status) filterUpdate.ranked_status = filter.ranked_status
 
-            if (oldFilter.notes !== filter.notes) filterUpdate.notes = filter.notes
+          if (oldFilter.notes !== filter.notes) filterUpdate.notes = filter.notes
 
-            if (Object.keys(filterUpdate).length > 0) {
-              filterUpdate.id = filter.id
-              return filterUpdate
-            }
+          if (Object.keys(filterUpdate).length > 0) {
+            courseUpdate.filter_updates[filter.id] = filterUpdate
           }
-          return null
-        })
-        .filter(Boolean) as {
-          id: number
-          tier?: string
-          ranked_status?: string
-          notes?: string
-        }[]
+        }
+      })
 
       if (Object.keys(courseUpdate).length > 0) {
         update.course_updates[course.id] = courseUpdate
@@ -521,9 +511,3 @@ function generateUpdate(): any {
   return update
 }
 </script>
-
-<style scoped>
-.saveButton {
-  font-size: 16px;
-}
-</style>

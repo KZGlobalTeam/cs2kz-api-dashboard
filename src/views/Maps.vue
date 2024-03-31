@@ -203,7 +203,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
             })
           },
         },
-        { default: () => "Edit" }
+        { default: () => "Update" }
       )
     },
   },
