@@ -54,9 +54,9 @@ const loading = ref(false)
 const serverForm = ref<FormInst | null>(null)
 
 const server = reactive({
-  name: "fdasfa",
-  ip_address: "127.0.0.1:27015",
-  owned_by: "STEAM_1:1:21505111",
+  name: "",
+  ip_address: "",
+  owned_by: "",
 })
 
 const apiKey = ref("")
