@@ -77,24 +77,22 @@ const banDurationOptions = [
 ]
 
 onBeforeMount(async () => {
-  if (route.params.id) {
-    try {
-      const { data } = (await axiosClient.get(
-        `/bans/${route.params.id}`,
-      )) as AxiosResponse<Ban>
-      // console.log(data);
+  try {
+    const { data } = (await axiosClient.get(
+      `/bans/${route.params.id}`,
+    )) as AxiosResponse<Ban>
+    // console.log(data);
 
-      ban.reason = data.reason
-      ban.banDuration = calcBanDuration(data)
-      ban.createdOn = data.created_on
+    ban.reason = data.reason
+    ban.banDuration = calcBanDuration(data)
+    ban.createdOn = data.created_on
 
-      oldBan = JSON.parse(JSON.stringify(ban))
-    } catch (error) {
-      notification.error({
-        title: "Failed to fetch the ban",
-        content: toErrorMsg(error),
-      })
-    }
+    oldBan = JSON.parse(JSON.stringify(ban))
+  } catch (error) {
+    notification.error({
+      title: "Failed to fetch the ban",
+      content: toErrorMsg(error),
+    })
   }
 })
 

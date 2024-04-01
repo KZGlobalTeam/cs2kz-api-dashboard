@@ -35,17 +35,17 @@ export const routes = [
     },
   },
   {
-    path: "/home/maps/:id",
-    name: "map",
-    component: () => import("../views/MapEditor.vue"),
+    path: "/home/maps/create",
+    name: "createmap",
+    component: () => import("../views/CreateMap.vue"),
     meta: {
       requiresRole: "maps",
     },
   },
   {
-    path: "/home/maps/create",
-    name: "createmap",
-    component: () => import("../views/MapEditor.vue"),
+    path: "/home/maps/:id/update",
+    name: "updatemap",
+    component: () => import("../views/UpdateMap.vue"),
     meta: {
       requiresRole: "maps",
     },

@@ -196,7 +196,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
           size: "tiny",
           onClick: () => {
             router.push({
-              name: "map",
+              name: "updatemap",
               params: {
                 id: rowData.id,
               },

@@ -89,24 +89,22 @@ const server = reactive({
 })
 
 onBeforeMount(async () => {
-  if (route.params.id) {
-    try {
-      const { data } = (await axiosClient.get(
-        `/servers/${route.params.id}`,
-      )) as AxiosResponse<Server>
-      // console.log(data);
+  try {
+    const { data } = (await axiosClient.get(
+      `/servers/${route.params.id}`,
+    )) as AxiosResponse<Server>
+    // console.log(data);
 
-      server.name = data.name
-      server.ip_address = data.ip_address
-      server.owned_by = data.owner.steam_id
+    server.name = data.name
+    server.ip_address = data.ip_address
+    server.owned_by = data.owner.steam_id
 
-      oldServer = JSON.parse(JSON.stringify(server))
-    } catch (error) {
-      notification.error({
-        title: "Failed to fetch the server",
-        content: toErrorMsg(error),
-      })
-    }
+    oldServer = JSON.parse(JSON.stringify(server))
+  } catch (error) {
+    notification.error({
+      title: "Failed to fetch the server",
+      content: toErrorMsg(error),
+    })
   }
 })
 

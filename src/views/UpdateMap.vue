@@ -1,0 +1,219 @@
+<template>
+  <div>
+    <div class="p-4 bg-gray-800 rounded-md mb-4">
+      <MapInfo
+        v-model:name="name"
+        v-model:workshop-id="workshopId"
+        v-model:check-steam="checkSteam"
+        v-model:description="description"
+        v-model:global-status="globalStatus"
+        updating
+      />
+    </div>
+
+    <div class="p-4 bg-gray-800 rounded-md mb-4">
+      <Mappers v-model:mappers="mappers" />
+    </div>
+
+    <!-- courses -->
+    <div class="p-4 bg-gray-800 rounded-md mb-4">
+      <Courses v-model:courses="courses" />
+    </div>
+
+    <!-- save map -->
+    <div class="p-4 bg-gray-800 rounded-md">
+      <n-button
+        @click.prevent="updateMap"
+        :disabled="loading"
+        :loading="loading"
+        class="saveButton"
+        text-color="#3cc962"
+        style="font-size: 16px"
+        size="large"
+        strong
+        bordered
+        >Update</n-button
+      >
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onBeforeMount, toRaw } from "vue"
+import { useRouter, useRoute } from "vue-router"
+import { NButton, useNotification } from "naive-ui"
+import type { Player, Course, Map } from "../types"
+import { cloneDeep, isEqual, omit } from "lodash-es"
+import axiosClient from "../axios"
+import { toErrorMsg } from "../utils"
+import type { AxiosResponse } from "axios"
+import MapInfo from "../components/map/MapInfo.vue"
+import Mappers from "../components/map/Mappers.vue"
+import Courses from "../components/map/Courses.vue"
+
+let oldMap: Map
+
+const router = useRouter()
+const route = useRoute()
+
+const notification = useNotification()
+
+const name = ref("")
+const workshopId = ref("")
+const description = ref("")
+const globalStatus = ref("global")
+const checkSteam = ref(false)
+
+// mappers input
+const mappers = ref<Player[]>([])
+
+const courses = ref<Course[]>([])
+
+const loading = ref(false)
+
+onBeforeMount(async () => {
+  try {
+    const { data } = (await axiosClient.get(
+      `/maps/${route.params.id}`,
+    )) as AxiosResponse<Map>
+    // console.log(data);
+
+    // save original map for generating update
+    oldMap = cloneDeep(data)
+
+    globalStatus.value = data.global_status
+    name.value = data.name
+    workshopId.value = data.workshop_id.toString()
+    description.value = data.description || ""
+    mappers.value = data.mappers
+    courses.value = data.courses
+  } catch (error) {
+    notification.error({
+      title: "Failed to fetch maps",
+      content: toErrorMsg(error),
+    })
+  }
+})
+
+async function updateMap() {
+  loading.value = true
+
+  try {
+    // in case some courses are deleted, we submit the new map as a whole
+    if (oldMap.courses.length !== courses.value.length) {
+      const update = {
+        global_status: globalStatus.value,
+        workshop_id: parseInt(workshopId.value),
+        description: description.value,
+        mappers: mappers.value.map((mapper) => mapper.steam_id),
+        courses: courses.value.map((course) => ({
+          name: course.name || null,
+          description: course.description || null,
+          filters: course.filters.map((filter) => omit(filter, ["id"])),
+          mappers: course.mappers.map((mapper) => mapper.steam_id),
+        })),
+      }
+      console.log("map to update", update)
+      await axiosClient.put("/maps", update, { withCredentials: true })
+    } else {
+      const update = generateUpdate()
+      console.log("map to update", update)
+      await axiosClient.patch(`/maps/${oldMap.id}`, update, {
+        withCredentials: true,
+      })
+    }
+
+    notification.success({ title: "Map updated", duration: 3000 })
+    router.push({
+      name: "maps",
+    })
+  } catch (error: any) {
+    loading.value = false
+    notification.error({
+      title: "Failed to update map",
+      content: toErrorMsg(error),
+    })
+  }
+}
+
+function generateUpdate(): any {
+  const update: any = {}
+
+  if (oldMap.description !== description.value)
+    update.description = description.value
+
+  if (oldMap.workshop_id !== Number(workshopId.value))
+    update.workshop_id = Number(workshopId.value)
+
+  if (oldMap.global_status !== globalStatus.value)
+    update.global_status = globalStatus.value
+
+  update.check_steam = checkSteam.value
+
+  const oldMappers = new Set(oldMap.mappers.map((mapper) => mapper.steam_id))
+  const newMappers = new Set(mappers.value.map((mapper) => mapper.steam_id))
+  update.added_mappers = Array.from(
+    new Set([...newMappers].filter((x) => !oldMappers.has(x))),
+  )
+  update.removed_mappers = Array.from(
+    new Set([...oldMappers].filter((x) => !newMappers.has(x))),
+  )
+
+  update.course_updates = {}
+  courses.value.forEach((course, index) => {
+    const oldCourse = oldMap.courses[index]
+
+    if (!isEqual(oldCourse, toRaw(course))) {
+      const courseUpdate: any = {}
+
+      if (oldCourse.name !== course.name && course.name !== "")
+        courseUpdate.name = course.name
+
+      if (
+        oldCourse.description !== course.description &&
+        course.description !== ""
+      )
+        courseUpdate.description = course.description
+
+      const oldMappers = new Set(
+        oldCourse.mappers.map((mapper) => mapper.steam_id),
+      )
+      const newMappers = new Set(
+        course.mappers.map((mapper) => mapper.steam_id),
+      )
+      courseUpdate.added_mappers = Array.from(
+        new Set([...newMappers].filter((x) => !oldMappers.has(x))),
+      )
+      courseUpdate.removed_mappers = Array.from(
+        new Set([...oldMappers].filter((x) => !newMappers.has(x))),
+      )
+
+      courseUpdate.filter_updates = {}
+      course.filters.forEach((filter, index) => {
+        const oldFilter = oldCourse.filters[index]
+        if (!isEqual(oldFilter, toRaw(filter))) {
+          const filterUpdate: any = {}
+
+          if (oldFilter.tier !== filter.tier) filterUpdate.tier = filter.tier
+
+          if (oldFilter.ranked_status !== filter.ranked_status)
+            filterUpdate.ranked_status = filter.ranked_status
+
+          if (oldFilter.notes !== filter.notes)
+            filterUpdate.notes = filter.notes
+
+          if (Object.keys(filterUpdate).length > 0) {
+            courseUpdate.filter_updates[filter.id] = filterUpdate
+          }
+        }
+      })
+
+      if (Object.keys(courseUpdate).length > 0) {
+        update.course_updates[course.id] = courseUpdate
+      }
+    }
+  })
+
+  return update
+}
+</script>
