@@ -81,7 +81,7 @@ const rules = {
 }
 
 async function createServer() {
-  // loading.value = true
+  loading.value = true
 
   serverForm.value?.validate(async (errors) => {
     if (!errors) {
