@@ -153,67 +153,91 @@ function generateUpdate(): any {
 
   const oldMappers = new Set(oldMap.mappers.map((mapper) => mapper.steam_id))
   const newMappers = new Set(mappers.value.map((mapper) => mapper.steam_id))
-  update.added_mappers = Array.from(
+
+  const added_mappers = Array.from(
     new Set([...newMappers].filter((x) => !oldMappers.has(x))),
   )
-  update.removed_mappers = Array.from(
+  const removed_mappers = Array.from(
     new Set([...oldMappers].filter((x) => !newMappers.has(x))),
   )
 
-  update.course_updates = {}
-  courses.value.forEach((course, index) => {
-    const oldCourse = oldMap.courses[index]
+  if (added_mappers.length > 0) {
+    update.added_mappers = added_mappers
+  }
+  if (removed_mappers.length > 0) {
+    update.removed_mappers = removed_mappers
+  }
 
-    if (!isEqual(oldCourse, toRaw(course))) {
-      const courseUpdate: any = {}
+  // check if courses are changed
+  if (!isEqual(oldMap.courses, toRaw(courses.value))) {
+    update.course_updates = {}
+    courses.value.forEach((course, index) => {
+      const oldCourse = oldMap.courses[index]
 
-      if (oldCourse.name !== course.name && course.name !== "")
-        courseUpdate.name = course.name
+      // check if each course is changed
+      if (!isEqual(oldCourse, toRaw(course))) {
+        const courseUpdate: any = {}
 
-      if (
-        oldCourse.description !== course.description &&
-        course.description !== ""
-      )
-        courseUpdate.description = course.description
+        if (oldCourse.name !== course.name && course.name !== "")
+          courseUpdate.name = course.name
 
-      const oldMappers = new Set(
-        oldCourse.mappers.map((mapper) => mapper.steam_id),
-      )
-      const newMappers = new Set(
-        course.mappers.map((mapper) => mapper.steam_id),
-      )
-      courseUpdate.added_mappers = Array.from(
-        new Set([...newMappers].filter((x) => !oldMappers.has(x))),
-      )
-      courseUpdate.removed_mappers = Array.from(
-        new Set([...oldMappers].filter((x) => !newMappers.has(x))),
-      )
+        if (
+          oldCourse.description !== course.description &&
+          course.description !== ""
+        )
+          courseUpdate.description = course.description
 
-      courseUpdate.filter_updates = {}
-      course.filters.forEach((filter, index) => {
-        const oldFilter = oldCourse.filters[index]
-        if (!isEqual(oldFilter, toRaw(filter))) {
-          const filterUpdate: any = {}
+        const oldMappers = new Set(
+          oldCourse.mappers.map((mapper) => mapper.steam_id),
+        )
+        const newMappers = new Set(
+          course.mappers.map((mapper) => mapper.steam_id),
+        )
 
-          if (oldFilter.tier !== filter.tier) filterUpdate.tier = filter.tier
+        const added_mappers = Array.from(
+          new Set([...newMappers].filter((x) => !oldMappers.has(x))),
+        )
+        const removed_mappers = Array.from(
+          new Set([...oldMappers].filter((x) => !newMappers.has(x))),
+        )
 
-          if (oldFilter.ranked_status !== filter.ranked_status)
-            filterUpdate.ranked_status = filter.ranked_status
-
-          if (oldFilter.notes !== filter.notes)
-            filterUpdate.notes = filter.notes
-
-          if (Object.keys(filterUpdate).length > 0) {
-            courseUpdate.filter_updates[filter.id] = filterUpdate
-          }
+        if (added_mappers.length > 0) {
+          courseUpdate.added_mappers = added_mappers
         }
-      })
+        if (removed_mappers.length > 0) {
+          courseUpdate.removed_mappers = removed_mappers
+        }
 
-      if (Object.keys(courseUpdate).length > 0) {
-        update.course_updates[course.id] = courseUpdate
+        // check if filters of this course are changed
+        if (!isEqual(oldCourse.filters, toRaw(course.filters))) {
+          courseUpdate.filter_updates = {}
+          course.filters.forEach((filter, index) => {
+            const oldFilter = oldCourse.filters[index]
+            if (!isEqual(oldFilter, toRaw(filter))) {
+              const filterUpdate: any = {}
+
+              if (oldFilter.tier !== filter.tier)
+                filterUpdate.tier = filter.tier
+
+              if (oldFilter.ranked_status !== filter.ranked_status)
+                filterUpdate.ranked_status = filter.ranked_status
+
+              if (oldFilter.notes !== filter.notes)
+                filterUpdate.notes = filter.notes
+
+              if (Object.keys(filterUpdate).length > 0) {
+                courseUpdate.filter_updates[filter.id] = filterUpdate
+              }
+            }
+          })
+        }
+
+        if (Object.keys(courseUpdate).length > 0) {
+          update.course_updates[course.id] = courseUpdate
+        }
       }
-    }
-  })
+    })
+  }
 
   return update
 }
