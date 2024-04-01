@@ -91,9 +91,3 @@ function getLink(index: number) {
   return "/" + path
 }
 </script>
-
-<style scoped>
-ion-icon {
-  font-size: 32;
-}
-</style>

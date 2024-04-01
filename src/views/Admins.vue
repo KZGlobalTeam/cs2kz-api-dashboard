@@ -9,7 +9,7 @@
         placeholder="Search"
       >
         <template #prefix>
-          <ion-icon name="search-sharp"></ion-icon>
+          <img src="/icons/search-sharp.svg" class="w-5 h-5" />
         </template>
       </n-input>
     </div>

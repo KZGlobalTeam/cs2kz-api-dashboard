@@ -48,9 +48,3 @@ const authRoutes = computed(() => {
   })
 })
 </script>
-
-<style scoped>
-ion-icon {
-  font-size: 32;
-}
-</style>
