@@ -60,6 +60,8 @@
         </n-button>
       </div>
     </div>
+
+    <KeyModal :api-key="apiKey" redirect-to="servers" :show-modal="showModal" />
   </div>
 </template>
 
@@ -72,6 +74,7 @@ import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
 import { isEqual } from "lodash-es"
 import { toErrorMsg, getDiff } from "../utils"
+import KeyModal from "../components/server/KeyModal.vue"
 
 const router = useRouter()
 const route = useRoute()
@@ -81,6 +84,9 @@ const dialog = useDialog()
 let oldServer: Record<string, string>
 
 const loading = ref(false)
+
+const apiKey = ref("")
+const showModal = ref(false)
 
 const server = reactive({
   name: "",
@@ -141,12 +147,10 @@ function newKey() {
         const id = route.params.id
         axiosClient
           .put(`/servers/${id}/key`, null, { withCredentials: true })
-          .then(() => {
+          .then(({ data }: AxiosResponse<{ refresh_key: string }>) => {
             resolve()
-            notification.success({
-              title: "New API key generated",
-              duration: 3000,
-            })
+            apiKey.value = data.refresh_key
+            showModal.value = true
           })
           .catch((error) => {
             resolve()
@@ -174,6 +178,7 @@ function revokeKey() {
           .then(() => {
             resolve()
             notification.success({ title: "API key revoked", duration: 3000 })
+            router.push({ name: "servers" })
           })
           .catch((error) => {
             resolve()

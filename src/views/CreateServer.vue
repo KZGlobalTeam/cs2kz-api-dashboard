@@ -33,18 +33,20 @@
         >Create</n-button
       >
     </div>
+
+    <KeyModal :api-key="apiKey" redirect-to="servers" :show-modal="showModal" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from "vue"
-import { useRouter } from "vue-router"
 import { NButton, NInput, NForm, NFormItem, useNotification } from "naive-ui"
 import type { FormInst } from "naive-ui"
+import type { AxiosResponse } from "axios"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"
+import KeyModal from "../components/server/KeyModal.vue"
 
-const router = useRouter()
 const notification = useNotification()
 
 const loading = ref(false)
@@ -52,10 +54,13 @@ const loading = ref(false)
 const serverForm = ref<FormInst | null>(null)
 
 const server = reactive({
-  name: "",
-  ip_address: "",
-  owned_by: "",
+  name: "fdasfa",
+  ip_address: "127.0.0.1:27015",
+  owned_by: "STEAM_1:1:21505111",
 })
+
+const apiKey = ref("")
+const showModal = ref(false)
 
 const rules = {
   name: {
@@ -76,14 +81,18 @@ const rules = {
 }
 
 async function createServer() {
-  loading.value = true
+  // loading.value = true
 
   serverForm.value?.validate(async (errors) => {
     if (!errors) {
       try {
-        await axiosClient.post("/servers", server, { withCredentials: true })
+        const { data } = (await axiosClient.post("/servers", server, {
+          withCredentials: true,
+        })) as AxiosResponse<{ server_id: number; refresh_key: string }>
+        apiKey.value = data.refresh_key
+
+        showModal.value = true
         notification.success({ title: "Server created", duration: 3000 })
-        router.push("/home/servers")
       } catch (error) {
         notification.error({
           title: "Failed to create server",
