@@ -139,14 +139,14 @@ const columns = ref<DataTableColumn<Admin>[]>([
           },
           onClick: () => {
             router.push({
-              name: "admin",
+              name: "updateadmin",
               params: {
                 steam_id: rowData.steam_id,
               },
             })
           },
         },
-        { default: () => "Edit" },
+        { default: () => "Update" },
       )
     },
   },

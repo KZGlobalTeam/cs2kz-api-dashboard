@@ -134,15 +134,15 @@ export const routes = [
   {
     path: "/home/admins/create",
     name: "createadmin",
-    component: () => import("../views/AdminEditor.vue"),
+    component: () => import("../views/CreateAdmin.vue"),
     meta: {
       requiresRole: "admin",
     },
   },
   {
-    path: "/home/admins/:steam_id",
-    name: "admin",
-    component: () => import("../views/AdminEditor.vue"),
+    path: "/home/admins/:steam_id/update",
+    name: "updateadmin",
+    component: () => import("../views/UpdateAdmin.vue"),
     meta: {
       requiresRole: "admin",
     },
