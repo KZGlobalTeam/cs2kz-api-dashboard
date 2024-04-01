@@ -4,7 +4,6 @@
       <MapInfo
         v-model:name="name"
         v-model:workshop-id="workshopId"
-        v-model:check-steam="checkSteam"
         v-model:description="description"
         v-model:global-status="globalStatus"
         :updating="false"
@@ -61,8 +60,6 @@ const name = ref("")
 const workshopId = ref("")
 const description = ref("")
 const globalStatus = ref("global")
-// if someone re-uploaded the map, or the mapper updated the map to fix a bug and uploaded it as a new item
-const checkSteam = ref(false)
 
 // mappers input
 const mappers = ref<Player[]>([{ name: "", steam_id: "", is_banned: false }])

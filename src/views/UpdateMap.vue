@@ -62,6 +62,7 @@ const name = ref("")
 const workshopId = ref("")
 const description = ref("")
 const globalStatus = ref("global")
+// if someone re-uploaded the map, or the mapper updated the map to fix a bug and uploaded it as a new item
 const checkSteam = ref(false)
 
 // mappers input
