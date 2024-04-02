@@ -53,10 +53,10 @@ import {
   NDialogProvider,
   enUS,
 } from "naive-ui"
-import { useAdminStore } from "./store/admin"
+import { usePlayerStore } from "./store/player"
 import axiosClient from "./axios"
 
-const adminStore = useAdminStore()
+const playerStore = usePlayerStore()
 const route = useRoute()
 
 const cookies = new Cookies(null, { path: "/" })
@@ -74,12 +74,12 @@ async function getAdmin() {
   const kzPlayer = cookies.get("kz-player")
 
   if (kzPlayer) {
-    adminStore.steamId = kzPlayer.steam_id
-    adminStore.avatar_url = kzPlayer.avatar_url
+    playerStore.steamId = kzPlayer.steam_id
+    playerStore.avatar_url = kzPlayer.avatar_url
 
     const { data } = await axiosClient.get(`/admins/${kzPlayer.steam_id}`)
 
-    adminStore.roles = data.roles
+    playerStore.roles = data.roles
   }
 }
 
@@ -91,3 +91,4 @@ function getLink(index: number) {
   return "/" + path
 }
 </script>
+./store/player

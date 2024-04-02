@@ -22,7 +22,7 @@
       class="flex gap-4 p-2 hover:bg-gray-700 rounded-md cursor-pointer"
     >
       <img
-        :src="`/icons/${route.meta.iconName}-sharp.svg`"
+        :src="`/icons/${route.meta?.iconName}-sharp.svg`"
         class="w-5 h-auto"
       />
       <p class="font-medium">{{ route.meta?.title }}</p>
@@ -32,19 +32,20 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { useAdminStore } from "../store/admin"
+import { usePlayerStore } from "../store/player"
 import { noAuthRoutes, routes } from "../router"
 
-const adminStore = useAdminStore()
+const playerStore = usePlayerStore()
 
 const authRoutes = computed(() => {
   return routes.filter((route) => {
     if (route.meta?.menuItem) {
-      if (!adminStore.roles) return false
-      else return adminStore.roles.includes(route.meta.requiresRole)
+      if (!playerStore.roles) return false
+      else return playerStore.roles.includes(route.meta.requiresRole)
     } else {
       return false
     }
   })
 })
 </script>
+../store/player

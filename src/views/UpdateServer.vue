@@ -14,7 +14,7 @@
         />
       </div>
 
-      <div class="mb-4">
+      <div v-if="isAdmin" class="mb-4">
         <p class="mb-2 font-medium">Owner</p>
         <n-input
           v-model:value="server.owned_by"
@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeMount, toRaw } from "vue"
+import { ref, reactive, onBeforeMount, computed, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { NButton, NInput, useNotification, useDialog } from "naive-ui"
 import { Server } from "../types"
@@ -75,10 +75,12 @@ import type { AxiosResponse } from "axios"
 import { isEqual } from "lodash-es"
 import { toErrorMsg, getDiff } from "../utils"
 import KeyModal from "../components/server/KeyModal.vue"
+import { usePlayerStore } from "../store/player"
 
 const router = useRouter()
 const route = useRoute()
 const notification = useNotification()
+const playerStore = usePlayerStore()
 const dialog = useDialog()
 
 let oldServer: Record<string, string>
@@ -88,10 +90,12 @@ const loading = ref(false)
 const apiKey = ref("")
 const showModal = ref(false)
 
+const isAdmin = computed(() => route.name === "createserver")
+
 const server = reactive({
   name: "",
   ip_address: "",
-  owned_by: "",
+  owned_by: isAdmin.value ? "" : playerStore.steamId,
 })
 
 onBeforeMount(async () => {

@@ -5,11 +5,11 @@
     <p class="text-xl font-semibold">CS2KZ API</p>
 
     <div>
-      <div class="flex gap-4" v-if="adminStore.steamId">
+      <div class="flex gap-4" v-if="PlayerStore.steamId">
         <!-- avatar -->
         <img
           class="w-8 h-8 rounded-full ring-2 ring-slate-700"
-          :src="adminStore.avatar_url"
+          :src="PlayerStore.avatar_url"
         />
         <div>
           <n-button @click="handleSignOut" strong>SIGN OUT</n-button>
@@ -27,12 +27,12 @@
 <script setup lang="ts">
 import { NButton } from "naive-ui"
 import { useRouter } from "vue-router"
-import { useAdminStore } from "../store/admin"
+import { usePlayerStore } from "../store/player"
 import Cookies from "universal-cookie"
 import axiosClient from "../axios"
 
 const router = useRouter()
-const adminStore = useAdminStore()
+const PlayerStore = usePlayerStore()
 
 const cookies = new Cookies(null, { path: "/" })
 
@@ -42,7 +42,7 @@ async function handleSignIn() {
 
 async function handleSignOut() {
   try {
-    adminStore.$reset()
+    PlayerStore.$reset()
     cookies.remove("kz-player")
     await axiosClient.get(`/auth/logout`, { withCredentials: true })
     router.push("/")
@@ -51,3 +51,4 @@ async function handleSignOut() {
   }
 }
 </script>
+../store/player

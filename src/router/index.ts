@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router"
-import { useAdminStore } from "../store/admin"
+import { usePlayerStore } from "../store/player"
 
 export const noAuthRoutes = [
   {
@@ -76,6 +76,21 @@ export const routes = [
     meta: {
       requiresRole: "servers",
     },
+  },
+  {
+    path: "/home/myservers",
+    name: "myservers",
+    component: () => import("../views/MyServers.vue"),
+  },
+  {
+    path: "/home/myservers/create",
+    name: "createmyserver",
+    component: () => import("../views/CreateServer.vue"),
+  },
+  {
+    path: "/home/myservers/:id/update",
+    name: "updatemyserver",
+    component: () => import("../views/UpdateServer.vue"),
   },
   {
     path: "/home/bans",
@@ -166,12 +181,12 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  const adminStore = useAdminStore()
+  const playerStore = usePlayerStore()
   try {
     // await adminStore.fetchRoles()
     if (to.meta.requiresRole && to.name !== "home") {
       const requiredRole = to.meta.requiresRole as string
-      if (!adminStore.roles?.includes(requiredRole)) return { name: "home" }
+      if (!playerStore.roles?.includes(requiredRole)) return { name: "home" }
     }
   } catch (error) {
     console.log(error)

@@ -12,7 +12,7 @@
         />
       </n-form-item>
 
-      <n-form-item label="Owner" path="owned_by">
+      <n-form-item v-if="isAdmin" label="Owner" path="owned_by">
         <n-input
           v-model:value="server.owned_by"
           placeholder="STEAM_1:1:XXXXXXXXXXXX"
@@ -34,29 +34,39 @@
       >
     </div>
 
-    <KeyModal :api-key="apiKey" redirect-to="servers" :show-modal="showModal" />
+    <KeyModal
+      :api-key="apiKey"
+      :redirect-to="isAdmin ? 'servers' : 'myservers'"
+      :show-modal="showModal"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue"
+import { ref, reactive, computed } from "vue"
 import { NButton, NInput, NForm, NFormItem, useNotification } from "naive-ui"
 import type { FormInst } from "naive-ui"
 import type { AxiosResponse } from "axios"
+import { useRoute } from "vue-router"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"
 import KeyModal from "../components/server/KeyModal.vue"
+import { usePlayerStore } from "../store/player"
 
+const playerStore = usePlayerStore()
+const route = useRoute()
 const notification = useNotification()
 
 const loading = ref(false)
 
 const serverForm = ref<FormInst | null>(null)
 
+const isAdmin = computed(() => route.name === "createserver")
+
 const server = reactive({
   name: "",
   ip_address: "",
-  owned_by: "",
+  owned_by: isAdmin.value ? "" : playerStore.steamId,
 })
 
 const apiKey = ref("")
@@ -86,6 +96,8 @@ async function createServer() {
   serverForm.value?.validate(async (errors) => {
     if (!errors) {
       try {
+        console.log(server)
+
         const { data } = (await axiosClient.post("/servers", server, {
           withCredentials: true,
         })) as AxiosResponse<{ server_id: number; refresh_key: string }>
