@@ -4,7 +4,6 @@
     :key="course.id"
     class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4"
   >
-    <!-- course name -->
     <div
       class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
     >
@@ -21,16 +20,8 @@
       <n-input v-model:value="course.name" placeholder="" />
     </div>
 
-    <Mappers v-model:mappers="course.mappers" />
-
-    <!-- filters -->
-    <div class="mb-4">
-      <p class="mb-2">Filters</p>
-      <Filters v-model:filters="course.filters" />
-    </div>
-
     <!-- description -->
-    <div>
+    <div class="mb-4">
       <p class="mb-2">Description</p>
       <n-input
         type="textarea"
@@ -38,6 +29,14 @@
         autosize
         placeholder=""
       />
+    </div>
+
+    <Mappers v-model:mappers="course.mappers" />
+
+    <!-- filters -->
+    <div class="mb-4">
+      <p class="mb-2">Filters</p>
+      <Filters v-model:filters="course.filters" />
     </div>
   </div>
 </template>
