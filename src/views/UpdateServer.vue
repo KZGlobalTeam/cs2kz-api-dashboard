@@ -61,7 +61,11 @@
       </div>
     </div>
 
-    <KeyModal :api-key="apiKey" redirect-to="servers" :show-modal="showModal" />
+    <KeyModal
+      :api-key="apiKey"
+      :redirect-to="isAdmin ? 'servers' : 'myservers'"
+      :show-modal="showModal"
+    />
   </div>
 </template>
 
@@ -182,7 +186,7 @@ function revokeKey() {
           .then(() => {
             resolve()
             notification.success({ title: "API key revoked", duration: 3000 })
-            router.push({ name: "servers" })
+            router.push({ name: isAdmin.value ? "servers" : "myservers" })
           })
           .catch((error) => {
             resolve()
