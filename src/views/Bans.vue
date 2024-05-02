@@ -335,11 +335,11 @@ async function loadBansData() {
       created_before: new Date(banQuery.dateRange[1]).toISOString(),
     }
 
-    const result = await axiosClient.get("/bans", {
+    const { data: res } = await axiosClient.get("/bans", {
       params,
     })
 
-    data.value = result.data || []
+    data.value = res?.results || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch bans",

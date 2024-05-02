@@ -188,10 +188,10 @@ onBeforeMount(() => {
 async function loadAdminsData() {
   loading.value = true
   try {
-    const result = await axiosClient.get("/admins")
+    const { data: res } = await axiosClient.get("/admins")
     // console.log(result.data)
 
-    data.value = result.data || []
+    data.value = res?.results || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch admins",

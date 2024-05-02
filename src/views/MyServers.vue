@@ -157,11 +157,11 @@ async function loadServersData() {
 
     // console.log(params)
 
-    const result = await axiosClient.get("/servers", {
+    const { data: res } = await axiosClient.get("/servers", {
       params,
     })
 
-    data.value = result.data || []
+    data.value = res?.results || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch servers",
