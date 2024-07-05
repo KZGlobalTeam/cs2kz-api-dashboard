@@ -4,8 +4,7 @@ export const usePlayerStore = defineStore("admin", {
   state: () => ({
     steamId: "",
     avatar_url: "",
-    // roles: ['servers']
-    roles: null as string[] | null,
+    permissions: null as string[] | null,
   }),
   getters: {},
 })

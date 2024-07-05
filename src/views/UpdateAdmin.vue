@@ -1,12 +1,12 @@
 <template>
   <div class="p-4 bg-gray-800 mb-4 rounded-md">
     <div class="mb-4">
-      <p class="mb-2">Roles</p>
+      <p class="mb-2">Permissions</p>
       <n-select
-        v-model:value="admin.roles"
+        v-model:value="admin.permissions"
         multiple
-        placeholder="Select Role"
-        :options="roleOptions"
+        placeholder="Select Permission"
+        :options="permissionOptions"
       />
     </div>
 
@@ -39,7 +39,7 @@ const notification = useNotification()
 const loading = ref(false)
 
 const admin = reactive({
-  roles: [],
+  permissions: [],
 })
 
 const roleOptions = [
@@ -53,9 +53,8 @@ onBeforeMount(async () => {
   let steamId = route.params.steam_id
   try {
     const { data } = await axiosClient.get(`/admins/${steamId}`)
-    // console.log(data);
 
-    admin.roles = data.roles
+    admin.permissions = data.permissions
   } catch (error) {
     notification.error({
       title: "Failed to fetch admins",
@@ -70,7 +69,7 @@ async function updateAdmin() {
   try {
     await axiosClient.put(
       `/admins/${route.params.steam_id}`,
-      { roles: admin.roles },
+      { permissions: admin.permissions },
       { withCredentials: true },
     )
     notification.success({ title: "Admin updated", duration: 3000 })

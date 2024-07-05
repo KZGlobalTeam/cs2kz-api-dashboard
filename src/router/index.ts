@@ -31,7 +31,7 @@ export const routes = [
       menuItem: true,
       title: "Maps",
       iconName: "map",
-      requiresRole: "maps",
+      requiresPermission: "maps",
     },
   },
   {
@@ -39,7 +39,7 @@ export const routes = [
     name: "createmap",
     component: () => import("../views/CreateMap.vue"),
     meta: {
-      requiresRole: "maps",
+      requiresPermission: "maps",
     },
   },
   {
@@ -47,7 +47,7 @@ export const routes = [
     name: "updatemap",
     component: () => import("../views/UpdateMap.vue"),
     meta: {
-      requiresRole: "maps",
+      requiresPermission: "maps",
     },
   },
   {
@@ -58,7 +58,7 @@ export const routes = [
       menuItem: true,
       title: "Servers",
       iconName: "server",
-      requiresRole: "servers",
+      requiresPermission: "servers",
     },
   },
   {
@@ -66,7 +66,7 @@ export const routes = [
     name: "createserver",
     component: () => import("../views/CreateServer.vue"),
     meta: {
-      requiresRole: "servers",
+      requiresPermission: "servers",
     },
   },
   {
@@ -74,7 +74,7 @@ export const routes = [
     name: "updateserver",
     component: () => import("../views/UpdateServer.vue"),
     meta: {
-      requiresRole: "servers",
+      requiresPermission: "servers",
     },
   },
   {
@@ -100,7 +100,7 @@ export const routes = [
       menuItem: true,
       title: "Bans",
       iconName: "ban",
-      requiresRole: "bans",
+      requiresPermission: "bans",
     },
   },
   {
@@ -108,7 +108,7 @@ export const routes = [
     name: "createban",
     component: () => import("../views/CreateBan.vue"),
     meta: {
-      requiresRole: "bans",
+      requiresPermission: "bans",
     },
   },
   {
@@ -116,7 +116,7 @@ export const routes = [
     name: "updateban",
     component: () => import("../views/UpdateBan.vue"),
     meta: {
-      requiresRole: "bans",
+      requiresPermission: "bans",
     },
   },
   {
@@ -124,7 +124,7 @@ export const routes = [
     name: "unban",
     component: () => import("../views/Unban.vue"),
     meta: {
-      requiresRole: "bans",
+      requiresPermission: "bans",
     },
   },
   {
@@ -132,7 +132,7 @@ export const routes = [
     name: "bandetails",
     component: () => import("../views/BanDetails.vue"),
     meta: {
-      requiresRole: "bans",
+      requiresPermission: "bans",
     },
   },
   {
@@ -143,7 +143,7 @@ export const routes = [
       menuItem: true,
       title: "Admins",
       iconName: "person",
-      requiresRole: "admin",
+      requiresPermission: "admin",
     },
   },
   {
@@ -151,7 +151,7 @@ export const routes = [
     name: "createadmin",
     component: () => import("../views/CreateAdmin.vue"),
     meta: {
-      requiresRole: "admin",
+      requiresPermission: "admin",
     },
   },
   {
@@ -159,7 +159,7 @@ export const routes = [
     name: "updateadmin",
     component: () => import("../views/UpdateAdmin.vue"),
     meta: {
-      requiresRole: "admin",
+      requiresPermission: "admin",
     },
   },
 ]
@@ -183,10 +183,9 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const playerStore = usePlayerStore()
   try {
-    // await adminStore.fetchRoles()
-    if (to.meta.requiresRole && to.name !== "home") {
-      const requiredRole = to.meta.requiresRole as string
-      if (!playerStore.roles?.includes(requiredRole)) return { name: "home" }
+    if (to.meta.requiresPermission && to.name !== "home") {
+      const requiredPermission = to.meta.requiresPermission as string
+      if (!playerStore.permissions?.includes(requiredPermission)) return { name: "home" }
     }
   } catch (error) {
     console.log(error)

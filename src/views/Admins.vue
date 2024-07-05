@@ -48,13 +48,13 @@ import type {
   DataTableColumn,
 } from "naive-ui"
 import axiosClient from "../axios"
-import type { Admin, Role } from "../types"
+import type { Admin, Permission } from "../types"
 import { renderSteamID, toErrorMsg } from "../utils"
 
 type RowData = {
   name: string
   steam_id: string
-  roles: string[]
+  permissions: string[]
 }
 
 const router = useRouter()
@@ -81,8 +81,8 @@ const columns = ref<DataTableColumn<Admin>[]>([
     },
   },
   {
-    title: "Roles",
-    key: "roles",
+    title: "Permissions",
+    key: "permissions",
     defaultFilterOptionValues: ["maps", "servers", "bans", "admin"],
     filterOptions: [
       {
@@ -103,10 +103,10 @@ const columns = ref<DataTableColumn<Admin>[]>([
       },
     ],
     filter(value, row) {
-      return row.roles.includes(value as Role)
+      return row.permissions.includes(value as Permission)
     },
     render(row) {
-      const tags = row.roles.map((role) => {
+      const tags = row.permissions.map((permission) => {
         return h(
           NTag,
           {
@@ -117,7 +117,7 @@ const columns = ref<DataTableColumn<Admin>[]>([
             bordered: false,
           },
           {
-            default: () => role,
+            default: () => permission,
           },
         )
       })
