@@ -42,7 +42,7 @@ const admin = reactive({
   permissions: [],
 })
 
-const roleOptions = [
+const permissionOptions = [
   { label: "maps", value: "maps" },
   { label: "servers", value: "servers" },
   { label: "bans", value: "bans" },
