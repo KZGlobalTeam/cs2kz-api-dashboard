@@ -81,6 +81,9 @@ const columns = ref<DataTableColumn<Server>[]>([
   {
     title: "IP",
     key: "ip_address",
+    render(rowData) {
+      return `${rowData.host}:${rowData.port}`
+    },
   },
   {
     title: "Created On",
@@ -148,6 +151,11 @@ onBeforeMount(() => {
 })
 
 async function loadServersData() {
+  if (playerStore.steamId === "") {
+    data.value = []
+    return
+  }
+
   loading.value = true
   try {
     const params = {

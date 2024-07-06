@@ -11,15 +11,6 @@ export const noAuthRoutes = [
       iconName: "home",
     },
   },
-  {
-    path: "/home/myservers",
-    name: "myservers",
-    component: () => import("../views/MyServers.vue"),
-    meta: {
-      title: "My Servers",
-      iconName: "server",
-    },
-  },
 ]
 
 export const routes = [
@@ -62,6 +53,17 @@ export const routes = [
     },
   },
   {
+    path: "/home/myservers",
+    name: "myservers",
+    component: () => import("../views/MyServers.vue"),
+    meta: {
+      menuItem: true,
+      title: "My Servers",
+      iconName: "server",
+      requiresPermission: "users",
+    },
+  },
+  {
     path: "/home/servers/create",
     name: "createserver",
     component: () => import("../views/CreateServer.vue"),
@@ -76,11 +78,6 @@ export const routes = [
     meta: {
       requiresPermission: "servers",
     },
-  },
-  {
-    path: "/home/myservers",
-    name: "myservers",
-    component: () => import("../views/MyServers.vue"),
   },
   {
     path: "/home/myservers/create",
@@ -185,7 +182,8 @@ router.beforeEach(async (to) => {
   try {
     if (to.meta.requiresPermission && to.name !== "home") {
       const requiredPermission = to.meta.requiresPermission as string
-      if (!playerStore.permissions?.includes(requiredPermission)) return { name: "home" }
+      if (!playerStore.permissions?.includes(requiredPermission))
+        return { name: "home" }
     }
   } catch (error) {
     console.log(error)

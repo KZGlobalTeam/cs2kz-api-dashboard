@@ -65,7 +65,8 @@ export interface Admin {
 export interface Server {
   id: number
   name: string
-  ip_address: string
+  host: string
+  port: number
   owner: Player
   created_on: string
 }

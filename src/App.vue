@@ -79,7 +79,7 @@ async function getAdmin() {
 
     const { data } = await axiosClient.get(`/admins/${kzPlayer.steam_id}`)
 
-    playerStore.permissions = data.permissions
+    playerStore.permissions = ["users", ...data.permissions]
   }
 }
 

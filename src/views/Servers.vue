@@ -90,6 +90,9 @@ const columns = ref<DataTableColumn<Server>[]>([
   {
     title: "IP",
     key: "ip_address",
+    render(rowData) {
+      return `${rowData.host}:${rowData.port}`
+    },
   },
   {
     title: "Owner",
@@ -176,7 +179,7 @@ async function loadServersData() {
     const params = {
       // typescript...
       name: serverQuery.name || null,
-      owner: serverQuery.owner || null,
+      owned_by: serverQuery.owner || null,
     }
 
     // console.log(params)
