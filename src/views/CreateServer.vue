@@ -49,7 +49,7 @@ import type { FormInst } from "naive-ui"
 import type { AxiosResponse } from "axios"
 import { useRoute } from "vue-router"
 import axiosClient from "../axios"
-import { toErrorMsg } from "../utils"
+import { toErrorMsg, transformSrv } from "../utils"
 import KeyModal from "../components/server/KeyModal.vue"
 import { usePlayerStore } from "../store/player"
 
@@ -98,9 +98,13 @@ async function createServer() {
       try {
         console.log(server)
 
-        const { data } = (await axiosClient.post("/servers", server, {
-          withCredentials: true,
-        })) as AxiosResponse<{ server_id: number; refresh_key: string }>
+        const { data } = (await axiosClient.post(
+          "/servers",
+          transformSrv(server),
+          {
+            withCredentials: true,
+          },
+        )) as AxiosResponse<{ server_id: number; refresh_key: string }>
         apiKey.value = data.refresh_key
 
         showModal.value = true

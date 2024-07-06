@@ -14,7 +14,7 @@
         />
       </div>
 
-      <div v-if="isAdmin" class="mb-4">
+      <div class="mb-4">
         <p class="mb-2 font-medium">Owner</p>
         <n-input
           v-model:value="server.owned_by"
@@ -77,14 +77,12 @@ import { Server } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
 import { isEqual } from "lodash-es"
-import { toErrorMsg, getDiff } from "../utils"
+import { toErrorMsg, getDiff, transformSrv } from "../utils"
 import KeyModal from "../components/server/KeyModal.vue"
-import { usePlayerStore } from "../store/player"
 
 const router = useRouter()
 const route = useRoute()
 const notification = useNotification()
-const playerStore = usePlayerStore()
 const dialog = useDialog()
 
 let oldServer: Record<string, string>
@@ -99,7 +97,7 @@ const isAdmin = computed(() => route.name === "createserver")
 const server = reactive({
   name: "",
   ip_address: "",
-  owned_by: isAdmin.value ? "" : playerStore.steamId,
+  owned_by: "",
 })
 
 onBeforeMount(async () => {
@@ -110,7 +108,7 @@ onBeforeMount(async () => {
     // console.log(data);
 
     server.name = data.name
-    server.ip_address = data.ip_address
+    server.ip_address = `${data.host}:${data.port}`
     server.owned_by = data.owner.steam_id
 
     oldServer = JSON.parse(JSON.stringify(server))
@@ -127,13 +125,15 @@ async function updateServer() {
     notification.error({ title: "No changes made" })
   } else {
     loading.value = true
-    const update = getDiff(oldServer, toRaw(server))
+    const update = getDiff(transformSrv(oldServer), transformSrv(toRaw(server)))
     try {
       await axiosClient.patch(`/servers/${route.params.id}`, update, {
         withCredentials: true,
       })
       notification.success({ title: "Server updated", duration: 3000 })
-      router.push("/home/servers")
+      console.log(route)
+
+      router.go(-1)
     } catch (error) {
       loading.value = false
       notification.error({

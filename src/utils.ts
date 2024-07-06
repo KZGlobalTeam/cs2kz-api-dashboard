@@ -66,6 +66,15 @@ export function getDiff(obj1: any, obj2: any) {
   return diff
 }
 
+export function transformSrv(server: any) {
+  const [host, port] = server.ip_address.split(":")
+  return {
+    host,
+    port: parseInt(port),
+    ...server,
+  }
+}
+
 export function calcBanDuration(ban: Ban) {
   const createdDate = new Date(ban.created_on)
   if (!ban.expires_on) {
