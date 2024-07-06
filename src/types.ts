@@ -16,7 +16,7 @@ export type RankedStatus = "never" | "unranked" | "ranked"
 
 export type GlobalStatus = "global" | "not_global" | "in_testing"
 
-export type Role = "none" | "maps" | "servers" | "bans" | "admin"
+export type Permission = "none" | "maps" | "servers" | "bans" | "admin"
 
 export type BanReason = "auto_strafe" | "auto_bhop"
 
@@ -59,7 +59,7 @@ export interface Map {
 export interface Admin {
   name: string
   steam_id: string
-  roles: Role[]
+  permissions: Permission[]
 }
 
 export interface Server {

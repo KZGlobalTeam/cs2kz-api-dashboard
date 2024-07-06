@@ -40,8 +40,8 @@ const playerStore = usePlayerStore()
 const authRoutes = computed(() => {
   return routes.filter((route) => {
     if (route.meta?.menuItem) {
-      if (!playerStore.roles) return false
-      else return playerStore.roles.includes(route.meta.requiresRole)
+      if (!playerStore.permissions) return false
+      else return playerStore.permissions.includes(route.meta.requiresPermission)
     } else {
       return false
     }

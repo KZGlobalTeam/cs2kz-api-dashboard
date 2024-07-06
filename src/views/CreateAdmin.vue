@@ -7,12 +7,12 @@
     </n-form>
 
     <div class="mb-4">
-      <p class="mb-2">Roles</p>
+      <p class="mb-2">Permissions</p>
       <n-select
-        v-model:value="admin.roles"
+        v-model:value="admin.permissions"
         multiple
-        placeholder="Select Role"
-        :options="roleOptions"
+        placeholder="Select Permission"
+        :options="permissionOptions"
       />
     </div>
 
@@ -53,7 +53,7 @@ const loading = ref(false)
 const adminForm = ref<FormInst | null>(null)
 const admin = reactive({
   steamId: "",
-  roles: [],
+  permissions: [],
 })
 
 const rules = {
@@ -79,7 +79,7 @@ function createAdmin() {
       try {
         await axiosClient.put(
           `/admins/${admin.steamId}`,
-          { roles: admin.roles },
+          { permissions: admin.permissions },
           { withCredentials: true },
         )
         notification.success({ title: "Admin saved", duration: 3000 })
