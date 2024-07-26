@@ -1,6 +1,6 @@
 <template>
   <div class="w-[200px] bg-gray-800 min-h-screen flex flex-col py-4 px-2">
-    <div class="border-b border-slate-600">
+    <div>
       <RouterLink
         v-for="route in noAuthRoutes"
         :key="route.name"

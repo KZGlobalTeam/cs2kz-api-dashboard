@@ -30,6 +30,7 @@ export const routes = [
     name: "createmap",
     component: () => import("../views/CreateMap.vue"),
     meta: {
+      title: "Create Map",
       requiresPermission: "maps",
     },
   },
@@ -38,6 +39,7 @@ export const routes = [
     name: "updatemap",
     component: () => import("../views/UpdateMap.vue"),
     meta: {
+      title: "Update Map",
       requiresPermission: "maps",
     },
   },
@@ -68,6 +70,7 @@ export const routes = [
     name: "createserver",
     component: () => import("../views/CreateServer.vue"),
     meta: {
+      title: "Create Server",
       requiresPermission: "servers",
     },
   },
@@ -76,6 +79,7 @@ export const routes = [
     name: "updateserver",
     component: () => import("../views/UpdateServer.vue"),
     meta: {
+      title: "Update Server",
       requiresPermission: "servers",
     },
   },
@@ -83,11 +87,17 @@ export const routes = [
     path: "/home/myservers/create",
     name: "createmyserver",
     component: () => import("../views/CreateServer.vue"),
+    meta: {
+      title: "Create Server",
+    },
   },
   {
     path: "/home/myservers/:id/update",
     name: "updatemyserver",
     component: () => import("../views/UpdateServer.vue"),
+    meta: {
+      title: "Update Server",
+    },
   },
   {
     path: "/home/bans",
@@ -105,6 +115,7 @@ export const routes = [
     name: "createban",
     component: () => import("../views/CreateBan.vue"),
     meta: {
+      title: "Create Ban",
       requiresPermission: "bans",
     },
   },
@@ -113,6 +124,7 @@ export const routes = [
     name: "updateban",
     component: () => import("../views/UpdateBan.vue"),
     meta: {
+      title: "Update Ban",
       requiresPermission: "bans",
     },
   },
@@ -121,6 +133,7 @@ export const routes = [
     name: "unban",
     component: () => import("../views/Unban.vue"),
     meta: {
+      title: "Unban",
       requiresPermission: "bans",
     },
   },
@@ -129,6 +142,7 @@ export const routes = [
     name: "bandetails",
     component: () => import("../views/BanDetails.vue"),
     meta: {
+      title: "Ban Details",
       requiresPermission: "bans",
     },
   },
@@ -148,6 +162,7 @@ export const routes = [
     name: "createadmin",
     component: () => import("../views/CreateAdmin.vue"),
     meta: {
+      title: "Create Admin",
       requiresPermission: "admin",
     },
   },
@@ -156,6 +171,7 @@ export const routes = [
     name: "updateadmin",
     component: () => import("../views/UpdateAdmin.vue"),
     meta: {
+      title: "Update Admin",
       requiresPermission: "admin",
     },
   },
