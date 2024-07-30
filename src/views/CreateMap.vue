@@ -154,6 +154,7 @@ function saveMap() {
           title: "Missing Fields",
           content: `Course ${courseIndex + 1}: Course name is required`,
         })
+        validated = false
       }
       if (course.mappers.length === 0) {
         notification.error({
