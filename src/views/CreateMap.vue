@@ -149,6 +149,12 @@ function saveMap() {
     })
   } else {
     courses.value.forEach((course, courseIndex) => {
+      if (course.name === "") {
+        notification.error({
+          title: "Missing Fields",
+          content: `Course ${courseIndex + 1}: Course name is required`,
+        })
+      }
       if (course.mappers.length === 0) {
         notification.error({
           title: "Missing Fields",

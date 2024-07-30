@@ -38,7 +38,7 @@ export interface Filter {
 
 export interface Course {
   id: number
-  name?: string
+  name: string
   description?: string
   filters: Filter[]
   mappers: Player[]

@@ -54,4 +54,3 @@ async function getAdmin() {
   }
 }
 </script>
-./store/player
