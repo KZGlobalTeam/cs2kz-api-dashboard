@@ -51,11 +51,11 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, Ref } from "vue"
+import { nextTick } from "vue"
 import { NTable, NInput } from "naive-ui"
 import type { Filter } from "../../types"
 
-const filters = defineModel<Filter[]>("filters") as Ref<Filter[]>
+const filters = defineModel<Filter[]>("filters", { required: true })
 
 const tierOptions = [
   { label: "Very Easy", value: "very_easy" },

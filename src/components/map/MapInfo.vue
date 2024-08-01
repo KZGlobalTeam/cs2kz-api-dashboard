@@ -1,8 +1,8 @@
 <template>
   <!-- map info -->
   <div>
-    <!-- description -->
-    <div class="mb-4">
+    <!-- name -->
+    <div v-if="updating" class="mb-4">
       <p class="mb-2 font-medium">Name</p>
       <n-input v-model:value="name" placeholder="kz_aaaa" />
     </div>
@@ -68,10 +68,10 @@ defineProps<{
   updating: boolean
 }>()
 const name = defineModel<string>("name")
-const workshopId = defineModel<string>("workshopId")
+const workshopId = defineModel<string>("workshopId", { required: true })
 const checkSteam = defineModel<boolean>("checkSteam")
-const description = defineModel<string>("description")
-const globalStatus = defineModel<string>("globalStatus")
+const description = defineModel<string>("description", { required: true })
+const globalStatus = defineModel<string>("globalStatus", { required: true })
 
 function handleStatusChange(e: Event) {
   globalStatus.value = (e.target as HTMLInputElement).value

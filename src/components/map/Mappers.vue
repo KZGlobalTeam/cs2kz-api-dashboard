@@ -24,11 +24,10 @@
 </template>
 
 <script setup lang="ts">
-import { Ref } from "vue"
 import { NInput, NDynamicInput } from "naive-ui"
-import type { Player } from "../../types"
+import type { Mapper } from "../../types"
 
-const mappers = defineModel<Player[]>("mappers") as Ref<Player[]>
+const mappers = defineModel<Mapper[]>("mappers", { required: true })
 
 function onCreateMapper() {
   return {

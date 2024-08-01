@@ -42,13 +42,12 @@
 </template>
 
 <script setup lang="ts">
-import { Ref } from "vue"
 import { NButton, NInput, useDialog } from "naive-ui"
 import Mappers from "./Mappers.vue"
 import Filters from "./Filters.vue"
 import type { Course } from "../../types"
 
-const courses = defineModel<Course[]>("courses") as Ref<Course[]>
+const courses = defineModel<Course[]>("courses", { required: true })
 
 const dialog = useDialog()
 

@@ -27,10 +27,10 @@ export const routes = [
   },
   {
     path: "/home/maps/create",
-    name: "createmap",
-    component: () => import("../views/CreateMap.vue"),
+    name: "createmaps",
+    component: () => import("../views/CreateMaps.vue"),
     meta: {
-      title: "Create Map",
+      title: "Create Maps",
       requiresPermission: "maps",
     },
   },

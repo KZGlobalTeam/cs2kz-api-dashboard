@@ -42,7 +42,7 @@
 import { ref, onBeforeMount, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { NButton, useNotification } from "naive-ui"
-import type { Player, Course, Map } from "../types"
+import type { Mapper, Course, Map } from "../types"
 import { cloneDeep, isEqual, omit } from "lodash-es"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"
@@ -66,7 +66,7 @@ const globalStatus = ref("global")
 const checkSteam = ref(false)
 
 // mappers input
-const mappers = ref<Player[]>([])
+const mappers = ref<Mapper[]>([])
 
 const courses = ref<Course[]>([])
 

@@ -46,7 +46,9 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadMapsData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="router.push({ name: 'createmap' })"
+      <n-button
+        text-color="#37ab56"
+        @click="router.push({ name: 'createmaps' })"
         >New Map</n-button
       >
     </div>
