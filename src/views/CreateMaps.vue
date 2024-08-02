@@ -21,16 +21,36 @@
       </div>
 
       <div class="flex gap-4">
-        <n-button
-          @click.prevent=""
-          :disabled="loading"
-          text-color="#856114"
-          type="warning"
-          style="font-size: 14px"
-          strong
-          bordered
-          >Save as Draft</n-button
-        >
+        <n-popconfirm @positive-click="loadDraft(false)">
+          <template #trigger>
+            <n-button
+              :disabled="loading"
+              text-color="#2b33ab"
+              type="info"
+              style="font-size: 14px"
+              strong
+              bordered
+              >Load Draft</n-button
+            >
+          </template>
+          Load draft?
+        </n-popconfirm>
+
+        <n-popconfirm @positive-click="saveDraft">
+          <template #trigger>
+            <n-button
+              :disabled="loading"
+              text-color="#856114"
+              type="warning"
+              style="font-size: 14px"
+              strong
+              bordered
+              >Save as Draft</n-button
+            >
+          </template>
+          Save maps as draft?
+        </n-popconfirm>
+
         <n-button
           @click.prevent="saveMaps"
           :disabled="loading"
@@ -72,13 +92,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref, toRaw } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NButton, NTabs, NTabPane, useNotification } from "naive-ui"
+import { useStorage } from "@vueuse/core"
+import {
+  NInput,
+  NButton,
+  NTabs,
+  NTabPane,
+  NPopconfirm,
+  useNotification,
+} from "naive-ui"
 import type { Mapper, GlobalStatus, Course } from "../types"
 import CreateMap from "./CreateMap.vue"
 import axiosClient from "../axios"
-import { omit } from "lodash-es"
+import { omit, cloneDeep } from "lodash-es"
 import { toErrorMsg } from "../utils"
 
 interface Map {
@@ -102,7 +130,11 @@ const loading = ref(false)
 const selectedMapName = ref("")
 const maps = ref<Map[]>([])
 
+const mapsDraft = useStorage<Map[]>("maps-draft", () => [])
+
 const mapTabName = ref("")
+
+loadDraft(true)
 
 function createMapTab() {
   maps.value.push({
@@ -120,11 +152,6 @@ function createMapTab() {
 }
 
 function closeTab(tabName: string) {
-  // TODO: warning on close tab
-  // if (maps.value.length === 1) {
-  //   notification.error({ title: "This is the last map" })
-  //   return
-  // }
   const index = maps.value.findIndex((v) => tabName === v.name)
   maps.value.splice(index, 1)
   const len = maps.value.length
@@ -136,6 +163,35 @@ function closeTab(tabName: string) {
     } else {
       selectedMapName.value = ""
     }
+  }
+}
+
+function loadDraft(newPage: boolean) {
+  if (mapsDraft.value.length > 0) {
+    maps.value = cloneDeep(toRaw(mapsDraft.value))
+    selectedMapName.value = maps.value[0].name
+  } else {
+    if (!newPage) {
+      notification.warning({
+        title: "You haven't saved any maps",
+        duration: 3000,
+      })
+    }
+  }
+}
+
+function saveDraft() {
+  if (maps.value.length > 0) {
+    mapsDraft.value = cloneDeep(toRaw(maps.value))
+    notification.success({
+      title: "Draft saved",
+      duration: 3000,
+    })
+  } else {
+    notification.warning({
+      title: "Nothing to save",
+      duration: 3000,
+    })
   }
 }
 
