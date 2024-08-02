@@ -76,7 +76,10 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadBansData">REFRESH</n-button>
-      <n-button text-color="#37ab56" @click="router.push({ name: 'createban' })"
+      <n-button
+        type="error"
+        secondary
+        @click="router.push({ name: 'createban' })"
         >New Ban</n-button
       >
     </div>

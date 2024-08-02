@@ -40,7 +40,8 @@
     <div class="flex justify-end gap-4">
       <n-button @click="loadServersData">REFRESH</n-button>
       <n-button
-        text-color="#37ab56"
+        secondary
+        type="primary"
         @click="router.push({ name: 'createserver' })"
         >New Server</n-button
       >

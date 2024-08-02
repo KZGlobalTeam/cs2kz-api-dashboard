@@ -11,10 +11,8 @@
         <n-button
           @click="createMapTab"
           :disabled="!mapTabName"
-          text-color="#159439"
-          style="font-size: 14px"
-          strong
-          bordered
+          tertiary
+          type="primary"
         >
           + New Map
         </n-button>
@@ -23,13 +21,7 @@
       <div class="flex gap-4">
         <n-popconfirm @positive-click="loadDraft(false)">
           <template #trigger>
-            <n-button
-              :disabled="loading"
-              text-color="#2b33ab"
-              type="info"
-              style="font-size: 14px"
-              strong
-              bordered
+            <n-button :disabled="loading" type="info" tertiary
               >Load Draft</n-button
             >
           </template>
@@ -38,13 +30,7 @@
 
         <n-popconfirm @positive-click="saveDraft">
           <template #trigger>
-            <n-button
-              :disabled="loading"
-              text-color="#856114"
-              type="warning"
-              style="font-size: 14px"
-              strong
-              bordered
+            <n-button :disabled="loading" type="warning" tertiary
               >Save as Draft</n-button
             >
           </template>
@@ -55,10 +41,8 @@
           @click.prevent="saveMaps"
           :disabled="loading"
           :loading="loading"
-          text-color="#3cc962"
-          style="font-size: 14px"
+          type="primary"
           strong
-          bordered
           >Create</n-button
         >
       </div>

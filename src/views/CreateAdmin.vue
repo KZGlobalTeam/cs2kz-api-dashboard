@@ -20,11 +20,8 @@
       @click.prevent="createAdmin"
       :disabled="loading"
       :loading="loading"
-      style="font-size: 16px"
-      text-color="#3cc962"
-      size="large"
+      type="primary"
       strong
-      bordered
       >Create</n-button
     >
   </div>

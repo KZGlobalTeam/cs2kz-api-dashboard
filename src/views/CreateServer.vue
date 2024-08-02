@@ -26,10 +26,8 @@
         :disabled="loading"
         :loading="loading"
         class="saveButton"
-        text-color="#3cc962"
-        size="large"
+        type="primary"
         strong
-        bordered
         >Create</n-button
       >
     </div>

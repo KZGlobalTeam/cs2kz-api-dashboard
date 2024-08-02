@@ -24,11 +24,8 @@
           :disabled="loading"
           :loading="loading"
           class="saveButton"
-          text-color="#3cc962"
-          style="font-size: 16px"
-          size="large"
+          type="error"
           strong
-          bordered
           >Ban</n-button
         >
       </div>

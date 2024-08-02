@@ -16,7 +16,9 @@
     <!-- courses -->
     <div class="p-4 bg-gray-800 rounded-md mb-4">
       <Courses v-model:courses="courses" />
-      <n-button @click="createCourse" text-color="#37ab56">New Course</n-button>
+      <n-button @click="createCourse" type="primary" tertiary
+        >New Course</n-button
+      >
     </div>
   </div>
 </template>

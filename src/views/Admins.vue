@@ -30,7 +30,8 @@
     <div class="flex justify-end gap-4">
       <n-button @click="loadAdminsData">REFRESH</n-button>
       <n-button
-        text-color="#37ab56"
+        type="primary"
+        secondary
         @click="router.push({ name: 'createadmin' })"
         >New Admin</n-button
       >

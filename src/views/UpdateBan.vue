@@ -20,11 +20,7 @@
           :disabled="loading"
           :loading="loading"
           class="saveButton"
-          text-color="#3cc962"
-          style="font-size: 16px"
-          size="large"
           strong
-          bordered
           >Update</n-button
         >
       </div>

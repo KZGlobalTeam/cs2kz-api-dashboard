@@ -28,11 +28,8 @@
           :disabled="loading"
           :loading="loading"
           class="saveButton"
-          text-color="#3cc962"
-          style="font-size: 16px"
-          size="large"
+          type="primary"
           strong
-          bordered
           >Update</n-button
         >
       </div>
@@ -41,21 +38,10 @@
     <div class="p-4 bg-gray-800 rounded-md">
       <p class="mb-2 font-medium">API Key</p>
       <div class="flex gap-4">
-        <n-button
-          @click="newKey"
-          text-color="#3cc962"
-          style="font-size: 16px"
-          strong
-        >
+        <n-button @click="newKey" type="primary" secondary strong>
           New Key
         </n-button>
-        <n-button
-          @click="revokeKey"
-          type="error"
-          textColor="#e2e8f0"
-          style="font-size: 16px"
-          strong
-        >
+        <n-button @click="revokeKey" type="error" secondary strong>
           Revoke Key
         </n-button>
       </div>

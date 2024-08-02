@@ -10,7 +10,7 @@
       <p class="font-medium text-xl">
         {{ `Course ${index + 1}` }}
       </p>
-      <n-button @click="deleteCourse(index)" text-color="#e2e8f0" type="error"
+      <n-button @click="deleteCourse(index)" type="error" tertiary
         >Delete</n-button
       >
     </div>

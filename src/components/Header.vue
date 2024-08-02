@@ -16,9 +16,7 @@
         </div>
       </div>
       <div v-else>
-        <n-button @click="handleSignIn" text-color="#6dde6d" strong
-          >SIGN IN</n-button
-        >
+        <n-button @click="handleSignIn" strong>SIGN IN</n-button>
       </div>
     </div>
   </div>
