@@ -5,11 +5,11 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from "vue"
+import { h, ref, watch } from "vue"
 import { RouterLink, useRoute } from "vue-router"
 import { usePlayerStore } from "../store/player"
 import { noAuthRoutes, routes } from "../router"
-import { NMenu } from "naive-ui"
+import { NMenu, useLoadingBar } from "naive-ui"
 import type { MenuOption } from "naive-ui"
 
 type Routes = typeof noAuthRoutes | typeof routes
@@ -18,9 +18,26 @@ const playerStore = usePlayerStore()
 
 const route = useRoute()
 
-const activeKey = computed(() => route.name as string)
+const activeKey = ref<string>("home")
 
 const menuOptions = ref<MenuOption[]>(toMenuOptions(noAuthRoutes))
+
+const loadingBar = useLoadingBar()
+
+watch(
+  () => route.name,
+  (name) => {
+    activeKey.value = name as string
+  },
+)
+
+playerStore.$subscribe((_, state) => {
+  if (state.loading) {
+    loadingBar.start()
+  } else {
+    loadingBar.finish()
+  }
+})
 
 playerStore.$subscribe(() => {
   const authRoutes = routes.filter((route) => {

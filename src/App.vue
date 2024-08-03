@@ -1,22 +1,24 @@
 <template>
-  <div class="font-poppings text-slate-200">
-    <n-config-provider :theme="darkTheme" :locale="enUS">
-      <n-dialog-provider>
-        <n-notification-provider>
-          <Header />
-          <div class="flex">
-            <NavBar />
-            <div class="flex-1 bg-gray-900 p-4">
-              <div class="mb-2 text-2xl font-semibold">
-                {{ route.meta.title }}
+  <n-config-provider :theme="darkTheme" :locale="enUS">
+    <n-dialog-provider>
+      <n-notification-provider>
+        <n-loading-bar-provider>
+          <div class="font-poppings text-slate-200">
+            <Header />
+            <div class="flex">
+              <NavBar />
+              <div class="flex-1 bg-gray-900 p-4">
+                <div class="mb-2 text-2xl font-semibold">
+                  {{ route.meta.title }}
+                </div>
+                <RouterView />
               </div>
-              <RouterView />
             </div>
           </div>
-        </n-notification-provider>
-      </n-dialog-provider>
-    </n-config-provider>
-  </div>
+        </n-loading-bar-provider>
+      </n-notification-provider>
+    </n-dialog-provider>
+  </n-config-provider>
 </template>
 
 <script setup lang="ts">
@@ -28,6 +30,7 @@ import {
   NConfigProvider,
   NNotificationProvider,
   NDialogProvider,
+  NLoadingBarProvider,
   enUS,
 } from "naive-ui"
 
