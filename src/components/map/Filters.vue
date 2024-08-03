@@ -43,7 +43,7 @@
           </select>
         </td>
         <td>
-          <n-input v-model:value="filter.notes" placeholder="" />
+          <n-input v-model:value="filter.notes" placeholder="Optional" />
         </td>
       </tr>
     </tbody>

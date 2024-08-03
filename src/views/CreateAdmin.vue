@@ -1,6 +1,6 @@
 <template>
   <div class="mb-4 rounded-md bg-gray-800 p-4">
-    <n-form ref="adminForm" :model="admin" :rulse="rules">
+    <n-form ref="adminForm" :model="admin" :rules="rules">
       <n-form-item label="Steam ID" path="steamId">
         <n-input v-model:value="admin.steamId" placeholder="" />
       </n-form-item>

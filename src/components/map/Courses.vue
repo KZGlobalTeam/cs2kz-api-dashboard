@@ -27,7 +27,7 @@
         type="textarea"
         v-model:value="course.description"
         autosize
-        placeholder=""
+        placeholder="Optional"
       />
     </div>
 

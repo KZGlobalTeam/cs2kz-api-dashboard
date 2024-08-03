@@ -4,7 +4,7 @@
     <!-- name -->
     <div v-if="updating" class="mb-4">
       <p class="mb-2 font-medium">Name</p>
-      <n-input v-model:value="name" placeholder="kz_aaaa" />
+      <n-input v-model:value="name" placeholder="Optional" />
     </div>
 
     <!-- workshop -->
@@ -13,7 +13,7 @@
       <n-input
         style="margin-bottom: 0.25rem"
         v-model:value="workshopId"
-        placeholder="123456789"
+        placeholder=""
       />
       <n-checkbox v-if="updating" size="small" v-model:checked="checkSteam">
         Update Workshop
@@ -27,7 +27,7 @@
         v-model:value="description"
         type="textarea"
         autosize
-        placeholder=""
+        placeholder="Optional"
       />
     </div>
 
