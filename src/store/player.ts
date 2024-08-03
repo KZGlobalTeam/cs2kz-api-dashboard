@@ -40,8 +40,6 @@ export const usePlayerStore = defineStore("admin", {
       try {
         this.$reset()
 
-        cookies.remove("kz-player")
-
         await axiosClient.get(`/auth/logout`, { withCredentials: true })
       } catch (error) {
         console.log(error)
