@@ -19,7 +19,7 @@
         </td>
         <td>
           <select
-            class="bg-[#303033] rounded-sm py-1 px-2"
+            class="rounded-sm bg-[#303033] px-2 py-1"
             @change="handleTierChange($event, index)"
             v-model="filter.tier"
           >
@@ -34,7 +34,7 @@
         </td>
         <td>
           <select
-            class="bg-[#303033] rounded-sm py-1 px-2"
+            class="rounded-sm bg-[#303033] px-2 py-1"
             v-model="filter.ranked_status"
           >
             <option v-for="option in rankedStatusOptions" :value="option.value">

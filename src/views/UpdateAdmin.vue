@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 bg-gray-800 mb-4 rounded-md">
+  <div class="mb-4 rounded-md bg-gray-800 p-4">
     <div class="mb-4">
       <p class="mb-2">Permissions</p>
       <n-select

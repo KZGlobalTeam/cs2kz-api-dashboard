@@ -1,15 +1,15 @@
 <template>
-  <div class="w-[200px] bg-gray-800 min-h-screen flex flex-col py-4 px-2">
+  <div class="flex min-h-screen w-[200px] flex-col bg-gray-800 px-2 py-4">
     <div>
       <RouterLink
         v-for="route in noAuthRoutes"
         :key="route.name"
         :to="route.path"
-        class="flex gap-4 p-2 hover:bg-gray-700 rounded-md cursor-pointer"
+        class="flex cursor-pointer gap-4 rounded-md p-2 hover:bg-gray-700"
       >
         <img
           :src="`/icons/${route.meta.iconName}-sharp.svg`"
-          class="w-5 h-auto"
+          class="h-auto w-5"
         />
         <p class="font-medium">{{ route.meta?.title }}</p>
       </RouterLink>
@@ -19,11 +19,11 @@
       v-for="route in authRoutes"
       :key="route.name"
       :to="route.path"
-      class="flex gap-4 p-2 hover:bg-gray-700 rounded-md cursor-pointer"
+      class="flex cursor-pointer gap-4 rounded-md p-2 hover:bg-gray-700"
     >
       <img
         :src="`/icons/${route.meta?.iconName}-sharp.svg`"
-        class="w-5 h-auto"
+        class="h-auto w-5"
       />
       <p class="font-medium">{{ route.meta?.title }}</p>
     </RouterLink>

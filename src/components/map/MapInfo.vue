@@ -9,7 +9,7 @@
 
     <!-- workshop -->
     <div class="mb-4">
-      <p class="font-medium mb-2">Workshop ID</p>
+      <p class="mb-2 font-medium">Workshop ID</p>
       <n-input
         style="margin-bottom: 0.25rem"
         v-model:value="workshopId"

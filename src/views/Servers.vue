@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-gray-800 rounded-md p-4">
-    <div class="flex justify-between gap-4 mb-4">
+  <div class="rounded-md bg-gray-800 p-4">
+    <div class="mb-4 flex justify-between gap-4">
       <!-- filters -->
       <n-space align="center">
         <n-input

@@ -7,7 +7,7 @@
           <div class="flex">
             <NavBar />
             <div class="flex-1 bg-gray-900 p-4">
-              <div class="mb-2 font-semibold text-2xl">
+              <div class="mb-2 text-2xl font-semibold">
                 {{ route.meta.title }}
               </div>
               <RouterView />

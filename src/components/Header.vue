@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex items-center h-16 w-full justify-between py-2 px-8 bg-gray-900 border-b border-b-slate-700 shadow-md"
+    class="flex h-16 w-full items-center justify-between border-b border-b-slate-700 bg-gray-900 px-8 py-2 shadow-md"
   >
     <p class="text-xl font-semibold">CS2KZ API</p>
 
@@ -8,7 +8,7 @@
       <div class="flex gap-4" v-if="PlayerStore.steamId">
         <!-- avatar -->
         <img
-          class="w-8 h-8 rounded-full ring-2 ring-slate-700"
+          class="h-8 w-8 rounded-full ring-2 ring-slate-700"
           :src="PlayerStore.avatar_url"
         />
         <div>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="p-4 bg-gray-800 mb-4 rounded-md">
+    <div class="mb-4 rounded-md bg-gray-800 p-4">
       <div class="mb-4">
         <p class="mb-2 font-medium">Server Name</p>
         <n-input v-model:value="server.name" placeholder="" />
@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <div class="p-4 bg-gray-800 rounded-md">
+    <div class="rounded-md bg-gray-800 p-4">
       <p class="mb-2 font-medium">API Key</p>
       <div class="flex gap-4">
         <n-button @click="newKey" type="primary" secondary strong>

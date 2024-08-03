@@ -2,12 +2,12 @@
   <div
     v-for="(course, index) in courses"
     :key="course.id"
-    class="p-4 bg-gray-900 border border-slate-600 rounded-md mb-4"
+    class="mb-4 rounded-md border border-slate-600 bg-gray-900 p-4"
   >
     <div
       class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
     >
-      <p class="font-medium text-xl">
+      <p class="text-xl font-medium">
         {{ `Course ${index + 1}` }}
       </p>
       <n-button @click="deleteCourse(index)" type="error" tertiary

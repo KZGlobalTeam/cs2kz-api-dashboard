@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex justify-between mb-4">
+    <div class="mb-4 flex justify-between">
       <div class="flex gap-4">
         <n-input
           style="max-width: 200px"

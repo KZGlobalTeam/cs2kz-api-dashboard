@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-gray-800 rounded-md p-4">
+  <div class="rounded-md bg-gray-800 p-4">
     <!-- selectors -->
-    <div class="flex gap-4 mb-4">
+    <div class="mb-4 flex gap-4">
       <n-input
         @input="handleAdminSearch"
         type="text"
@@ -9,7 +9,7 @@
         placeholder="Search"
       >
         <template #prefix>
-          <img src="/icons/search-sharp.svg" class="w-5 h-5" />
+          <img src="/icons/search-sharp.svg" class="h-5 w-5" />
         </template>
       </n-input>
     </div>

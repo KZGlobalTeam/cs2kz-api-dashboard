@@ -9,7 +9,7 @@
   >
     <div
       @click="handleClickApiKey"
-      class="w-max px-2 py-1 bg-gray-700 hover:bg-gray-800 text-2xl text-green-600 hover:text-green-700 rounded-md cursor-pointer"
+      class="w-max cursor-pointer rounded-md bg-gray-700 px-2 py-1 text-2xl text-green-600 hover:bg-gray-800 hover:text-green-700"
     >
       {{ apiKey }}
     </div>

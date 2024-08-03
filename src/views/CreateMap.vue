@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="p-4 bg-gray-800 rounded-md mb-4">
+    <div class="mb-4 rounded-md bg-gray-800 p-4">
       <MapInfo
         v-model:workshop-id="workshopId"
         v-model:description="description"
@@ -9,12 +9,12 @@
       />
     </div>
 
-    <div class="p-4 bg-gray-800 rounded-md mb-4">
+    <div class="mb-4 rounded-md bg-gray-800 p-4">
       <Mappers v-model:mappers="mappers" />
     </div>
 
     <!-- courses -->
-    <div class="p-4 bg-gray-800 rounded-md mb-4">
+    <div class="mb-4 rounded-md bg-gray-800 p-4">
       <Courses v-model:courses="courses" />
       <n-button @click="createCourse" type="primary" tertiary
         >New Course</n-button
