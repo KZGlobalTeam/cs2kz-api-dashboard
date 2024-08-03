@@ -73,14 +73,7 @@
 import { ref, toRaw } from "vue"
 import { useRouter } from "vue-router"
 import { useStorage } from "@vueuse/core"
-import {
-  NInput,
-  NButton,
-  NTabs,
-  NTabPane,
-  NPopconfirm,
-  useNotification,
-} from "naive-ui"
+import { NInput, NButton, NTabs, NTabPane, useNotification } from "naive-ui"
 import type { Mapper, GlobalStatus, Course } from "../types"
 import CreateMap from "./CreateMap.vue"
 import axiosClient from "../axios"
