@@ -12,11 +12,13 @@ import { noAuthRoutes, routes } from "../router"
 import { NMenu } from "naive-ui"
 import type { MenuOption } from "naive-ui"
 
+type Routes = typeof noAuthRoutes | typeof routes
+
 const playerStore = usePlayerStore()
 
 const activeKey = ref<string | null>(null)
 
-const menuOptions = ref<MenuOption[]>([])
+const menuOptions = ref<MenuOption[]>(toMenuOptions(noAuthRoutes))
 
 playerStore.$subscribe(() => {
   const authRoutes = routes.filter((route) => {
@@ -29,7 +31,11 @@ playerStore.$subscribe(() => {
     }
   })
 
-  menuOptions.value = [...noAuthRoutes, ...authRoutes].map((route) => ({
+  menuOptions.value = toMenuOptions([...noAuthRoutes, ...authRoutes] as Routes)
+})
+
+function toMenuOptions(rts: Routes) {
+  return rts.map((route) => ({
     label: () =>
       h(
         "div",
@@ -54,7 +60,7 @@ playerStore.$subscribe(() => {
       ),
     key: route.name,
   }))
-})
+}
 </script>
 
 <style scoped>
