@@ -19,23 +19,17 @@
       </div>
 
       <div class="flex gap-4">
-        <n-popconfirm @positive-click="loadDraft(false)">
-          <template #trigger>
-            <n-button :disabled="loading" type="info" tertiary
-              >Load Draft</n-button
-            >
-          </template>
-          Load draft?
-        </n-popconfirm>
+        <n-button
+          @click="loadDraft(false)"
+          :disabled="loading"
+          type="info"
+          tertiary
+          >Load Draft</n-button
+        >
 
-        <n-popconfirm @positive-click="saveDraft">
-          <template #trigger>
-            <n-button :disabled="loading" type="warning" tertiary
-              >Save as Draft</n-button
-            >
-          </template>
-          Save maps as draft?
-        </n-popconfirm>
+        <n-button @click="saveDraft" :disabled="loading" type="warning" tertiary
+          >Save as Draft</n-button
+        >
 
         <n-button
           @click.prevent="saveMaps"
