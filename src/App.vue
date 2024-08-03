@@ -23,7 +23,6 @@
 import Header from "./components/Header.vue"
 import NavBar from "./components/NavBar.vue"
 import { RouterView, useRoute } from "vue-router"
-import Cookies from "universal-cookie"
 import {
   darkTheme,
   NConfigProvider,
@@ -31,26 +30,6 @@ import {
   NDialogProvider,
   enUS,
 } from "naive-ui"
-import { usePlayerStore } from "./store/player"
-import axiosClient from "./axios"
 
-const playerStore = usePlayerStore()
 const route = useRoute()
-
-const cookies = new Cookies(null, { path: "/" })
-
-getAdmin()
-
-async function getAdmin() {
-  const kzPlayer = cookies.get("kz-player")
-
-  if (kzPlayer) {
-    playerStore.steamId = kzPlayer.steam_id
-    playerStore.avatar_url = kzPlayer.avatar_url
-
-    const { data } = await axiosClient.get(`/admins/${kzPlayer.steam_id}`)
-
-    playerStore.permissions = ["users", ...data.permissions]
-  }
-}
 </script>

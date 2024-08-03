@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref } from "vue"
-import { RouterLink } from "vue-router"
+import { h, ref, computed } from "vue"
+import { RouterLink, useRoute } from "vue-router"
 import { usePlayerStore } from "../store/player"
 import { noAuthRoutes, routes } from "../router"
 import { NMenu } from "naive-ui"
@@ -16,7 +16,9 @@ type Routes = typeof noAuthRoutes | typeof routes
 
 const playerStore = usePlayerStore()
 
-const activeKey = ref<string | null>(null)
+const route = useRoute()
+
+const activeKey = computed(() => route.name as string)
 
 const menuOptions = ref<MenuOption[]>(toMenuOptions(noAuthRoutes))
 

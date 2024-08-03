@@ -195,14 +195,12 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const playerStore = usePlayerStore()
-  try {
-    if (to.meta.requiresPermission && to.name !== "home") {
-      const requiredPermission = to.meta.requiresPermission as string
-      if (!playerStore.permissions?.includes(requiredPermission))
-        return { name: "home" }
-    }
-  } catch (error) {
-    console.log(error)
+  await playerStore.getPermissions()
+
+  if (to.meta.requiresPermission && to.name !== "home") {
+    const requiredPermission = to.meta.requiresPermission as string
+    if (!playerStore.permissions?.includes(requiredPermission))
+      return { name: "home" }
   }
 })
 
