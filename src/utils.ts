@@ -67,11 +67,14 @@ export function getDiff(obj1: any, obj2: any) {
 }
 
 export function transformSrv(server: any) {
-  const [host, port] = server.ip_address.split(":")
+  const lastColonIdx = server.ip_address.lastIndexOf(":")
+  const host = server.ip_address.slice(0, lastColonIdx)
+  const port = server.ip_address.slice(lastColonIdx + 1)
   return {
-    host,
-    port: parseInt(port),
-    ...server,
+    new_name: server.name,
+    new_host: host,
+    new_port: parseInt(port),
+    new_owner: server.owner,
   }
 }
 

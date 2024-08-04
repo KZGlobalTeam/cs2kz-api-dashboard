@@ -143,7 +143,7 @@ function newKey() {
           .put(`/servers/${id}/key`, null, { withCredentials: true })
           .then(({ data }: AxiosResponse<{ refresh_key: string }>) => {
             resolve()
-            apiKey.value = data.refresh_key
+            apiKey.value = data.key
             showModal.value = true
           })
           .catch((error) => {
