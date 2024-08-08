@@ -189,7 +189,7 @@ async function loadServersData() {
       params,
     })
 
-    data.value = res?.results || []
+    data.value = res?.servers || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch servers",

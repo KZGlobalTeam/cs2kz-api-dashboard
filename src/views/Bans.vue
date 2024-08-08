@@ -342,7 +342,7 @@ async function loadBansData() {
       params,
     })
 
-    data.value = res?.results || []
+    data.value = res?.bans || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch bans",

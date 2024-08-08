@@ -192,7 +192,7 @@ async function loadAdminsData() {
     const { data: res } = await axiosClient.get("/admins")
     // console.log(result.data)
 
-    data.value = res?.results || []
+    data.value = res?.admins || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch admins",
