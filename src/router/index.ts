@@ -44,6 +44,15 @@ export const routes = [
     },
   },
   {
+    path: "/home/maps/:id/removecourse",
+    name: "removecourse",
+    component: () => import("../views/RemoveCourse.vue"),
+    meta: {
+      title: "Remove Course",
+      requiresPermission: "maps",
+    },
+  },
+  {
     path: "/home/servers",
     name: "servers",
     component: () => import("../views/Servers.vue"),

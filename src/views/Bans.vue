@@ -107,6 +107,7 @@ import type {
 import axiosClient from "../axios"
 import type { Ban } from "../types"
 import { toLocal, renderSteamID, toErrorMsg } from "../utils"
+import ActionButton from "../components/ActionButton.vue"
 
 interface BanQuery {
   player?: string
@@ -230,67 +231,49 @@ const columns = ref<DataTableColumn<Ban>[]>([
     render(rowData) {
       return [
         !rowData.unban &&
-          h(
-            NButton,
-            {
-              type: "default",
-              textColor: "#e2e8f0",
-              size: "tiny",
-              style: {
-                marginRight: "0.5rem",
-              },
-              onClick: () => {
-                router.push({
-                  name: "updateban",
-                  params: {
-                    id: rowData.id,
-                  },
-                })
-              },
-            },
-            { default: () => "Update" },
-          ),
-        !rowData.unban &&
-          h(
-            NButton,
-            {
-              type: "default",
-              textColor: "#e2e8f0",
-              size: "tiny",
-              style: {
-                marginRight: "0.5rem",
-              },
-              onClick: () => {
-                router.push({
-                  name: "unban",
-                  params: {
-                    id: rowData.id,
-                  },
-                })
-              },
-            },
-            { default: () => "Unban" },
-          ),
-        h(
-          NButton,
-          {
-            type: "default",
-            textColor: "#e2e8f0",
-            size: "tiny",
+          h(ActionButton, {
+            iconName: "edit",
             style: {
               marginRight: "0.5rem",
             },
             onClick: () => {
               router.push({
-                name: "bandetails",
+                name: "updateban",
                 params: {
                   id: rowData.id,
                 },
               })
             },
+          }),
+        !rowData.unban &&
+          h(ActionButton, {
+            iconName: "unban",
+            style: {
+              marginRight: "0.5rem",
+            },
+            onClick: () => {
+              router.push({
+                name: "unban",
+                params: {
+                  id: rowData.id,
+                },
+              })
+            },
+          }),
+        h(ActionButton, {
+          iconName: "more",
+          style: {
+            marginRight: "0.5rem",
           },
-          { default: () => "Details" },
-        ),
+          onClick: () => {
+            router.push({
+              name: "bandetails",
+              params: {
+                id: rowData.id,
+              },
+            })
+          },
+        }),
       ]
     },
   },

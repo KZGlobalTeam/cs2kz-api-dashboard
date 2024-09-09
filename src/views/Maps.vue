@@ -72,6 +72,7 @@ import type {
   PaginationInfo,
   DataTableColumn,
 } from "naive-ui"
+import ActionButton from "../components/ActionButton.vue"
 import type { Map, GlobalStatus } from "../types"
 import { useRouter } from "vue-router"
 import axiosClient from "../axios"
@@ -191,12 +192,12 @@ const columns = ref<DataTableColumn<RowData>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return h(
-        NButton,
-        {
-          type: "default",
-          textColor: "#e2e8f0",
-          size: "tiny",
+      return [
+        h(ActionButton, {
+          iconName: "edit",
+          style: {
+            marginRight: "0.5rem",
+          },
           onClick: () => {
             router.push({
               name: "updatemap",
@@ -205,9 +206,20 @@ const columns = ref<DataTableColumn<RowData>[]>([
               },
             })
           },
-        },
-        { default: () => "Update" },
-      )
+        }),
+        h(ActionButton, {
+          iconName: "delete",
+          type: "error",
+          onClick: () => {
+            router.push({
+              name: "removecourse",
+              params: {
+                id: rowData.id,
+              },
+            })
+          },
+        }),
+      ]
     },
   },
 ])

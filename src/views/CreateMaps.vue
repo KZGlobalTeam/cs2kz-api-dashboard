@@ -213,6 +213,8 @@ async function saveMaps() {
       }
 
       if (allPassed) {
+        // clear draft
+        mapsDraft.value = []
         router.push({
           name: "maps",
         })

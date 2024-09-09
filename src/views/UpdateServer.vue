@@ -17,7 +17,7 @@
       <div class="mb-4">
         <p class="mb-2 font-medium">Owner</p>
         <n-input
-          v-model:value="server.owned_by"
+          v-model:value="server.owner"
           placeholder="STEAM_1:1:XXXXXXXXXXXX"
         />
       </div>
@@ -83,7 +83,7 @@ const isAdmin = computed(() => route.name === "createserver")
 const server = reactive({
   name: "",
   ip_address: "",
-  owned_by: "",
+  owner: "",
 })
 
 onBeforeMount(async () => {
@@ -95,7 +95,7 @@ onBeforeMount(async () => {
 
     server.name = data.name
     server.ip_address = `${data.host}:${data.port}`
-    server.owned_by = data.owner.steam_id
+    server.owner = data.owner.steam_id
 
     oldServer = JSON.parse(JSON.stringify(server))
   } catch (error) {
@@ -111,11 +111,14 @@ async function updateServer() {
     notification.error({ title: "No changes made" })
   } else {
     loading.value = true
-    const update = getDiff(transformSrv(oldServer), transformSrv(toRaw(server)))
     try {
-      await axiosClient.patch(`/servers/${route.params.id}`, update, {
-        withCredentials: true,
-      })
+      await axiosClient.patch(
+        `/servers/${route.params.id}`,
+        transformSrv(server, false),
+        {
+          withCredentials: true,
+        },
+      )
       notification.success({ title: "Server updated", duration: 3000 })
       console.log(route)
 
@@ -141,7 +144,7 @@ function newKey() {
         const id = route.params.id
         axiosClient
           .put(`/servers/${id}/key`, null, { withCredentials: true })
-          .then(({ data }: AxiosResponse<{ refresh_key: string }>) => {
+          .then(({ data }: AxiosResponse<{ key: string }>) => {
             resolve()
             apiKey.value = data.key
             showModal.value = true

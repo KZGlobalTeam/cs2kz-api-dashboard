@@ -63,7 +63,7 @@ function toMenuOptions(rts: Routes) {
         },
         [
           h("img", {
-            src: `/icons/${route.meta.iconName}-sharp.svg`,
+            src: `/icons/${route.meta.iconName}.svg`,
             class: "h-auto w-4",
           }),
           ,

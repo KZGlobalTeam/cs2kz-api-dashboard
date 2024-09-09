@@ -12,9 +12,9 @@
         />
       </n-form-item>
 
-      <n-form-item v-if="isAdmin" label="Owner" path="owned_by">
+      <n-form-item v-if="isAdmin" label="Owner" path="owner">
         <n-input
-          v-model:value="server.owned_by"
+          v-model:value="server.owner"
           placeholder="STEAM_1:1:XXXXXXXXXXXX"
         />
       </n-form-item>
@@ -64,7 +64,7 @@ const isAdmin = computed(() => route.name === "createserver")
 const server = reactive({
   name: "",
   ip_address: "",
-  owned_by: isAdmin.value ? "" : playerStore.steamId,
+  owner: isAdmin.value ? "" : playerStore.steamId,
 })
 
 const apiKey = ref("")
@@ -81,7 +81,7 @@ const rules = {
     message: "IP address is required.",
     trigger: ["input", "blur"],
   },
-  owned_by: {
+  owner: {
     required: true,
     message: "Owner's steam ID is required.",
     trigger: ["input", "blur"],
@@ -98,12 +98,12 @@ async function createServer() {
 
         const { data } = (await axiosClient.post(
           "/servers",
-          transformSrv(server),
+          transformSrv(server, true),
           {
             withCredentials: true,
           },
-        )) as AxiosResponse<{ server_id: number; refresh_key: string }>
-        apiKey.value = data.refresh_key
+        )) as AxiosResponse<{ server_id: number; key: string }>
+        apiKey.value = data.key
 
         showModal.value = true
         notification.success({ title: "Server created", duration: 3000 })

@@ -66,16 +66,21 @@ export function getDiff(obj1: any, obj2: any) {
   return diff
 }
 
-export function transformSrv(server: any) {
-  const lastColonIdx = server.ip_address.lastIndexOf(":")
-  const host = server.ip_address.slice(0, lastColonIdx)
-  const port = server.ip_address.slice(lastColonIdx + 1)
-  return {
-    new_name: server.name,
-    new_host: host,
-    new_port: parseInt(port),
-    new_owner: server.owner,
-  }
+export function transformSrv(server: any, newSrv: boolean) {
+  const [host, port] = server.ip_address.split(":")
+  return newSrv
+    ? {
+        name: server.name,
+        host,
+        port: parseInt(port),
+        owner_id: server.owner,
+      }
+    : {
+        new_name: server.name,
+        new_host: host,
+        new_port: parseInt(port),
+        new_owner: server.owner,
+      }
 }
 
 export function calcBanDuration(ban: Ban) {

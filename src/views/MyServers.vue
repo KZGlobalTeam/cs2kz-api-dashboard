@@ -53,6 +53,7 @@ import axiosClient from "../axios"
 import type { Server } from "../types"
 import { toLocal, toErrorMsg } from "../utils"
 import { usePlayerStore } from "../store/player"
+import ActionButton from "../components/ActionButton.vue"
 
 type ServerQuery = {
   name: string
@@ -104,26 +105,17 @@ const columns = ref<DataTableColumn<Server>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return h(
-        NButton,
-        {
-          type: "default",
-          textColor: "#e2e8f0",
-          size: "tiny",
-          style: {
-            marginRight: "0.5rem",
-          },
-          onClick: () => {
-            router.push({
-              name: "updatemyserver",
-              params: {
-                id: rowData.id,
-              },
-            })
-          },
+      return h(ActionButton, {
+        iconName: "edit",
+        onClick: () => {
+          router.push({
+            name: "updatemyserver",
+            params: {
+              id: rowData.id,
+            },
+          })
         },
-        { default: () => "Update" },
-      )
+      })
     },
   },
 ])
