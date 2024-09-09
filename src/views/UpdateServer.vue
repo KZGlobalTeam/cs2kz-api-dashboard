@@ -63,7 +63,7 @@ import { Server } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
 import { isEqual } from "lodash-es"
-import { toErrorMsg, getDiff, transformSrv } from "../utils"
+import { toErrorMsg, transformSrv } from "../utils"
 import KeyModal from "../components/server/KeyModal.vue"
 
 const router = useRouter()

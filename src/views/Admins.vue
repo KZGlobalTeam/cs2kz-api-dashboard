@@ -9,7 +9,7 @@
         placeholder="Search"
       >
         <template #prefix>
-          <img src="/icons/search-sharp.svg" class="h-5 w-5" />
+          <img src="/icons/search.svg" class="h-5 w-5" />
         </template>
       </n-input>
     </div>
