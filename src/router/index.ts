@@ -15,7 +15,7 @@ export const noAuthRoutes = [
 
 export const routes = [
   {
-    path: "/home/maps",
+    path: "/maps",
     name: "maps",
     component: () => import("../views/Maps.vue"),
     meta: {
@@ -26,7 +26,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/maps/create",
+    path: "/maps/create",
     name: "createmaps",
     component: () => import("../views/CreateMaps.vue"),
     meta: {
@@ -35,7 +35,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/maps/:id/update",
+    path: "/maps/:id/update",
     name: "updatemap",
     component: () => import("../views/UpdateMap.vue"),
     meta: {
@@ -44,7 +44,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/maps/:id/removecourse",
+    path: "/maps/:id/removecourse",
     name: "removecourse",
     component: () => import("../views/RemoveCourse.vue"),
     meta: {
@@ -53,7 +53,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/servers",
+    path: "/servers",
     name: "servers",
     component: () => import("../views/Servers.vue"),
     meta: {
@@ -64,7 +64,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/myservers",
+    path: "/myservers",
     name: "myservers",
     component: () => import("../views/MyServers.vue"),
     meta: {
@@ -75,7 +75,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/servers/create",
+    path: "/servers/create",
     name: "createserver",
     component: () => import("../views/CreateServer.vue"),
     meta: {
@@ -84,7 +84,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/servers/:id/update",
+    path: "/servers/:id/update",
     name: "updateserver",
     component: () => import("../views/UpdateServer.vue"),
     meta: {
@@ -93,7 +93,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/myservers/create",
+    path: "/myservers/create",
     name: "createmyserver",
     component: () => import("../views/CreateServer.vue"),
     meta: {
@@ -101,7 +101,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/myservers/:id/update",
+    path: "/myservers/:id/update",
     name: "updatemyserver",
     component: () => import("../views/UpdateServer.vue"),
     meta: {
@@ -109,7 +109,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/bans",
+    path: "/bans",
     name: "bans",
     component: () => import("../views/Bans.vue"),
     meta: {
@@ -120,7 +120,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/bans/create",
+    path: "/bans/create",
     name: "createban",
     component: () => import("../views/CreateBan.vue"),
     meta: {
@@ -129,7 +129,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/bans/:id/update",
+    path: "/bans/:id/update",
     name: "updateban",
     component: () => import("../views/UpdateBan.vue"),
     meta: {
@@ -138,7 +138,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/bans/:id/unban",
+    path: "/bans/:id/unban",
     name: "unban",
     component: () => import("../views/Unban.vue"),
     meta: {
@@ -147,7 +147,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/bans/:id",
+    path: "/bans/:id",
     name: "bandetails",
     component: () => import("../views/BanDetails.vue"),
     meta: {
@@ -156,7 +156,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/admins",
+    path: "/admins",
     name: "admins",
     component: () => import("../views/Admins.vue"),
     meta: {
@@ -167,7 +167,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/admins/create",
+    path: "/admins/create",
     name: "createadmin",
     component: () => import("../views/CreateAdmin.vue"),
     meta: {
@@ -176,7 +176,7 @@ export const routes = [
     },
   },
   {
-    path: "/home/admins/:steam_id/update",
+    path: "/admins/:steam_id/update",
     name: "updateadmin",
     component: () => import("../views/UpdateAdmin.vue"),
     meta: {
@@ -204,6 +204,7 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const playerStore = usePlayerStore()
+  playerStore.readCookie()
   await playerStore.getPermissions()
 
   if (to.meta.requiresPermission && to.name !== "home") {
