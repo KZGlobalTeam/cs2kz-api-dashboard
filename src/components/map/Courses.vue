@@ -10,7 +10,11 @@
       <p class="text-xl font-medium">
         {{ `Course ${index + 1}` }}
       </p>
-      <n-button @click="deleteCourse(index)" type="error" tertiary
+      <n-button
+        v-if="removable"
+        @click="deleteCourse(index)"
+        type="error"
+        tertiary
         >Delete</n-button
       >
     </div>
@@ -46,6 +50,13 @@ import { NButton, NInput, useDialog } from "naive-ui"
 import Mappers from "./Mappers.vue"
 import Filters from "./Filters.vue"
 import type { Course } from "../../types"
+
+const props = withDefaults(
+  defineProps<{
+    removable?: boolean
+  }>(),
+  { removable: true },
+)
 
 const courses = defineModel<Course[]>("courses", { required: true })
 

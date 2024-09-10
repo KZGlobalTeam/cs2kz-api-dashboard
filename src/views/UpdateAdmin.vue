@@ -70,7 +70,7 @@ async function updateAdmin() {
       { withCredentials: true },
     )
     notification.success({ title: "Admin updated", duration: 3000 })
-    router.push("/home/admins")
+    router.push("/admins")
   } catch (error) {
     loading.value = false
     notification.error({

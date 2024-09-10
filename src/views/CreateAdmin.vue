@@ -80,7 +80,7 @@ function createAdmin() {
           { withCredentials: true },
         )
         notification.success({ title: "Admin saved", duration: 3000 })
-        router.push("/home/admins")
+        router.push("/admins")
       } catch (error) {
         loading.value = false
         notification.error({

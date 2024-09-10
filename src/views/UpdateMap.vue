@@ -17,7 +17,7 @@
 
     <!-- courses -->
     <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <Courses v-model:courses="courses" />
+      <Courses :removable="false" v-model:courses="courses" />
     </div>
 
     <!-- save map -->
@@ -40,7 +40,7 @@ import { ref, onBeforeMount, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { NButton, useNotification } from "naive-ui"
 import type { Mapper, Course, Map } from "../types"
-import { cloneDeep, isEqual, omit } from "lodash-es"
+import { cloneDeep, isEqual } from "lodash-es"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"
 import type { AxiosResponse } from "axios"
@@ -97,29 +97,11 @@ async function updateMap() {
   loading.value = true
 
   try {
-    // in case some courses are deleted, we submit the new map as a whole
-    if (oldMap.courses.length !== courses.value.length) {
-      const update = {
-        global_status: globalStatus.value,
-        workshop_id: parseInt(workshopId.value),
-        description: description.value,
-        mappers: mappers.value.map((mapper) => mapper.steam_id),
-        courses: courses.value.map((course) => ({
-          name: course.name || null,
-          description: course.description || null,
-          filters: course.filters.map((filter) => omit(filter, ["id"])),
-          mappers: course.mappers.map((mapper) => mapper.steam_id),
-        })),
-      }
-      console.log("map to update", update)
-      await axiosClient.put("/maps", update, { withCredentials: true })
-    } else {
-      const update = generateUpdate()
-      console.log("map to update", update)
-      await axiosClient.patch(`/maps/${oldMap.id}`, update, {
-        withCredentials: true,
-      })
-    }
+    const update = generateUpdate()
+    console.log("map to update", update)
+    await axiosClient.patch(`/maps/${oldMap.id}`, update, {
+      withCredentials: true,
+    })
 
     notification.success({ title: "Map updated", duration: 3000 })
     router.push({

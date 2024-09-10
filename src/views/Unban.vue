@@ -60,7 +60,7 @@ async function revertBan() {
           withCredentials: true,
         })
         notification.success({ title: "Ban reverted", duration: 3000 })
-        router.push("/home/bans")
+        router.push("/bans")
       } catch (error) {
         loading.value = false
         notification.error({

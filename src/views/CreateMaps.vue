@@ -194,7 +194,7 @@ async function saveMaps() {
 
         if (result.status === "fulfilled") {
           notification.success({
-            title: `${maps.value[i].name} saved`,
+            title: `${maps.value[i].name} created`,
             duration: 3000,
           })
 
