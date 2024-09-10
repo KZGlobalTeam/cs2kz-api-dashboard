@@ -51,7 +51,7 @@ import Mappers from "./Mappers.vue"
 import Filters from "./Filters.vue"
 import type { Course } from "../../types"
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     removable?: boolean
   }>(),
