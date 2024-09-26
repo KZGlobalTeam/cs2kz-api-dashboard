@@ -52,7 +52,14 @@
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NSpace, useNotification } from "naive-ui"
+import {
+  NInput,
+  NDataTable,
+  NButton,
+  NSpace,
+  NTooltip,
+  useNotification,
+} from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -128,17 +135,25 @@ const columns = ref<DataTableColumn<Server>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return h(ActionButton, {
-        iconName: "edit",
-        onClick: () => {
-          router.push({
-            name: "updateserver",
-            params: {
-              id: rowData.id,
-            },
-          })
+      return h(
+        NTooltip,
+        { trigger: "hover" },
+        {
+          trigger: () =>
+            h(ActionButton, {
+              iconName: "edit",
+              onClick: () => {
+                router.push({
+                  name: "updateserver",
+                  params: {
+                    id: rowData.id,
+                  },
+                })
+              },
+            }),
+          default: () => "Update",
         },
-      })
+      )
     },
   },
 ])

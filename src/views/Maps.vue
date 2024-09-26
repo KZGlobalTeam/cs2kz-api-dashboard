@@ -65,6 +65,7 @@ import {
   NTag,
   NSpace,
   NSelect,
+  NTooltip,
   useNotification,
 } from "naive-ui"
 import type {
@@ -193,32 +194,48 @@ const columns = ref<DataTableColumn<RowData>[]>([
     key: "actions",
     render(rowData) {
       return [
-        h(ActionButton, {
-          iconName: "edit",
-          style: {
-            marginRight: "0.5rem",
+        h(
+          NTooltip,
+          { trigger: "hover" },
+          {
+            trigger: () =>
+              h(ActionButton, {
+                iconName: "edit",
+                style: {
+                  marginRight: "0.5rem",
+                },
+                onClick: () => {
+                  router.push({
+                    name: "updatemap",
+                    params: {
+                      id: rowData.id,
+                    },
+                  })
+                },
+              }),
+            default: () => "Update",
           },
-          onClick: () => {
-            router.push({
-              name: "updatemap",
-              params: {
-                id: rowData.id,
-              },
-            })
+        ),
+        h(
+          NTooltip,
+          { trigger: "hover" },
+          {
+            trigger: () =>
+              h(ActionButton, {
+                iconName: "delete",
+                type: "error",
+                onClick: () => {
+                  router.push({
+                    name: "removemap",
+                    params: {
+                      id: rowData.id,
+                    },
+                  })
+                },
+              }),
+            default: () => "Remove Courses",
           },
-        }),
-        h(ActionButton, {
-          iconName: "delete",
-          type: "error",
-          onClick: () => {
-            router.push({
-              name: "removecourse",
-              params: {
-                id: rowData.id,
-              },
-            })
-          },
-        }),
+        ),
       ]
     },
   },

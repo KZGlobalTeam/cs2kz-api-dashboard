@@ -42,7 +42,14 @@
 <script setup lang="ts">
 import { ref, reactive, h, computed, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NTag, useNotification } from "naive-ui"
+import {
+  NInput,
+  NDataTable,
+  NButton,
+  NTag,
+  NTooltip,
+  useNotification,
+} from "naive-ui"
 import type {
   DataTableSortState,
   PaginationInfo,
@@ -130,17 +137,25 @@ const columns = ref<DataTableColumn<Admin>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return h(ActionButton, {
-        iconName: "edit",
-        onClick: () => {
-          router.push({
-            name: "updateadmin",
-            params: {
-              steam_id: rowData.steam_id,
-            },
-          })
+      return h(
+        NTooltip,
+        { trigger: "hover" },
+        {
+          trigger: () =>
+            h(ActionButton, {
+              iconName: "edit",
+              onClick: () => {
+                router.push({
+                  name: "updateadmin",
+                  params: {
+                    steam_id: rowData.steam_id,
+                  },
+                })
+              },
+            }),
+          default: () => "Edit",
         },
-      })
+      )
     },
   },
 ])

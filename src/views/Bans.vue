@@ -97,6 +97,7 @@ import {
   NSelect,
   NDatePicker,
   NTag,
+  NTooltip,
   useNotification,
 } from "naive-ui"
 import type {
@@ -231,49 +232,76 @@ const columns = ref<DataTableColumn<Ban>[]>([
     render(rowData) {
       return [
         !rowData.unban &&
-          h(ActionButton, {
-            iconName: "edit",
-            style: {
-              marginRight: "0.5rem",
+          h(
+            NTooltip,
+            { trigger: "hover" },
+            {
+              trigger: () =>
+                h(ActionButton, {
+                  iconName: "edit",
+                  style: {
+                    marginRight: "0.5rem",
+                  },
+                  onClick: () => {
+                    router.push({
+                      name: "updateban",
+                      params: {
+                        id: rowData.id,
+                      },
+                    })
+                  },
+                }),
+              default: () => "Update",
             },
-            onClick: () => {
-              router.push({
-                name: "updateban",
-                params: {
-                  id: rowData.id,
-                },
-              })
-            },
-          }),
+          ),
+        ,
         !rowData.unban &&
-          h(ActionButton, {
-            iconName: "unban",
-            style: {
-              marginRight: "0.5rem",
+          h(
+            NTooltip,
+            { trigger: "hover" },
+            {
+              trigger: () =>
+                h(ActionButton, {
+                  iconName: "unban",
+                  style: {
+                    marginRight: "0.5rem",
+                  },
+                  onClick: () => {
+                    router.push({
+                      name: "unban",
+                      params: {
+                        id: rowData.id,
+                      },
+                    })
+                  },
+                }),
+              default: () => "Unban",
             },
-            onClick: () => {
-              router.push({
-                name: "unban",
-                params: {
-                  id: rowData.id,
+          ),
+        ,
+        h(
+          NTooltip,
+          { trigger: "hover" },
+          {
+            trigger: () =>
+              h(ActionButton, {
+                iconName: "more",
+                style: {
+                  marginRight: "0.5rem",
                 },
-              })
-            },
-          }),
-        h(ActionButton, {
-          iconName: "more",
-          style: {
-            marginRight: "0.5rem",
+                onClick: () => {
+                  router.push({
+                    name: "bandetails",
+                    params: {
+                      id: rowData.id,
+                    },
+                  })
+                },
+              }),
+            default: () => "Details",
           },
-          onClick: () => {
-            router.push({
-              name: "bandetails",
-              params: {
-                id: rowData.id,
-              },
-            })
-          },
-        }),
+        ),
+        ,
       ]
     },
   },
