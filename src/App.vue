@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue"
+import { onMounted } from "vue"
 import Header from "./components/Header.vue"
 import NavBar from "./components/NavBar.vue"
 import { RouterView, useRoute, useRouter } from "vue-router"
@@ -54,7 +54,7 @@ async function verifySession() {
   try {
     await axiosClient.get("/auth/verify-session", { withCredentials: true })
 
-    setTimeout(verifySession, 1000 * 3)
+    setTimeout(verifySession, 1000 * 25)
   } catch (error: any) {
     if (error.response.status >= 400) {
       playerStore.$reset()

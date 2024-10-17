@@ -31,12 +31,7 @@
           >Save as Draft</n-button
         >
 
-        <n-button
-          @click.prevent="saveMaps"
-          :disabled="loading"
-          :loading="loading"
-          type="primary"
-          strong
+        <n-button @click.prevent="saveMaps" type="primary" strong
           >Create</n-button
         >
       </div>
@@ -66,6 +61,17 @@
         />
       </n-tab-pane>
     </n-tabs>
+
+    <n-modal v-model:show="loading" :mask-closable="false" class="bg-gray-700">
+      <n-card style="width: 300px">
+        <div class="flex items-center gap-2">
+          <img src="/icons/loading.svg" class="h-8 w-auto" />
+          <span class="font-poppings text-lg font-medium"
+            >Creating maps...</span
+          >
+        </div>
+      </n-card>
+    </n-modal>
   </div>
 </template>
 
@@ -73,7 +79,15 @@
 import { ref, toRaw } from "vue"
 import { useRouter } from "vue-router"
 import { useStorage } from "@vueuse/core"
-import { NInput, NButton, NTabs, NTabPane, useNotification } from "naive-ui"
+import {
+  NInput,
+  NButton,
+  NCard,
+  NModal,
+  NTabs,
+  NTabPane,
+  useNotification,
+} from "naive-ui"
 import type { Mapper, GlobalStatus, Course } from "../types"
 import CreateMap from "./CreateMap.vue"
 import axiosClient from "../axios"
@@ -185,6 +199,8 @@ async function saveMaps() {
     try {
       const results = await Promise.allSettled(promises)
 
+      loading.value = false
+
       let allPassed = true
 
       const names: string[] = []
@@ -223,8 +239,6 @@ async function saveMaps() {
       console.log(error)
     }
   }
-
-  loading.value = false
 }
 
 function validateMap(map: Map) {
