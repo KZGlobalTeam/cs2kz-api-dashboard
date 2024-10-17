@@ -42,29 +42,26 @@ const playerStore = usePlayerStore()
 const route = useRoute()
 const router = useRouter()
 
-const timer = ref(0)
-
 onMounted(async () => {
   playerStore.readPlayer()
   // if logged in
   if (playerStore.steamId) {
-    timer.value = setInterval(verifySession, 1000 * 2)
+    await verifySession()
   }
-})
-
-onUnmounted(() => {
-  clearInterval(timer.value)
 })
 
 async function verifySession() {
   try {
     await axiosClient.get("/auth/verify-session", { withCredentials: true })
+
+    setTimeout(verifySession, 1000 * 3)
   } catch (error: any) {
     if (error.response.status >= 400) {
       playerStore.$reset()
       cookies.remove("kz-player")
       router.push("/")
     }
+
     console.error(error)
   }
 }
