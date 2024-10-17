@@ -18,7 +18,7 @@
         </div>
       </div>
       <div v-else>
-        <n-button secondary type="success" @click="playerStore.signIn" strong
+        <n-button secondary type="success" @click="signIn" strong
           >SIGN IN</n-button
         >
       </div>
@@ -30,13 +30,22 @@
 import { NButton } from "naive-ui"
 import { useRouter } from "vue-router"
 import { usePlayerStore } from "../store/player"
+import axiosClient from "../axios"
 
 const router = useRouter()
 
 const playerStore = usePlayerStore()
 
+async function signIn() {
+  location.href = `${import.meta.env.VITE_API_URL}/auth/login?redirect_to=${location.origin}`
+}
+
 async function signOut() {
-  await playerStore.signOut()
-  router.push("/")
+  try {
+    await axiosClient.get(`/auth/logout`, { withCredentials: true })
+    router.push("/")
+  } catch (error) {
+    console.log(error)
+  }
 }
 </script>

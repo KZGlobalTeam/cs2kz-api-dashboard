@@ -9,7 +9,7 @@ import { h, ref, watch } from "vue"
 import { RouterLink, useRoute } from "vue-router"
 import { usePlayerStore } from "../store/player"
 import { noAuthRoutes, routes } from "../router"
-import { NMenu, useLoadingBar } from "naive-ui"
+import { NMenu } from "naive-ui"
 import type { MenuOption } from "naive-ui"
 
 type Routes = typeof noAuthRoutes | typeof routes
@@ -22,22 +22,12 @@ const activeKey = ref<string>("home")
 
 const menuOptions = ref<MenuOption[]>(toMenuOptions(noAuthRoutes))
 
-const loadingBar = useLoadingBar()
-
 watch(
   () => route.name,
   (name) => {
     activeKey.value = name as string
   },
 )
-
-playerStore.$subscribe((_, state) => {
-  if (state.loading) {
-    loadingBar.start()
-  } else {
-    loadingBar.finish()
-  }
-})
 
 playerStore.$subscribe(() => {
   const authRoutes = routes.filter((route) => {

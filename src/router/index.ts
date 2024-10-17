@@ -204,11 +204,10 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const playerStore = usePlayerStore()
-  playerStore.readCookie()
-  await playerStore.getPermissions()
 
-  if (to.meta.requiresPermission && to.name !== "home") {
-    const requiredPermission = to.meta.requiresPermission as string
+  const requiredPermission = to.meta.requiresPermission as string
+
+  if (requiredPermission && to.name !== "home") {
     if (!playerStore.permissions?.includes(requiredPermission))
       return { name: "home" }
   }

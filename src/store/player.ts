@@ -12,37 +12,25 @@ export const usePlayerStore = defineStore("admin", {
     loading: false,
   }),
   actions: {
-    async getPermissions() {
+    async readPlayer() {
       this.loading = true
-      try {
-        if (this.steamId) {
-          const { data } = await axiosClient.get(`/admins/${this.steamId}`)
-          this.permissions = ["users", ...data.permissions]
-        }
-      } catch (error) {
-        console.log(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    readCookie() {
+
       const kzPlayer = cookies.get("kz-player")
 
       if (kzPlayer) {
         this.steamId = kzPlayer.steam_id
         this.avatar_url = kzPlayer.avatar_url
-      }
-    },
-    async signIn() {
-      location.href = `${import.meta.env.VITE_API_URL}/auth/login?redirect_to=${location.origin}`
-    },
-    async signOut() {
-      try {
-        this.$reset()
 
-        await axiosClient.get(`/auth/logout`, { withCredentials: true })
-      } catch (error) {
-        console.log(error)
+        try {
+          const { data } = await axiosClient.get(`/admins/${this.steamId}`)
+          this.permissions = ["users", ...data.permissions]
+        } catch (error: any) {
+          if (error.response.status === 404) {
+            this.permissions = ["users"]
+          }
+        } finally {
+          this.loading = false
+        }
       }
     },
   },
