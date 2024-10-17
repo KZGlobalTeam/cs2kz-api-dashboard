@@ -5,6 +5,7 @@
       v-model:value="mappers"
       item-style="margin-bottom: 1rem;"
       :on-create="onCreateMapper"
+      :min="1"
       #="{ index }"
     >
       <div class="flex gap-4">
