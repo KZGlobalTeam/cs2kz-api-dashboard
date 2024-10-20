@@ -47,7 +47,7 @@ const courses = defineModel<Course[]>("courses", { required: true })
 function createCourse() {
   courses.value.push({
     id: newCourseId++,
-    name: "",
+    name: courses.value.length === 0 ? "Main" : "",
     description: "",
     filters: [
       {
