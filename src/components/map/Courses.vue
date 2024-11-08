@@ -66,6 +66,7 @@ function deleteCourse(index: number) {
   dialog.warning({
     title: "Warning",
     content: "Are you sure you want to delete this course?",
+    class: "font-poppings",
     positiveText: "Yes",
     negativeText: "Cancel",
     onPositiveClick: () => {

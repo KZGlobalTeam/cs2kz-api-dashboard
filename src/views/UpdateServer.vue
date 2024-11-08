@@ -137,6 +137,7 @@ function newKey() {
   dialog.warning({
     title: "Warning",
     content: "Are you sure you want to generate a new API key for this server?",
+    class: "font-poppings",
     positiveText: "Yes",
     negativeText: "Cancel",
     onPositiveClick: (): Promise<void> => {
@@ -165,6 +166,7 @@ function revokeKey() {
   dialog.warning({
     title: "Warning",
     content: "Are you sure you want to revoke API key for this server?",
+    class: "font-poppings",
     positiveText: "Yes",
     negativeText: "Cancel",
     onPositiveClick: (): Promise<void> => {
