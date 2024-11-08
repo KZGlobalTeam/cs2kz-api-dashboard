@@ -102,8 +102,8 @@ async function createServer() {
           {
             withCredentials: true,
           },
-        )) as AxiosResponse<{ server_id: number; key: string }>
-        apiKey.value = data.key
+        )) as AxiosResponse<{ server_id: number; api_key: string }>
+        apiKey.value = data.api_key
 
         showModal.value = true
         notification.success({ title: "Server created", duration: 3000 })
