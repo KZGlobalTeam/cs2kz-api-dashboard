@@ -196,7 +196,11 @@ onBeforeMount(() => {
 async function loadAdminsData() {
   loading.value = true
   try {
-    const { data: res } = await axiosClient.get("/admins")
+    const { data: res } = await axiosClient.get("/admins", {
+      params: {
+        permissions: "user-permissions,servers,map-pool,player-bans",
+      },
+    })
     // console.log(result.data)
 
     data.value = res?.admins || []

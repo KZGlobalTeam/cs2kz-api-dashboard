@@ -18,15 +18,15 @@ export const usePlayerStore = defineStore("admin", {
       const kzPlayer = cookies.get("kz-player")
 
       if (kzPlayer) {
-        this.steamId = kzPlayer.steam_id
+        this.steamId = kzPlayer.id
         this.avatar_url = kzPlayer.avatar_url
 
         try {
-          const { data } = await axiosClient.get(`/admins/${this.steamId}`)
-          this.permissions = ["users", ...data.permissions]
+          const { data } = await axiosClient.get(`/users/${this.steamId}`)
+          this.permissions = data.permissions
         } catch (error: any) {
           if (error.response.status === 404) {
-            this.permissions = ["users"]
+            this.permissions = []
           }
         } finally {
           this.loading = false

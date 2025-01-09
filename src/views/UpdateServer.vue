@@ -114,7 +114,7 @@ async function updateServer() {
     try {
       await axiosClient.patch(
         `/servers/${route.params.id}`,
-        transformSrv(server, false),
+        transformSrv(server),
         {
           withCredentials: true,
         },

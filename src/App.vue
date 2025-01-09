@@ -52,17 +52,15 @@ onMounted(async () => {
 
 async function verifySession() {
   try {
-    await axiosClient.get("/auth/verify-session", { withCredentials: true })
+    await axiosClient.get("/auth/web", { withCredentials: true })
 
-    setTimeout(verifySession, 1000 * 25)
+    setTimeout(verifySession, 1000 * 3)
   } catch (error: any) {
-    if (error.response.status >= 400) {
-      playerStore.$reset()
-      cookies.remove("kz-player")
-      router.push("/")
-    }
-
-    console.error(error)
+    // if (error.response.status >= 400) {
+    //   playerStore.$reset()
+    //   cookies.remove("kz-player")
+    //   router.push("/")
+    // }
   }
 }
 </script>

@@ -22,7 +22,7 @@ export const routes = [
       menuItem: true,
       title: "Maps",
       iconName: "map",
-      requiresPermission: "maps",
+      requiresPermission: "map-pool",
     },
   },
   {
@@ -31,7 +31,7 @@ export const routes = [
     component: () => import("../views/CreateMaps.vue"),
     meta: {
       title: "Create Maps",
-      requiresPermission: "maps",
+      requiresPermission: "map-pool",
     },
   },
   {
@@ -40,7 +40,7 @@ export const routes = [
     component: () => import("../views/UpdateMap.vue"),
     meta: {
       title: "Update Map",
-      requiresPermission: "maps",
+      requiresPermission: "map-pool",
     },
   },
   {
@@ -49,7 +49,7 @@ export const routes = [
     component: () => import("../views/RemoveCourse.vue"),
     meta: {
       title: "Remove Course",
-      requiresPermission: "maps",
+      requiresPermission: "map-pool",
     },
   },
   {
@@ -61,17 +61,6 @@ export const routes = [
       title: "Servers",
       iconName: "server",
       requiresPermission: "servers",
-    },
-  },
-  {
-    path: "/myservers",
-    name: "myservers",
-    component: () => import("../views/MyServers.vue"),
-    meta: {
-      menuItem: true,
-      title: "My Servers",
-      iconName: "server",
-      requiresPermission: "users",
     },
   },
   {
@@ -90,6 +79,16 @@ export const routes = [
     meta: {
       title: "Update Server",
       requiresPermission: "servers",
+    },
+  },
+  {
+    path: "/myservers",
+    name: "myservers",
+    component: () => import("../views/MyServers.vue"),
+    meta: {
+      menuItem: true,
+      title: "My Servers",
+      iconName: "server",
     },
   },
   {
@@ -116,7 +115,7 @@ export const routes = [
       menuItem: true,
       title: "Bans",
       iconName: "ban",
-      requiresPermission: "bans",
+      requiresPermission: "player-bans",
     },
   },
   {
@@ -125,7 +124,7 @@ export const routes = [
     component: () => import("../views/CreateBan.vue"),
     meta: {
       title: "Create Ban",
-      requiresPermission: "bans",
+      requiresPermission: "player-bans",
     },
   },
   {
@@ -134,7 +133,7 @@ export const routes = [
     component: () => import("../views/UpdateBan.vue"),
     meta: {
       title: "Update Ban",
-      requiresPermission: "bans",
+      requiresPermission: "player-bans",
     },
   },
   {
@@ -143,7 +142,7 @@ export const routes = [
     component: () => import("../views/Unban.vue"),
     meta: {
       title: "Unban",
-      requiresPermission: "bans",
+      requiresPermission: "player-bans",
     },
   },
   {
@@ -152,7 +151,7 @@ export const routes = [
     component: () => import("../views/BanDetails.vue"),
     meta: {
       title: "Ban Details",
-      requiresPermission: "bans",
+      requiresPermission: "player-bans",
     },
   },
   {
@@ -163,7 +162,7 @@ export const routes = [
       menuItem: true,
       title: "Admins",
       iconName: "person",
-      requiresPermission: "admin",
+      requiresPermission: "user-permissions",
     },
   },
   {
@@ -172,7 +171,7 @@ export const routes = [
     component: () => import("../views/CreateAdmin.vue"),
     meta: {
       title: "Create Admin",
-      requiresPermission: "admin",
+      requiresPermission: "user-permissions",
     },
   },
   {
@@ -181,7 +180,7 @@ export const routes = [
     component: () => import("../views/UpdateAdmin.vue"),
     meta: {
       title: "Update Admin",
-      requiresPermission: "admin",
+      requiresPermission: "user-permissions",
     },
   },
 ]

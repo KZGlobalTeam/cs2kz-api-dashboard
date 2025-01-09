@@ -58,21 +58,14 @@ export function getDiff(obj1: any, obj2: any) {
   return diff
 }
 
-export function transformSrv(server: any, newSrv: boolean) {
+export function transformSrv(server: any) {
   const [host, port] = server.ip_address.split(":")
-  return newSrv
-    ? {
-        name: server.name,
-        host,
-        port: parseInt(port),
-        owner_id: server.owner,
-      }
-    : {
-        new_name: server.name,
-        new_host: host,
-        new_port: parseInt(port),
-        new_owner: server.owner,
-      }
+  return {
+    name: server.name,
+    host,
+    port: parseInt(port),
+    owner_id: server.owner,
+  }
 }
 
 export function calcBanDuration(ban: Ban) {

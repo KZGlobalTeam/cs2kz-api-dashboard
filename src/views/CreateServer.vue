@@ -98,12 +98,12 @@ async function createServer() {
 
         const { data } = (await axiosClient.post(
           "/servers",
-          transformSrv(server, true),
+          transformSrv(server),
           {
             withCredentials: true,
           },
-        )) as AxiosResponse<{ server_id: number; api_key: string }>
-        apiKey.value = data.api_key
+        )) as AxiosResponse<{ server_id: number; access_key: string }>
+        apiKey.value = data.access_key
 
         showModal.value = true
         notification.success({ title: "Server created", duration: 3000 })

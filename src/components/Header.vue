@@ -37,12 +37,12 @@ const router = useRouter()
 const playerStore = usePlayerStore()
 
 async function signIn() {
-  location.href = `${import.meta.env.VITE_API_URL}/auth/login?redirect_to=${location.origin}`
+  location.href = `${import.meta.env.VITE_API_URL}/auth/web/login?redirect_to=${location.origin}`
 }
 
 async function signOut() {
   try {
-    await axiosClient.get(`/auth/logout`, { withCredentials: true })
+    await axiosClient.get(`/auth/web/logout`, { withCredentials: true })
     router.push("/")
   } catch (error) {
     console.log(error)
