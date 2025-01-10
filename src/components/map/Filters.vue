@@ -3,47 +3,77 @@
     <thead>
       <tr>
         <th>Mode</th>
-        <th>Type</th>
-        <th>Tier</th>
-        <th>Ranked Status</th>
+        <th>NUB Tier</th>
+        <th>PRO Tier</th>
+        <th>State</th>
         <th>Notes</th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="(filter, index) in filters" :key="filter.id">
+      <!-- classic -->
+
+      <tr>
+        <td>Classic</td>
+
         <td>
-          {{ filter.mode === "classic" ? "Classic" : "Vanilla" }}
-        </td>
-        <td>
-          {{ filter.teleports ? "TP" : "Pro" }}
-        </td>
-        <td>
-          <select
-            class="rounded-sm bg-[#303033] px-2 py-1"
-            @change="handleTierChange($event, index)"
-            v-model="filter.tier"
-          >
-            <option
-              class=""
-              v-for="option in tierOptions"
-              :value="option.value"
-            >
+          <select class="rounded-sm bg-[#303033] px-2 py-1" v-model="filters.classic.nub_tier">
+            <option class="" v-for="option in tierOptions" :value="option.value">
               {{ option.label }}
             </option>
           </select>
         </td>
+
         <td>
-          <select
-            class="rounded-sm bg-[#303033] px-2 py-1"
-            v-model="filter.ranked_status"
-          >
-            <option v-for="option in rankedStatusOptions" :value="option.value">
+          <select class="rounded-sm bg-[#303033] px-2 py-1" v-model="filters.classic.pro_tier">
+            <option class="" v-for="option in tierOptions" :value="option.value">
               {{ option.label }}
             </option>
           </select>
         </td>
+
         <td>
-          <n-input v-model:value="filter.notes" placeholder="Optional" />
+          <select class="rounded-sm bg-[#303033] px-2 py-1" v-model="filters.classic.state">
+            <option v-for="option in filterStateOptions" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </td>
+
+        <td>
+          <n-input v-model:value="filters.classic.notes" placeholder="Optional" />
+        </td>
+      </tr>
+
+      <!-- vanilla -->
+      <tr>
+        <td>Vanilla</td>
+
+        <td>
+          <select class="rounded-sm bg-[#303033] px-2 py-1" v-model="filters.vanilla.nub_tier">
+            <option class="" v-for="option in tierOptions" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </td>
+
+        <td>
+          <select class="rounded-sm bg-[#303033] px-2 py-1" v-model="filters.vanilla.pro_tier">
+            <option class="" v-for="option in tierOptions" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </td>
+
+        <td>
+          <select class="rounded-sm bg-[#303033] px-2 py-1" v-model="filters.vanilla.state">
+            <option v-for="option in filterStateOptions" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </td>
+
+        <td>
+          <n-input v-model:value="filters.vanilla.notes" placeholder="Optional" />
         </td>
       </tr>
     </tbody>
@@ -51,11 +81,10 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick } from "vue"
 import { NTable, NInput } from "naive-ui"
-import type { Filter } from "../../types"
+import type { CourseFilters } from "../../types"
 
-const filters = defineModel<Filter[]>("filters", { required: true })
+const filters = defineModel<CourseFilters>("filters", { required: true })
 
 const tierOptions = [
   { label: "Very Easy", value: "very_easy" },
@@ -69,18 +98,9 @@ const tierOptions = [
   { label: "Unfeasible", value: "unfeasible" },
   { label: "Impossible", value: "impossible" },
 ]
-const rankedStatusOptions = [
-  { label: "Never", value: "never" },
+const filterStateOptions = [
+  { label: "Pending", value: "pending" },
   { label: "Unranked", value: "unranked" },
   { label: "Ranked", value: "ranked" },
 ]
-
-function handleTierChange(e: Event, index: number) {
-  const tier = (e.target as HTMLSelectElement).value as string
-  if (tier === "unfeasible" || tier === "impossible") {
-    nextTick(() => {
-      filters.value[index].ranked_status = "unranked"
-    })
-  }
-}
 </script>

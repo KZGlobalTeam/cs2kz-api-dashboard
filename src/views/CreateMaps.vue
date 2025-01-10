@@ -8,37 +8,20 @@
           @keyup.enter="mapTabName && createMapTab()"
           placeholder="kz_aaaa"
         />
-        <n-button
-          @click="createMapTab"
-          :disabled="!mapTabName"
-          tertiary
-          type="primary"
-        >
-          + New Map
-        </n-button>
+        <n-button @click="createMapTab" :disabled="!mapTabName" tertiary type="primary"> + New Map </n-button>
       </div>
 
       <div class="flex gap-4">
-        <n-button
-          @click="loadDraft(false)"
-          :disabled="loading"
-          type="info"
-          tertiary
-          >Load Draft</n-button
-        >
+        <n-button @click="loadDraft(false)" :disabled="loading" type="info" tertiary>Load Draft</n-button>
 
-        <n-button @click="saveDraft" :disabled="loading" type="warning" tertiary
-          >Save as Draft</n-button
-        >
+        <n-button @click="saveDraft" :disabled="loading" type="warning" tertiary>Save as Draft</n-button>
 
-        <n-button @click.prevent="saveMaps" type="primary" strong
-          >Create</n-button
-        >
+        <n-button @click.prevent="saveMaps" type="primary" strong>Create</n-button>
       </div>
     </div>
 
     <n-tabs
-      v-if="maps.length > 0"
+      v-if="mapTabs.length > 0"
       v-model:value="selectedMapName"
       type="card"
       size="small"
@@ -46,18 +29,13 @@
       tab-style="min-width: 80px;"
       @close="closeTab"
     >
-      <n-tab-pane
-        v-for="map in maps"
-        :key="map.name"
-        :tab="map.name"
-        :name="map.name"
-      >
+      <n-tab-pane v-for="mapTab in mapTabs" :key="mapTab.name" :tab="mapTab.name" :name="mapTab.name">
         <CreateMap
-          v-model:workshop-id="map.form.workshopId"
-          v-model:description="map.form.description"
-          v-model:global-status="map.form.globalStatus"
-          v-model:mappers="map.form.mappers"
-          v-model:courses="map.form.courses"
+          v-model:workshop-id="mapTab.newMap.workshop_id"
+          v-model:description="mapTab.newMap.description"
+          v-model:state="mapTab.newMap.state"
+          v-model:mappers="mapTab.newMap.mappers"
+          v-model:courses="mapTab.newMap.courses"
         />
       </n-tab-pane>
     </n-tabs>
@@ -66,9 +44,7 @@
       <n-card style="width: 300px">
         <div class="flex items-center gap-2">
           <img src="/icons/loading.svg" class="h-8 w-auto" />
-          <span class="font-poppings text-lg font-medium"
-            >Creating maps...</span
-          >
+          <span class="font-poppings text-lg font-medium">Creating maps...</span>
         </div>
       </n-card>
     </n-modal>
@@ -79,33 +55,18 @@
 import { ref, toRaw } from "vue"
 import { useRouter } from "vue-router"
 import { useStorage } from "@vueuse/core"
-import {
-  NInput,
-  NButton,
-  NCard,
-  NModal,
-  NTabs,
-  NTabPane,
-  useNotification,
-} from "naive-ui"
-import type { Mapper, GlobalStatus, Course } from "../types"
+import { NInput, NButton, NCard, NModal, NTabs, NTabPane, useNotification } from "naive-ui"
+import type { NewMap } from "../types"
 import CreateMap from "./CreateMap.vue"
 import axiosClient from "../axios"
-import { omit, cloneDeep } from "lodash-es"
+import { cloneDeep } from "lodash-es"
 import { toErrorMsg } from "../utils"
 
-interface Map {
+interface MapTab {
   name: string
-  form: MapForm
+  newMap: NewMap
 }
 
-interface MapForm {
-  workshopId: string
-  description: string
-  globalStatus: GlobalStatus
-  mappers: Mapper[]
-  courses: Course[]
-}
 const router = useRouter()
 
 const notification = useNotification()
@@ -113,22 +74,22 @@ const notification = useNotification()
 const loading = ref(false)
 
 const selectedMapName = ref("")
-const maps = ref<Map[]>([])
+const mapTabs = ref<MapTab[]>([])
 
-const mapsDraft = useStorage<Map[]>("maps-draft", () => [])
+const drafts = useStorage<MapTab[]>("maps-draft", () => [])
 
 const mapTabName = ref("")
 
 loadDraft(true)
 
 function createMapTab() {
-  maps.value.push({
+  mapTabs.value.push({
     name: mapTabName.value,
-    form: {
-      workshopId: "",
+    newMap: {
+      workshop_id: -1,
       description: "",
-      globalStatus: "global",
-      mappers: [{ name: "", steam_id: "" }],
+      state: "global",
+      mappers: [""],
       courses: [],
     },
   })
@@ -137,14 +98,14 @@ function createMapTab() {
 }
 
 function closeTab(tabName: string) {
-  const index = maps.value.findIndex((v) => tabName === v.name)
-  maps.value.splice(index, 1)
-  const len = maps.value.length
+  const index = mapTabs.value.findIndex((v) => tabName === v.name)
+  mapTabs.value.splice(index, 1)
+  const len = mapTabs.value.length
   if (selectedMapName.value === tabName) {
     if (len > 1) {
-      selectedMapName.value = maps.value[index].name
+      selectedMapName.value = mapTabs.value[index].name
     } else if (len === 1) {
-      selectedMapName.value = maps.value[0].name
+      selectedMapName.value = mapTabs.value[0].name
     } else {
       selectedMapName.value = ""
     }
@@ -152,9 +113,9 @@ function closeTab(tabName: string) {
 }
 
 function loadDraft(newPage: boolean) {
-  if (mapsDraft.value.length > 0) {
-    maps.value = cloneDeep(toRaw(mapsDraft.value))
-    selectedMapName.value = maps.value[0].name
+  if (drafts.value.length > 0) {
+    mapTabs.value = cloneDeep(toRaw(drafts.value))
+    selectedMapName.value = drafts.value[0].name
   } else {
     if (!newPage) {
       notification.warning({
@@ -166,8 +127,8 @@ function loadDraft(newPage: boolean) {
 }
 
 function saveDraft() {
-  if (maps.value.length > 0) {
-    mapsDraft.value = cloneDeep(toRaw(maps.value))
+  if (mapTabs.value.length > 0) {
+    drafts.value = cloneDeep(toRaw(mapTabs.value))
     notification.success({
       title: "Draft saved",
       duration: 3000,
@@ -184,7 +145,7 @@ async function saveMaps() {
   loading.value = true
   let allValidated = true
 
-  for (const map of maps.value) {
+  for (const map of mapTabs.value) {
     const validated = validateMap(map)
     if (!validated) {
       allValidated = false
@@ -193,8 +154,8 @@ async function saveMaps() {
 
   if (allValidated) {
     const promises = []
-    for (const map of maps.value) {
-      promises.push(createMap(map.form))
+    for (const map of mapTabs.value) {
+      promises.push(createMap(toRaw(map.newMap)))
     }
     try {
       const results = await Promise.allSettled(promises)
@@ -210,15 +171,15 @@ async function saveMaps() {
 
         if (result.status === "fulfilled") {
           notification.success({
-            title: `${maps.value[i].name} created`,
+            title: `${mapTabs.value[i].name} created`,
             duration: 3000,
           })
 
-          names.push(maps.value[i].name)
+          names.push(mapTabs.value[i].name)
         } else {
           allPassed = false
           notification.error({
-            title: maps.value[i].name,
+            title: mapTabs.value[i].name,
             content: toErrorMsg(result.reason),
           })
         }
@@ -230,7 +191,7 @@ async function saveMaps() {
 
       if (allPassed) {
         // clear draft
-        mapsDraft.value = []
+        drafts.value = []
         router.push({
           name: "maps",
         })
@@ -241,11 +202,11 @@ async function saveMaps() {
   }
 }
 
-function validateMap(map: Map) {
+function validateMap(map: MapTab) {
   // validate map info
   let validated = true
 
-  if (!map.form.workshopId) {
+  if (!map.newMap.workshop_id) {
     notification.error({
       title: map.name,
       content: "Workshop ID is required",
@@ -253,15 +214,15 @@ function validateMap(map: Map) {
     validated = false
   }
 
-  if (map.form.mappers.length === 0) {
+  if (map.newMap.mappers.length === 0) {
     notification.error({
       title: map.name,
       content: "At least one mapper is required",
     })
     validated = false
   } else {
-    map.form.mappers.forEach((mapper, index) => {
-      if (!mapper.steam_id) {
+    map.newMap.mappers.forEach((mapper, index) => {
+      if (!mapper) {
         notification.error({
           title: map.name,
           content: `Mapper ${index + 1}: Steam ID is required`,
@@ -271,13 +232,13 @@ function validateMap(map: Map) {
     })
   }
 
-  if (map.form.courses.length === 0) {
+  if (map.newMap.courses.length === 0) {
     notification.error({
       title: map.name,
       content: "No courses created",
     })
   } else {
-    map.form.courses.forEach((course, courseIndex) => {
+    map.newMap.courses.forEach((course, courseIndex) => {
       if (course.name === "") {
         notification.error({
           title: map.name,
@@ -293,12 +254,10 @@ function validateMap(map: Map) {
         validated = false
       } else {
         course.mappers.forEach((mapper, mapperIndex) => {
-          if (!mapper.steam_id) {
+          if (!mapper) {
             notification.error({
               title: map.name,
-              content: `Course ${courseIndex + 1}: Mapper ${
-                mapperIndex + 1
-              }: Steam ID is required`,
+              content: `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1}: Steam ID is required`,
             })
             validated = false
           }
@@ -310,20 +269,8 @@ function validateMap(map: Map) {
   return validated
 }
 
-async function createMap(mapForm: MapForm) {
-  const mapToCreate = {
-    global_status: mapForm.globalStatus,
-    workshop_id: parseInt(mapForm.workshopId),
-    description: mapForm.description,
-    mappers: mapForm.mappers.map((mapper) => mapper.steam_id),
-    courses: mapForm.courses.map((course) => ({
-      name: course.name || null,
-      description: course.description || null,
-      filters: course.filters.map((filter) => omit(filter, ["id"])),
-      mappers: course.mappers.map((mapper) => mapper.steam_id),
-    })),
-  }
-
-  return axiosClient.put("/maps", mapToCreate, { withCredentials: true })
+async function createMap(newMap: NewMap) {
+  console.log("new map", newMap)
+  return axiosClient.put("/maps", newMap, { withCredentials: true })
 }
 </script>

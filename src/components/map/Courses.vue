@@ -1,22 +1,10 @@
 <template>
-  <div
-    v-for="(course, index) in courses"
-    :key="course.id"
-    class="mb-4 rounded-md border border-slate-600 bg-gray-900 p-4"
-  >
-    <div
-      class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2"
-    >
+  <div v-for="(course, index) in courses" class="mb-4 rounded-md border border-slate-600 bg-gray-900 p-4">
+    <div class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2">
       <p class="text-xl font-medium">
         {{ `Course ${index + 1}` }}
       </p>
-      <n-button
-        v-if="removable"
-        @click="deleteCourse(index)"
-        type="error"
-        tertiary
-        >Delete</n-button
-      >
+      <n-button v-if="removable" @click="deleteCourse(index)" type="error" tertiary>Delete</n-button>
     </div>
 
     <div class="mb-4">
@@ -27,12 +15,7 @@
     <!-- description -->
     <div class="mb-4">
       <p class="mb-2">Description</p>
-      <n-input
-        type="textarea"
-        v-model:value="course.description"
-        autosize
-        placeholder="Optional"
-      />
+      <n-input type="textarea" v-model:value="course.description" autosize placeholder="Optional" />
     </div>
 
     <Mappers v-model:mappers="course.mappers" />
@@ -49,7 +32,7 @@
 import { NButton, NInput, useDialog } from "naive-ui"
 import Mappers from "./Mappers.vue"
 import Filters from "./Filters.vue"
-import type { Course } from "../../types"
+import type { NewCourse } from "../../types"
 
 withDefaults(
   defineProps<{
@@ -58,7 +41,7 @@ withDefaults(
   { removable: true },
 )
 
-const courses = defineModel<Course[]>("courses", { required: true })
+const courses = defineModel<NewCourse[]>("courses", { required: true })
 
 const dialog = useDialog()
 

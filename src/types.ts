@@ -12,15 +12,11 @@ export type Tier =
 
 export type Mode = "classic" | "vanilla"
 
-export type FilterState = "pending" | "unranked" | "ranked"
-
 export type MapState = "global" | "invalid" | "in_testing"
 
-export type Permission =
-  | "map-pool"
-  | "servers"
-  | "player-bans"
-  | "user-permissions"
+export type FilterState = "pending" | "unranked" | "ranked"
+
+export type Permission = "map-pool" | "servers" | "player-bans" | "user-permissions"
 
 export type BanReason = "macro" | "auto_strafe" | "auto_bhop"
 
@@ -29,23 +25,44 @@ export interface Player {
   id: string
 }
 
-export interface Filters {
-  vanilla: Filter
-  classic: Filter
-}
-
-export interface Filter {
+export interface CourseFilter {
   nub_tier: Tier
   pro_tier: Tier
   state: FilterState
   notes: string
 }
 
+export interface CourseFilters {
+  vanilla: CourseFilter
+  classic: CourseFilter
+}
+
+export interface FilterUpdate {
+  vanilla?: Partial<CourseFilter>
+  classic?: Partial<CourseFilter>
+}
+
 export interface Course {
   name: string
   description?: string
-  filters: Filters
+  filters: CourseFilters
   mappers: Player[]
+}
+
+export interface NewCourse {
+  name: string
+  description?: string
+  filters: CourseFilters
+  mappers: string[]
+}
+
+export interface CourseUpdate {
+  idx: number
+  name?: string
+  description?: string
+  added_mappers: string[]
+  deleted_mappers: string[]
+  filter_updates: FilterUpdate
 }
 
 export interface Map {
@@ -57,7 +74,24 @@ export interface Map {
   vpk_checksum: number
   mappers: Player[]
   courses: Course[]
-  aproved_at: string
+  approved_at: string
+}
+
+export interface NewMap {
+  workshop_id: number
+  description?: string
+  state: MapState
+  mappers: string[]
+  courses: NewCourse[]
+}
+
+export interface MapUpdate {
+  workshop_id?: number
+  description?: string
+  state?: MapState
+  added_mappers?: string[]
+  deleted_mappers?: string[]
+  course_updates?: CourseUpdate[]
 }
 
 export interface User {
@@ -80,9 +114,14 @@ export interface Ban {
   id: number
   player: Player
   reason: BanReason
-  banned_by: Player
+  banned_by: BannedBy
   created_at: string
   unban?: Unban
+}
+
+export interface BannedBy {
+  id: number
+  type: "server" | "admin"
 }
 
 export interface Unban {

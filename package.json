@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky",
+    "typegen": "openapi-typescript ./openapi.json -o ./openapi-types.ts"
   },
   "lint-staged": {
     "*": "prettier . --write",
@@ -32,6 +33,7 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "naive-ui": "^2.36.0",
+    "openapi-typescript": "^7.5.2",
     "oxlint": "^0.2.15",
     "postcss": "^8.4.32",
     "prettier": "3.2.5",
