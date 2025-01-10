@@ -48,13 +48,13 @@ async function verifySession() {
   try {
     await axiosClient.get("/auth/web", { withCredentials: true })
 
-    setTimeout(verifySession, 1000 * 3)
+    setTimeout(verifySession, 1000 * 25)
   } catch (error: any) {
-    // if (error.response.status >= 400) {
-    //   playerStore.$reset()
-    //   cookies.remove("kz-player")
-    //   router.push("/")
-    // }
+    if (error.response.status >= 400) {
+      playerStore.$reset()
+      cookies.remove("kz-player")
+      router.push("/")
+    }
   }
 }
 </script>

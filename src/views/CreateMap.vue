@@ -29,7 +29,7 @@ import MapInfo from "../components/map/MapInfo.vue"
 import Mappers from "../components/map/Mappers.vue"
 import Courses from "../components/map/Courses.vue"
 
-const workshopId = defineModel<number>("workshopId", { required: true })
+const workshopId = defineModel<string>("workshopId", { required: true })
 const description = defineModel<string>("description")
 const state = defineModel<MapState>("state", {
   required: true,
@@ -46,14 +46,14 @@ function createCourse() {
     description: "",
     filters: {
       classic: {
-        nub_tier: "very_easy",
-        pro_tier: "very_easy",
+        nub_tier: "very-easy",
+        pro_tier: "very-easy",
         state: "ranked",
         notes: "",
       },
       vanilla: {
-        nub_tier: "very_easy",
-        pro_tier: "very_easy",
+        nub_tier: "very-easy",
+        pro_tier: "very-easy",
         state: "ranked",
         notes: "",
       },

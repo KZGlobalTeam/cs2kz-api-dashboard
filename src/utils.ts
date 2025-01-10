@@ -39,7 +39,7 @@ export function renderWorkshopId(workshopId: number) {
 }
 
 export function toErrorMsg(error: any) {
-  return `${error.response.data.detail}`
+  return `${error.response.data.title}\n${error.response.data.json_error.detail}`
 }
 
 export function getDiff(obj1: any, obj2: any) {

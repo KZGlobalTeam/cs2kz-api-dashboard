@@ -10,7 +10,7 @@
         <n-select
           style="width: 8rem"
           @update-value="handleStatusChange"
-          v-model:value="mapQuery.globalStatus"
+          v-model:value="mapQuery.state"
           :options="options"
         />
       </n-space>
@@ -46,7 +46,7 @@ import { ref, reactive, nextTick, onBeforeMount, h } from "vue"
 import { NInput, NDataTable, NButton, NTag, NSpace, NSelect, NTooltip, useNotification } from "naive-ui"
 import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
 import ActionButton from "../components/ActionButton.vue"
-import type { Map, GlobalStatus } from "../types"
+import type { Map, MapState } from "../types"
 import { useRouter } from "vue-router"
 import axiosClient from "../axios"
 import { toLocal, renderWorkshopId, toErrorMsg } from "../utils"
@@ -54,16 +54,16 @@ import { toLocal, renderWorkshopId, toErrorMsg } from "../utils"
 type RowData = {
   id: number
   name: string
-  created_on: string
+  approved_at: string
   workshop_id: number
-  global_status: GlobalStatus
+  state: MapState
   courseCount: number
 }
 
 type MapQuery = {
   name: string
   mapper: string
-  globalStatus?: GlobalStatus
+  state?: MapState
 }
 
 const router = useRouter()
@@ -75,21 +75,21 @@ const data = ref<RowData[]>([])
 const mapQuery = reactive<MapQuery>({
   name: "",
   mapper: "",
-  globalStatus: "global",
+  state: "approved",
 })
 
 const options = [
   {
-    label: "Global",
-    value: "global",
+    label: "Approved",
+    value: "approved",
   },
   {
-    label: "In Testing",
-    value: "in_testing",
+    label: "Testing",
+    value: "in-testing",
   },
   {
-    label: "Not Global",
-    value: "not_global",
+    label: "Invalid",
+    value: "invalid",
   },
 ]
 
@@ -125,20 +125,11 @@ const columns = ref<DataTableColumn<RowData>[]>([
       return h(
         NTag,
         {
-          type:
-            rowData.global_status === "global"
-              ? "success"
-              : rowData.global_status === "in_testing"
-                ? "warning"
-                : "default",
+          type: rowData.state === "approved" ? "success" : rowData.state === "in-testing" ? "warning" : "default",
         },
         {
           default: () =>
-            rowData.global_status === "not_global"
-              ? "Not Global"
-              : rowData.global_status === "in_testing"
-                ? "In Testing"
-                : "Global",
+            rowData.state === "approved" ? "Approved" : rowData.state === "in-testing" ? "Testing" : "Invalid",
         },
       )
     },
@@ -152,10 +143,10 @@ const columns = ref<DataTableColumn<RowData>[]>([
     key: "created_on",
     sortOrder: false,
     render(rowData) {
-      return toLocal(rowData.created_on)
+      return toLocal(rowData.approved_at)
     },
     sorter(rowA, rowB) {
-      return new Date(rowA.created_on).getTime() - new Date(rowB.created_on).getTime()
+      return new Date(rowA.approved_at).getTime() - new Date(rowB.approved_at).getTime()
     },
   },
   {
@@ -195,7 +186,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
                 type: "error",
                 onClick: () => {
                   router.push({
-                    name: "removemap",
+                    name: "removecourse",
                     params: {
                       id: rowData.id,
                     },
@@ -238,7 +229,7 @@ async function loadMapsData() {
       // typescript...
       name: mapQuery.name || null,
       mapper: mapQuery.mapper || null,
-      global_status: mapQuery.globalStatus || null,
+      state: mapQuery.state || null,
     }
 
     // console.log(params)
@@ -246,12 +237,12 @@ async function loadMapsData() {
     const { data: res } = await axiosClient.get("/maps", { params })
     // console.log(result.data)
 
-    data.value = res?.maps
-      ? res.maps.map((v: Map) => ({
+    data.value = res?.values
+      ? res.values.map((v: Map) => ({
           id: v.id,
           name: v.name,
-          global_status: v.global_status,
-          created_on: v.created_on,
+          state: v.state,
+          approved_at: v.approved_at,
           workshop_id: v.workshop_id,
           courseCount: v.courses.length,
         }))
@@ -275,7 +266,7 @@ function handleStatusChange() {
 function clearFilter() {
   mapQuery.name = ""
   mapQuery.mapper = ""
-  mapQuery.globalStatus = "global"
+  mapQuery.state = "approved"
   loadMapsData()
 }
 

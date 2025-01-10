@@ -6,7 +6,7 @@
           style="max-width: 200px"
           v-model:value="mapTabName"
           @keyup.enter="mapTabName && createMapTab()"
-          placeholder="kz_aaaa"
+          placeholder="Map name"
         />
         <n-button @click="createMapTab" :disabled="!mapTabName" tertiary type="primary"> + New Map </n-button>
       </div>
@@ -86,9 +86,9 @@ function createMapTab() {
   mapTabs.value.push({
     name: mapTabName.value,
     newMap: {
-      workshop_id: -1,
+      workshop_id: "",
       description: "",
-      state: "global",
+      state: "approved",
       mappers: [""],
       courses: [],
     },
@@ -142,17 +142,19 @@ function saveDraft() {
 }
 
 async function saveMaps() {
-  loading.value = true
   let allValidated = true
 
   for (const map of mapTabs.value) {
     const validated = validateMap(map)
+    console.log("validated map", validated)
     if (!validated) {
       allValidated = false
     }
   }
 
   if (allValidated) {
+    loading.value = true
+
     const promises = []
     for (const map of mapTabs.value) {
       promises.push(createMap(toRaw(map.newMap)))
@@ -271,6 +273,6 @@ function validateMap(map: MapTab) {
 
 async function createMap(newMap: NewMap) {
   console.log("new map", newMap)
-  return axiosClient.put("/maps", newMap, { withCredentials: true })
+  return axiosClient.put("/maps", { ...newMap, workshop_id: parseInt(newMap.workshop_id) }, { withCredentials: true })
 }
 </script>

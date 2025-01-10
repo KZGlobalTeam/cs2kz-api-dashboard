@@ -1,10 +1,10 @@
 export type Tier =
-  | "very_easy"
+  | "very-easy"
   | "easy"
   | "medium"
   | "advanced"
   | "hard"
-  | "very_hard"
+  | "very-hard"
   | "extreme"
   | "death"
   | "unfeasible"
@@ -12,7 +12,7 @@ export type Tier =
 
 export type Mode = "classic" | "vanilla"
 
-export type MapState = "global" | "invalid" | "in_testing"
+export type MapState = "approved" | "invalid" | "in-testing"
 
 export type FilterState = "pending" | "unranked" | "ranked"
 
@@ -78,7 +78,7 @@ export interface Map {
 }
 
 export interface NewMap {
-  workshop_id: number
+  workshop_id: string
   description?: string
   state: MapState
   mappers: string[]

@@ -2,15 +2,14 @@
   <!-- map info -->
   <div>
     <!-- name -->
-    <div v-if="updating" class="mb-4">
-      <p class="mb-2 font-medium">Name</p>
-      <n-input v-model:value="name" placeholder="Optional" />
-    </div>
+    <p v-if="updating" class="mb-4 text-2xl font-medium">
+      {{ name }}
+    </p>
 
     <!-- workshop -->
     <div class="mb-4">
       <p class="mb-2 font-medium">Workshop ID</p>
-      <n-input style="margin-bottom: 0.25rem" v-model:value="workshopId as unknown as string" placeholder="" />
+      <n-input style="margin-bottom: 0.25rem" v-model:value="workshopId" placeholder="" />
     </div>
 
     <!-- description -->
@@ -25,9 +24,9 @@
       <n-select
         v-model:value="state"
         :options="[
-          { value: 'global', label: 'Global' },
+          { value: 'approved', label: 'Approved' },
           { value: 'invalid', label: 'Invalid' },
-          { value: 'in_testing', label: 'Testing' },
+          { value: 'in-testing', label: 'Testing' },
         ]"
       />
     </div>
@@ -38,10 +37,11 @@
 import { NInput, NSelect } from "naive-ui"
 
 defineProps<{
+  name?: string
   updating: boolean
 }>()
-const name = defineModel<string>("name")
-const workshopId = defineModel<number>("workshopId", { required: true })
+
+const workshopId = defineModel<string>("workshopId", { required: true })
 const description = defineModel<string>("description")
 const state = defineModel<string>("state", { required: true })
 </script>

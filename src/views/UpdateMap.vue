@@ -2,7 +2,7 @@
   <div>
     <div class="mb-4 rounded-md bg-gray-800 p-4">
       <MapInfo
-        v-model:name="name"
+        :name="name"
         v-model:workshop-id="workshopId"
         v-model:description="description"
         v-model:state="state"
@@ -55,9 +55,9 @@ const route = useRoute()
 const notification = useNotification()
 
 const name = ref("")
-const workshopId = ref(0)
+const workshopId = ref("")
 const description = ref("")
-const state = ref<MapState>("global")
+const state = ref<MapState>("approved")
 
 // mappers input
 const mappers = ref<string[]>([])
@@ -76,7 +76,7 @@ onBeforeMount(async () => {
 
     state.value = data.state
     name.value = data.name
-    workshopId.value = data.workshop_id
+    workshopId.value = data.workshop_id.toString()
     description.value = data.description || ""
     mappers.value = data.mappers.map((mapper) => mapper.id)
     courses.value = data.courses.map((course) => ({
@@ -96,7 +96,7 @@ async function updateMap() {
 
   try {
     const update = generateUpdate()
-    console.log("map to update", update)
+    console.log("map update", update)
     await axiosClient.patch(`/maps/${oldMap.id}`, update, {
       withCredentials: true,
     })
@@ -106,6 +106,7 @@ async function updateMap() {
       name: "maps",
     })
   } catch (error: any) {
+    console.error("update error", error)
     loading.value = false
     notification.error({
       title: "Failed to update map",
@@ -117,9 +118,10 @@ async function updateMap() {
 function generateUpdate(): any {
   const update: MapUpdate = {}
 
-  if (oldMap.description !== description.value) update.description = description.value
+  if (oldMap.description !== description.value && description.value !== "") update.description = description.value
 
-  if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
+  // if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
+  update.workshop_id = Number(workshopId.value)
 
   if (oldMap.state !== state.value) update.state = state.value
 
@@ -181,6 +183,7 @@ function generateUpdate(): any {
         }
 
         if (Object.keys(courseUpdate).length > 0) {
+          if (!update.course_updates) update.course_updates = []
           update.course_updates!.push({ idx: index, ...courseUpdate })
         }
       }

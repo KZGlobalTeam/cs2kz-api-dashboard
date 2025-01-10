@@ -87,12 +87,12 @@ import type { CourseFilters } from "../../types"
 const filters = defineModel<CourseFilters>("filters", { required: true })
 
 const tierOptions = [
-  { label: "Very Easy", value: "very_easy" },
+  { label: "Very Easy", value: "very-easy" },
   { label: "Easy", value: "easy" },
   { label: "Medium", value: "medium" },
   { label: "Advanced", value: "advanced" },
   { label: "Hard", value: "hard" },
-  { label: "Very Hard", value: "very_hard" },
+  { label: "Very Hard", value: "very-hard" },
   { label: "Extreme", value: "extreme" },
   { label: "Death", value: "death" },
   { label: "Unfeasible", value: "unfeasible" },

@@ -14,7 +14,7 @@
 
     <div class="flex justify-end gap-4">
       <n-button
-        :disabled="selectedCourseIds.length === 0 || data.length === 1 || selectedCourseIds.length === data.length"
+        :disabled="selectedCourseNames.length === 0 || data.length === 1 || selectedCourseNames.length === data.length"
         :loading="loading"
         secondary
         type="error"
@@ -28,19 +28,18 @@
 <script setup lang="ts">
 import { ref, onBeforeMount, h } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import type { Map, Mapper } from "../types"
+import type { Map, Player } from "../types"
 import { NDataTable, NButton, useNotification } from "naive-ui"
 import type { DataTableColumn, DataTableRowKey } from "naive-ui"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
 import { toErrorMsg } from "../utils"
 import MapperNames from "../components/MapperNames.vue"
-import { omit } from "lodash-es"
 
 type RowData = {
-  id: number
+  key: string
   name: string
-  mappers: Mapper[]
+  mappers: Player[]
   description: string
   tierCKZ: string
   tierVNL: string
@@ -59,15 +58,11 @@ const data = ref<RowData[]>([])
 
 const map = ref<Map>()
 
-const selectedCourseIds = ref<number[]>([])
+const selectedCourseNames = ref<string[]>([])
 
 const columns = ref<DataTableColumn<RowData>[]>([
   {
     type: "selection",
-  },
-  {
-    title: "ID",
-    key: "id",
   },
   {
     title: "Name",
@@ -111,12 +106,12 @@ onBeforeMount(async () => {
 
     mapName.value = res.name
     data.value = res.courses.map((course) => ({
-      id: course.id,
+      key: course.name,
       name: course.name,
       mappers: course.mappers,
       description: course.description || "-",
-      tierCKZ: course.filters.find((filter) => filter.mode === "classic" && filter.teleports)!.tier,
-      tierVNL: course.filters.find((filter) => filter.mode === "vanilla" && filter.teleports)!.tier,
+      tierCKZ: course.filters.classic.nub_tier,
+      tierVNL: course.filters.vanilla.nub_tier,
     }))
   } catch (error) {
     notification.error({
@@ -133,18 +128,16 @@ async function removeCourses() {
 
   try {
     if (map.value) {
-      const courses = map.value.courses.filter((course) => !selectedCourseIds.value.includes(course.id))!
+      const courses = map.value.courses.filter((course) => !selectedCourseNames.value.includes(course.name))!
 
       const newMap = {
-        global_status: map.value.global_status,
         workshop_id: map.value.workshop_id,
-        description: map.value.description || null,
-        mappers: map.value.mappers.map((mapper) => mapper.steam_id),
+        description: map.value.description,
+        state: map.value.state,
+        mappers: map.value.mappers.map((mapper) => mapper.id),
         courses: courses.map((course) => ({
-          name: course.name,
-          description: course.description || null,
-          filters: course.filters.map((filter) => omit(filter, ["id"])),
-          mappers: course.mappers.map((mapper) => mapper.steam_id),
+          ...course,
+          mappers: course.mappers.map((mapper) => mapper.id),
         })),
       }
       console.log("map to update", newMap)
@@ -165,11 +158,11 @@ async function removeCourses() {
 }
 
 function handleCheck(rowKeys: DataTableRowKey[]) {
-  selectedCourseIds.value = rowKeys.map(Number)
+  selectedCourseNames.value = rowKeys as string[]
 }
 
 function rowKey(rowData: RowData) {
-  return rowData.id
+  return rowData.name
 }
 
 function transformTier(tier: string) {
