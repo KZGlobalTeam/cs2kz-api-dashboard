@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount, nextTick } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NSpace, NSelect, NDatePicker, NTag, NTooltip, useNotification } from "naive-ui"
+import { NInput, NDataTable, NButton, NSpace, NSelect, NDatePicker, NTooltip, useNotification } from "naive-ui"
 import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
 import type { Ban } from "../types"
