@@ -40,16 +40,16 @@ const admin = reactive({
 })
 
 const permissionOptions = [
-  { label: "maps", value: "maps" },
+  { label: "map-pool", value: "map-pool" },
   { label: "servers", value: "servers" },
-  { label: "bans", value: "bans" },
-  { label: "admin", value: "admin" },
+  { label: "player-bans", value: "player-bans" },
+  { label: "user-permissions", value: "user-permissions" },
 ]
 
 onBeforeMount(async () => {
-  let steamId = route.params.steam_id
+  let id = route.params.id
   try {
-    const { data } = await axiosClient.get(`/admins/${steamId}`)
+    const { data } = await axiosClient.get(`/users/${id}`)
 
     admin.permissions = data.permissions
   } catch (error) {
@@ -65,11 +65,11 @@ async function updateAdmin() {
 
   try {
     await axiosClient.put(
-      `/admins/${route.params.steam_id}`,
+      `/users/${route.params.id}/permissions`,
       { permissions: admin.permissions },
       { withCredentials: true },
     )
-    notification.success({ title: "Admin updated", duration: 3000 })
+    notification.success({ title: "Permissions updated", duration: 3000 })
     router.push("/admins")
   } catch (error) {
     loading.value = false

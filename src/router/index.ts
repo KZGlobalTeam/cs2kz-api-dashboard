@@ -175,7 +175,7 @@ export const routes = [
     },
   },
   {
-    path: "/admins/:steam_id/update",
+    path: "/admins/:id/update",
     name: "updateadmin",
     component: () => import("../views/UpdateAdmin.vue"),
     meta: {

@@ -35,13 +35,13 @@ import { useRouter } from "vue-router"
 import { NInput, NDataTable, NButton, NTag, NTooltip, useNotification } from "naive-ui"
 import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
-import type { Admin, Permission } from "../types"
+import type { User, Permission } from "../types"
 import { renderSteamID, toErrorMsg } from "../utils"
 import ActionButton from "../components/ActionButton.vue"
 
 type RowData = {
   name: string
-  steam_id: string
+  id: string
   permissions: string[]
 }
 
@@ -54,7 +54,7 @@ const searchQuery = ref("")
 const searchValue = ref("")
 const queryTimeout = ref()
 
-const columns = ref<DataTableColumn<Admin>[]>([
+const columns = ref<DataTableColumn<User>[]>([
   {
     title: "Name",
     key: "name",
@@ -62,32 +62,32 @@ const columns = ref<DataTableColumn<Admin>[]>([
     sorter: "default",
   },
   {
-    title: "Steam ID",
-    key: "steam_id",
+    title: "ID",
+    key: "id",
     render(rowData) {
-      return renderSteamID(rowData.steam_id)
+      return renderSteamID(rowData.id)
     },
   },
   {
     title: "Permissions",
     key: "permissions",
-    defaultFilterOptionValues: ["maps", "servers", "bans", "admin"],
+    defaultFilterOptionValues: ["user-permissions", "servers", "player-bans", "user-permissions"],
     filterOptions: [
       {
-        label: "maps",
-        value: "maps",
+        label: "map-pool",
+        value: "map-pool",
       },
       {
         label: "servers",
         value: "servers",
       },
       {
-        label: "bans",
-        value: "bans",
+        label: "player-bans",
+        value: "player-bans",
       },
       {
-        label: "admin",
-        value: "admin",
+        label: "user-permissions",
+        value: "user-permissions",
       },
     ],
     filter(value, row) {
@@ -127,7 +127,7 @@ const columns = ref<DataTableColumn<Admin>[]>([
                 router.push({
                   name: "updateadmin",
                   params: {
-                    steam_id: rowData.steam_id,
+                    id: rowData.id,
                   },
                 })
               },
@@ -173,14 +173,10 @@ onBeforeMount(() => {
 async function loadAdminsData() {
   loading.value = true
   try {
-    const { data: res } = await axiosClient.get("/admins", {
-      params: {
-        permissions: "user-permissions,servers,map-pool,player-bans",
-      },
-    })
+    const { data: res } = await axiosClient.get(`/users`)
     // console.log(result.data)
 
-    data.value = res?.admins || []
+    data.value = res || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch admins",
@@ -199,7 +195,7 @@ function handleAdminSearch() {
 }
 
 function rowKey(rowData: RowData) {
-  return rowData.steam_id
+  return rowData.id
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

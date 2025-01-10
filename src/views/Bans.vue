@@ -90,8 +90,9 @@ const router = useRouter()
 const notification = useNotification()
 
 const banReasonOptions = [
-  { label: "Auto Bhop", value: "auto_bhop" },
-  { label: "Auto Strafe", value: "auto_strafe" },
+  { label: "Macro", value: "macro" },
+  { label: "Auto Bhop", value: "auto-bhop" },
+  { label: "Auto Strafe", value: "auto-strafe" },
 ]
 
 const statusOptions = [
@@ -129,43 +130,21 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Steam ID",
     key: "steam_id",
     render(rowData) {
-      return renderSteamID(rowData.player.steam_id, true)
+      return renderSteamID(rowData.player.id, true)
     },
   },
   {
     title: "Reason",
     key: "reason",
     render(rowData) {
-      return rowData.reason.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-    },
-  },
-  {
-    title: "Status",
-    key: "status",
-    render(rowData) {
-      return h(
-        NTag,
-        {
-          type: rowData.unban ? "success" : "error",
-        },
-        {
-          default: () => (rowData.unban ? "unbanned" : "banned"),
-        },
-      )
-    },
-  },
-  {
-    title: "Server",
-    key: "server",
-    render(rowData) {
-      return rowData.server?.name || "-"
+      return rowData.reason.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
     },
   },
   {
     title: "Banned By",
     key: "banned_by",
     render(rowData) {
-      return rowData.admin ? rowData.admin.name : "Anticheat"
+      return rowData.banned_by.type === "server" ? "Anticheat" : renderSteamID(rowData.banned_by.id.toString(), true)
     },
   },
   {
@@ -173,18 +152,10 @@ const columns = ref<DataTableColumn<Ban>[]>([
     key: "created_on",
     sortOrder: false,
     render(rowData) {
-      return toLocal(rowData.created_on)
+      return toLocal(rowData.created_at)
     },
     sorter(rowA, rowB) {
-      return new Date(rowA.created_on).getTime() - new Date(rowB.created_on).getTime()
-    },
-  },
-  {
-    title: "Exipres On",
-    key: "expires_on",
-    sortOrder: false,
-    render(rowData) {
-      return rowData.expires_on ? toLocal(rowData.expires_on) : "-"
+      return new Date(rowA.created_at).getTime() - new Date(rowB.created_at).getTime()
     },
   },
   {
@@ -309,7 +280,7 @@ async function loadBansData() {
       params,
     })
 
-    data.value = res?.bans || []
+    data.value = res?.values || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch bans",

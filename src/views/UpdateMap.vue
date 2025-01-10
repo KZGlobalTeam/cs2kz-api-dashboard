@@ -120,8 +120,7 @@ function generateUpdate(): any {
 
   if (oldMap.description !== description.value && description.value !== "") update.description = description.value
 
-  // if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
-  update.workshop_id = Number(workshopId.value)
+  if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
 
   if (oldMap.state !== state.value) update.state = state.value
 
@@ -184,7 +183,7 @@ function generateUpdate(): any {
 
         if (Object.keys(courseUpdate).length > 0) {
           if (!update.course_updates) update.course_updates = []
-          update.course_updates!.push({ idx: index, ...courseUpdate })
+          update.course_updates!.push({ idx: index + 1, ...courseUpdate })
         }
       }
     })
