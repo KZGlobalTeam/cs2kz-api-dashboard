@@ -15,12 +15,9 @@
     </div>
 
     <p class="mt-6 text-lg">
-      The API key will be displayed only <strong>once</strong>. Please copy and
-      save it securely. <br />
-      <strong>Do not</strong> share your API key with anyone else or expose it
-      publicly. <br />
-      If you suspect your key has been compromised, you can revoke it or
-      generate a new one in the dashboard.
+      The API key will be displayed only <strong>once</strong>. Please copy and save it securely. <br />
+      <strong>Do not</strong> share your API key with anyone else or expose it publicly. <br />
+      If you suspect your key has been compromised, you can revoke it or generate a new one in the dashboard.
     </p>
   </n-modal>
 </template>

@@ -8,18 +8,12 @@
 
       <div class="mb-4">
         <p class="mb-2 font-medium">Server IP</p>
-        <n-input
-          v-model:value="server.ip_address"
-          placeholder="127.0.0.1:27015"
-        />
+        <n-input v-model:value="server.ip_address" placeholder="127.0.0.1:27015" />
       </div>
 
       <div class="mb-4">
         <p class="mb-2 font-medium">Owner</p>
-        <n-input
-          v-model:value="server.owner"
-          placeholder="STEAM_1:1:XXXXXXXXXXXX"
-        />
+        <n-input v-model:value="server.owner" placeholder="STEAM_1:1:XXXXXXXXXXXX" />
       </div>
 
       <div>
@@ -38,20 +32,12 @@
     <div class="rounded-md bg-gray-800 p-4">
       <p class="mb-2 font-medium">API Key</p>
       <div class="flex gap-4">
-        <n-button @click="newKey" type="primary" secondary strong>
-          New Key
-        </n-button>
-        <n-button @click="revokeKey" type="error" secondary strong>
-          Revoke Key
-        </n-button>
+        <n-button @click="newKey" type="primary" secondary strong> New Key </n-button>
+        <n-button @click="revokeKey" type="error" secondary strong> Revoke Key </n-button>
       </div>
     </div>
 
-    <KeyModal
-      :api-key="apiKey"
-      :redirect-to="isAdmin ? 'servers' : 'myservers'"
-      :show-modal="showModal"
-    />
+    <KeyModal :api-key="apiKey" :redirect-to="isAdmin ? 'servers' : 'myservers'" :show-modal="showModal" />
   </div>
 </template>
 
@@ -88,9 +74,7 @@ const server = reactive({
 
 onBeforeMount(async () => {
   try {
-    const { data } = (await axiosClient.get(
-      `/servers/${route.params.id}`,
-    )) as AxiosResponse<Server>
+    const { data } = (await axiosClient.get(`/servers/${route.params.id}`)) as AxiosResponse<Server>
     // console.log(data);
 
     server.name = data.name
@@ -112,13 +96,9 @@ async function updateServer() {
   } else {
     loading.value = true
     try {
-      await axiosClient.patch(
-        `/servers/${route.params.id}`,
-        transformSrv(server),
-        {
-          withCredentials: true,
-        },
-      )
+      await axiosClient.patch(`/servers/${route.params.id}`, transformSrv(server), {
+        withCredentials: true,
+      })
       notification.success({ title: "Server updated", duration: 3000 })
       console.log(route)
 

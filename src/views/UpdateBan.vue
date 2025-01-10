@@ -8,19 +8,11 @@
 
       <div class="mb-4">
         <p class="mb-2 font-medium">Ban Duration</p>
-        <n-select
-          v-model:value="ban.banDuration"
-          :options="banDurationOptions"
-        />
+        <n-select v-model:value="ban.banDuration" :options="banDurationOptions" />
       </div>
 
       <div>
-        <n-button
-          @click.prevent="updateBan"
-          :disabled="loading"
-          :loading="loading"
-          class="saveButton"
-          strong
+        <n-button @click.prevent="updateBan" :disabled="loading" :loading="loading" class="saveButton" strong
           >Update</n-button
         >
       </div>
@@ -74,9 +66,7 @@ const banDurationOptions = [
 
 onBeforeMount(async () => {
   try {
-    const { data } = (await axiosClient.get(
-      `/bans/${route.params.id}`,
-    )) as AxiosResponse<Ban>
+    const { data } = (await axiosClient.get(`/bans/${route.params.id}`)) as AxiosResponse<Ban>
     // console.log(data);
 
     ban.reason = data.reason
@@ -104,8 +94,7 @@ async function updateBan() {
         update = { ...diff, expires_on: null }
       } else {
         const expires_on = new Date(
-          new Date(ban.createdOn).getTime() +
-            (ban.banDuration as number) * 24 * 60 * 60 * 1000,
+          new Date(ban.createdOn).getTime() + (ban.banDuration as number) * 24 * 60 * 60 * 1000,
         ).toISOString()
         update = { ...diff, expires_on }
       }

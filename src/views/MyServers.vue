@@ -30,12 +30,7 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadServersData">REFRESH</n-button>
-      <n-button
-        type="primary"
-        secondary
-        @click="router.push({ name: 'createmyserver' })"
-        >New Server</n-button
-      >
+      <n-button type="primary" secondary @click="router.push({ name: 'createmyserver' })">New Server</n-button>
     </div>
   </div>
 </template>
@@ -43,18 +38,8 @@
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import {
-  NInput,
-  NDataTable,
-  NButton,
-  NTooltip,
-  useNotification,
-} from "naive-ui"
-import type {
-  DataTableSortState,
-  PaginationInfo,
-  DataTableColumn,
-} from "naive-ui"
+import { NInput, NDataTable, NButton, NTooltip, useNotification } from "naive-ui"
+import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
 import type { Server } from "../types"
 import { toLocal, toErrorMsg } from "../utils"
@@ -101,10 +86,7 @@ const columns = ref<DataTableColumn<Server>[]>([
       return toLocal(rowData.created_on)
     },
     sorter(rowA, rowB) {
-      return (
-        new Date(rowA.created_on).getTime() -
-        new Date(rowB.created_on).getTime()
-      )
+      return new Date(rowA.created_on).getTime() - new Date(rowB.created_on).getTime()
     },
   },
   {

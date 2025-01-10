@@ -207,8 +207,7 @@ router.beforeEach(async (to) => {
   const requiredPermission = to.meta.requiresPermission as string
 
   if (requiredPermission && to.name !== "home") {
-    if (!playerStore.permissions?.includes(requiredPermission))
-      return { name: "home" }
+    if (!playerStore.permissions?.includes(requiredPermission)) return { name: "home" }
   }
 })
 

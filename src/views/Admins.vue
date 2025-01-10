@@ -2,12 +2,7 @@
   <div class="rounded-md bg-gray-800 p-4">
     <!-- selectors -->
     <div class="mb-4 flex gap-4">
-      <n-input
-        @input="handleAdminSearch"
-        type="text"
-        v-model:value="searchQuery"
-        placeholder="Search"
-      >
+      <n-input @input="handleAdminSearch" type="text" v-model:value="searchQuery" placeholder="Search">
         <template #prefix>
           <img src="/icons/search.svg" class="h-5 w-5" />
         </template>
@@ -29,12 +24,7 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadAdminsData">REFRESH</n-button>
-      <n-button
-        type="primary"
-        secondary
-        @click="router.push({ name: 'createadmin' })"
-        >New Admin</n-button
-      >
+      <n-button type="primary" secondary @click="router.push({ name: 'createadmin' })">New Admin</n-button>
     </div>
   </div>
 </template>
@@ -42,19 +32,8 @@
 <script setup lang="ts">
 import { ref, reactive, h, computed, onBeforeMount } from "vue"
 import { useRouter } from "vue-router"
-import {
-  NInput,
-  NDataTable,
-  NButton,
-  NTag,
-  NTooltip,
-  useNotification,
-} from "naive-ui"
-import type {
-  DataTableSortState,
-  PaginationInfo,
-  DataTableColumn,
-} from "naive-ui"
+import { NInput, NDataTable, NButton, NTag, NTooltip, useNotification } from "naive-ui"
+import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
 import type { Admin, Permission } from "../types"
 import { renderSteamID, toErrorMsg } from "../utils"
@@ -181,9 +160,7 @@ const data = ref<RowData[]>([])
 
 const filteredData = computed<RowData[]>(() => {
   if (searchValue.value) {
-    return data.value.filter((v) =>
-      v.name.toLowerCase().includes(searchValue.value.toLowerCase()),
-    )
+    return data.value.filter((v) => v.name.toLowerCase().includes(searchValue.value.toLowerCase()))
   }
 
   return data.value

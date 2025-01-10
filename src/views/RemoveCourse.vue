@@ -14,11 +14,7 @@
 
     <div class="flex justify-end gap-4">
       <n-button
-        :disabled="
-          selectedCourseIds.length === 0 ||
-          data.length === 1 ||
-          selectedCourseIds.length === data.length
-        "
+        :disabled="selectedCourseIds.length === 0 || data.length === 1 || selectedCourseIds.length === data.length"
         :loading="loading"
         secondary
         type="error"
@@ -108,9 +104,7 @@ onBeforeMount(async () => {
   loadingMap.value = true
 
   try {
-    const { data: res } = (await axiosClient.get(
-      `/maps/${route.params.id}`,
-    )) as AxiosResponse<Map>
+    const { data: res } = (await axiosClient.get(`/maps/${route.params.id}`)) as AxiosResponse<Map>
     // console.log(data);
 
     map.value = res
@@ -121,12 +115,8 @@ onBeforeMount(async () => {
       name: course.name,
       mappers: course.mappers,
       description: course.description || "-",
-      tierCKZ: course.filters.find(
-        (filter) => filter.mode === "classic" && filter.teleports,
-      )!.tier,
-      tierVNL: course.filters.find(
-        (filter) => filter.mode === "vanilla" && filter.teleports,
-      )!.tier,
+      tierCKZ: course.filters.find((filter) => filter.mode === "classic" && filter.teleports)!.tier,
+      tierVNL: course.filters.find((filter) => filter.mode === "vanilla" && filter.teleports)!.tier,
     }))
   } catch (error) {
     notification.error({
@@ -143,9 +133,7 @@ async function removeCourses() {
 
   try {
     if (map.value) {
-      const courses = map.value.courses.filter(
-        (course) => !selectedCourseIds.value.includes(course.id),
-      )!
+      const courses = map.value.courses.filter((course) => !selectedCourseIds.value.includes(course.id))!
 
       const newMap = {
         global_status: map.value.global_status,

@@ -3,19 +3,9 @@
     <div class="mb-4 flex justify-between gap-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input
-          @keyup.enter="loadMapsData"
-          type="text"
-          v-model:value="mapQuery.name"
-          placeholder="Name"
-        />
+        <n-input @keyup.enter="loadMapsData" type="text" v-model:value="mapQuery.name" placeholder="Name" />
 
-        <n-input
-          @keyup.enter="loadMapsData"
-          type="text"
-          v-model:value="mapQuery.mapper"
-          placeholder="Mapper"
-        />
+        <n-input @keyup.enter="loadMapsData" type="text" v-model:value="mapQuery.mapper" placeholder="Mapper" />
 
         <n-select
           style="width: 8rem"
@@ -46,33 +36,15 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadMapsData">REFRESH</n-button>
-      <n-button
-        secondary
-        type="primary"
-        @click="router.push({ name: 'createmaps' })"
-        >New Map</n-button
-      >
+      <n-button secondary type="primary" @click="router.push({ name: 'createmaps' })">New Map</n-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, nextTick, onBeforeMount, h } from "vue"
-import {
-  NInput,
-  NDataTable,
-  NButton,
-  NTag,
-  NSpace,
-  NSelect,
-  NTooltip,
-  useNotification,
-} from "naive-ui"
-import type {
-  DataTableSortState,
-  PaginationInfo,
-  DataTableColumn,
-} from "naive-ui"
+import { NInput, NDataTable, NButton, NTag, NSpace, NSelect, NTooltip, useNotification } from "naive-ui"
+import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
 import ActionButton from "../components/ActionButton.vue"
 import type { Map, GlobalStatus } from "../types"
 import { useRouter } from "vue-router"
@@ -183,10 +155,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
       return toLocal(rowData.created_on)
     },
     sorter(rowA, rowB) {
-      return (
-        new Date(rowA.created_on).getTime() -
-        new Date(rowB.created_on).getTime()
-      )
+      return new Date(rowA.created_on).getTime() - new Date(rowB.created_on).getTime()
     },
   },
   {

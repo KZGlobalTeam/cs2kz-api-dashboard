@@ -9,11 +9,7 @@
       <div>
         <p class="title">Reason</p>
         <p>
-          {{
-            ban.reason
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (c) => c.toUpperCase())
-          }}
+          {{ ban.reason.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) }}
         </p>
       </div>
 
@@ -93,9 +89,7 @@ const ban = ref<Ban>()
 onBeforeMount(async () => {
   if (route.params.id) {
     try {
-      const { data } = (await axiosClient.get(
-        `/bans/${route.params.id}`,
-      )) as AxiosResponse<Ban>
+      const { data } = (await axiosClient.get(`/bans/${route.params.id}`)) as AxiosResponse<Ban>
       // console.log(data);
 
       ban.value = data

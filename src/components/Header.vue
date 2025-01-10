@@ -7,20 +7,13 @@
     <div>
       <div class="flex gap-4" v-if="playerStore.steamId">
         <!-- avatar -->
-        <img
-          class="h-8 w-8 rounded-full ring-2 ring-slate-700"
-          :src="playerStore.avatar_url"
-        />
+        <img class="h-8 w-8 rounded-full ring-2 ring-slate-700" :src="playerStore.avatar_url" />
         <div>
-          <n-button secondary type="warning" @click="signOut" strong
-            >SIGN OUT</n-button
-          >
+          <n-button secondary type="warning" @click="signOut" strong>SIGN OUT</n-button>
         </div>
       </div>
       <div v-else>
-        <n-button secondary type="success" @click="signIn" strong
-          >SIGN IN</n-button
-        >
+        <n-button secondary type="success" @click="signIn" strong>SIGN IN</n-button>
       </div>
     </div>
   </div>

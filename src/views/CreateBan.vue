@@ -3,10 +3,7 @@
     <div class="mb-4 rounded-md bg-gray-800 p-4">
       <n-form ref="banForm" :model="ban" :rules="rules">
         <n-form-item label="Steam ID" path="player_id">
-          <n-input
-            v-model:value="ban.player_id"
-            placeholder="STEAM_1:1:XXXXXXXXXXX"
-          />
+          <n-input v-model:value="ban.player_id" placeholder="STEAM_1:1:XXXXXXXXXXX" />
         </n-form-item>
 
         <n-form-item label="Player IP" path="player_ip">
@@ -36,14 +33,7 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue"
 import { useRouter } from "vue-router"
-import {
-  NButton,
-  NInput,
-  NSelect,
-  NForm,
-  NFormItem,
-  useNotification,
-} from "naive-ui"
+import { NButton, NInput, NSelect, NForm, NFormItem, useNotification } from "naive-ui"
 import type { FormInst } from "naive-ui"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"

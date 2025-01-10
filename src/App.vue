@@ -24,13 +24,7 @@ import { onMounted } from "vue"
 import Header from "./components/Header.vue"
 import NavBar from "./components/NavBar.vue"
 import { RouterView, useRoute, useRouter } from "vue-router"
-import {
-  darkTheme,
-  NConfigProvider,
-  NNotificationProvider,
-  NDialogProvider,
-  enUS,
-} from "naive-ui"
+import { darkTheme, NConfigProvider, NNotificationProvider, NDialogProvider, enUS } from "naive-ui"
 import { usePlayerStore } from "./store/player"
 import axiosClient from "./axios"
 import Cookies from "universal-cookie"

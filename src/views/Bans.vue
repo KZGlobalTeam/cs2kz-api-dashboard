@@ -3,26 +3,11 @@
     <div class="mb-4 flex justify-between gap-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input
-          @keyup.enter="loadBansData"
-          type="text"
-          v-model:value="banQuery.player"
-          placeholder="Player"
-        />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.player" placeholder="Player" />
 
-        <n-input
-          @keyup.enter="loadBansData"
-          type="text"
-          v-model:value="banQuery.server"
-          placeholder="Server"
-        />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.server" placeholder="Server" />
 
-        <n-input
-          @keyup.enter="loadBansData"
-          type="text"
-          v-model:value="banQuery.bannedBy"
-          placeholder="Banned By"
-        />
+        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.bannedBy" placeholder="Banned By" />
 
         <n-input
           @keyup.enter="loadBansData"
@@ -76,12 +61,7 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadBansData">REFRESH</n-button>
-      <n-button
-        type="error"
-        secondary
-        @click="router.push({ name: 'createban' })"
-        >New Ban</n-button
-      >
+      <n-button type="error" secondary @click="router.push({ name: 'createban' })">New Ban</n-button>
     </div>
   </div>
 </template>
@@ -89,22 +69,8 @@
 <script setup lang="ts">
 import { ref, reactive, h, onBeforeMount, nextTick } from "vue"
 import { useRouter } from "vue-router"
-import {
-  NInput,
-  NDataTable,
-  NButton,
-  NSpace,
-  NSelect,
-  NDatePicker,
-  NTag,
-  NTooltip,
-  useNotification,
-} from "naive-ui"
-import type {
-  DataTableSortState,
-  PaginationInfo,
-  DataTableColumn,
-} from "naive-ui"
+import { NInput, NDataTable, NButton, NSpace, NSelect, NDatePicker, NTag, NTooltip, useNotification } from "naive-ui"
+import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
 import type { Ban } from "../types"
 import { toLocal, renderSteamID, toErrorMsg } from "../utils"
@@ -170,9 +136,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Reason",
     key: "reason",
     render(rowData) {
-      return rowData.reason
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase())
+      return rowData.reason.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
     },
   },
   {
@@ -212,10 +176,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
       return toLocal(rowData.created_on)
     },
     sorter(rowA, rowB) {
-      return (
-        new Date(rowA.created_on).getTime() -
-        new Date(rowB.created_on).getTime()
-      )
+      return new Date(rowA.created_on).getTime() - new Date(rowB.created_on).getTime()
     },
   },
   {
@@ -339,12 +300,7 @@ async function loadBansData() {
       banned_by: banQuery.bannedBy || null,
       unbanned_by: banQuery.unbannedBy || null,
       reason: banQuery.reason,
-      unbanned:
-        banQuery.status === null
-          ? null
-          : banQuery.status === "banned"
-            ? false
-            : true,
+      unbanned: banQuery.status === null ? null : banQuery.status === "banned" ? false : true,
       created_after: new Date(banQuery.dateRange[0]).toISOString(),
       created_before: new Date(banQuery.dateRange[1]).toISOString(),
     }

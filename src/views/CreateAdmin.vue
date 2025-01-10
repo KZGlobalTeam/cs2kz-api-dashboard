@@ -16,12 +16,7 @@
       />
     </div>
 
-    <n-button
-      @click.prevent="createAdmin"
-      :disabled="loading"
-      :loading="loading"
-      type="primary"
-      strong
+    <n-button @click.prevent="createAdmin" :disabled="loading" :loading="loading" type="primary" strong
       >Create</n-button
     >
   </div>
@@ -30,14 +25,7 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue"
 import { useRouter } from "vue-router"
-import {
-  NSelect,
-  NButton,
-  NInput,
-  NForm,
-  NFormItem,
-  useNotification,
-} from "naive-ui"
+import { NSelect, NButton, NInput, NForm, NFormItem, useNotification } from "naive-ui"
 import type { FormInst } from "naive-ui"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"
@@ -74,11 +62,7 @@ function createAdmin() {
   adminForm.value?.validate(async (errors) => {
     if (!errors) {
       try {
-        await axiosClient.put(
-          `/admins/${admin.steamId}`,
-          { permissions: admin.permissions },
-          { withCredentials: true },
-        )
+        await axiosClient.put(`/admins/${admin.steamId}`, { permissions: admin.permissions }, { withCredentials: true })
         notification.success({ title: "Admin saved", duration: 3000 })
         router.push("/admins")
       } catch (error) {

@@ -6,17 +6,11 @@
       </n-form-item>
 
       <n-form-item label="Server IP" path="ip_address">
-        <n-input
-          v-model:value="server.ip_address"
-          placeholder="127.0.0.1:27015"
-        />
+        <n-input v-model:value="server.ip_address" placeholder="127.0.0.1:27015" />
       </n-form-item>
 
       <n-form-item v-if="isAdmin" label="Owner" path="owner">
-        <n-input
-          v-model:value="server.owner"
-          placeholder="STEAM_1:1:XXXXXXXXXXXX"
-        />
+        <n-input v-model:value="server.owner" placeholder="STEAM_1:1:XXXXXXXXXXXX" />
       </n-form-item>
     </n-form>
 
@@ -32,11 +26,7 @@
       >
     </div>
 
-    <KeyModal
-      :api-key="apiKey"
-      :redirect-to="isAdmin ? 'servers' : 'myservers'"
-      :show-modal="showModal"
-    />
+    <KeyModal :api-key="apiKey" :redirect-to="isAdmin ? 'servers' : 'myservers'" :show-modal="showModal" />
   </div>
 </template>
 
@@ -96,13 +86,9 @@ async function createServer() {
       try {
         console.log(server)
 
-        const { data } = (await axiosClient.post(
-          "/servers",
-          transformSrv(server),
-          {
-            withCredentials: true,
-          },
-        )) as AxiosResponse<{ server_id: number; access_key: string }>
+        const { data } = (await axiosClient.post("/servers", transformSrv(server), {
+          withCredentials: true,
+        })) as AxiosResponse<{ server_id: number; access_key: string }>
         apiKey.value = data.access_key
 
         showModal.value = true

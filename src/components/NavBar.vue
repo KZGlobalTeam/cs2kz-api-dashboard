@@ -33,8 +33,7 @@ playerStore.$subscribe(() => {
   const authRoutes = routes.filter((route) => {
     if (route.meta?.menuItem) {
       if (!playerStore.permissions) return false
-      else
-        return playerStore.permissions.includes(route.meta.requiresPermission)
+      else return playerStore.permissions.includes(route.meta.requiresPermission)
     } else {
       return false
     }
