@@ -21,9 +21,6 @@ import { NInput, NDynamicInput } from "naive-ui"
 const mappers = defineModel<string[]>("mappers", { required: true })
 
 function onCreateMapper() {
-  return {
-    name: "",
-    id: "",
-  }
+  return ""
 }
 </script>
