@@ -24,6 +24,9 @@ import { NButton } from "naive-ui"
 import { useRouter } from "vue-router"
 import { usePlayerStore } from "../store/player"
 import axiosClient from "../axios"
+import Cookies from "universal-cookie"
+
+const cookies = new Cookies(null, { path: "/" })
 
 const router = useRouter()
 
@@ -36,6 +39,8 @@ async function signIn() {
 async function signOut() {
   try {
     await axiosClient.get(`/auth/web/logout`, { withCredentials: true })
+    playerStore.$reset()
+    cookies.remove("kz-player")
     router.push("/")
   } catch (error) {
     console.log(error)

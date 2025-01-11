@@ -32,14 +32,14 @@ watch(
 playerStore.$subscribe(() => {
   const authRoutes = routes.filter((route) => {
     if (route.meta?.menuItem) {
-      if (!playerStore.permissions) return false
-      else return playerStore.permissions.includes(route.meta.requiresPermission)
+      if (playerStore.permissions.length === 0) return false
+      else return !route.meta.requiresPermission || playerStore.permissions.includes(route.meta.requiresPermission)
     } else {
       return false
     }
   })
 
-  menuOptions.value = toMenuOptions([...noAuthRoutes.filter((route) => route.meta.menuItem), ...authRoutes] as Routes)
+  menuOptions.value = toMenuOptions([...noAuthRoutes, ...authRoutes] as Routes)
 })
 
 function toMenuOptions(rts: Routes) {

@@ -12,6 +12,9 @@ export const noAuthRoutes = [
       iconName: "home",
     },
   },
+]
+
+export const routes = [
   {
     path: "/myservers",
     name: "myservers",
@@ -30,9 +33,6 @@ export const noAuthRoutes = [
       title: "Create Server",
     },
   },
-]
-
-export const routes = [
   {
     path: "/maps",
     name: "maps",
