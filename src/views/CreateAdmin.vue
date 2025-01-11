@@ -1,8 +1,8 @@
 <template>
   <div class="mb-4 rounded-md bg-gray-800 p-4">
     <n-form ref="adminForm" :model="admin" :rules="rules">
-      <n-form-item label="Steam ID" path="steamId">
-        <n-input v-model:value="admin.steamId" placeholder="" />
+      <n-form-item label="Steam ID" path="id">
+        <n-input v-model:value="admin.id" placeholder="" />
       </n-form-item>
     </n-form>
 
@@ -37,12 +37,12 @@ const loading = ref(false)
 
 const adminForm = ref<FormInst | null>(null)
 const admin = reactive({
-  steamId: "",
+  id: "",
   permissions: [],
 })
 
 const rules = {
-  steamId: {
+  id: {
     required: true,
     message: "Steam ID is required.",
     trigger: ["input", "blur"],
@@ -50,10 +50,10 @@ const rules = {
 }
 
 const permissionOptions = [
-  { label: "maps", value: "maps" },
+  { label: "map-pool", value: "map-pool" },
   { label: "servers", value: "servers" },
-  { label: "bans", value: "bans" },
-  { label: "admin", value: "admin" },
+  { label: "player-bans", value: "player-bans" },
+  { label: "user-permissions", value: "user-permissions" },
 ]
 
 function createAdmin() {
@@ -62,7 +62,11 @@ function createAdmin() {
   adminForm.value?.validate(async (errors) => {
     if (!errors) {
       try {
-        await axiosClient.put(`/admins/${admin.steamId}`, { permissions: admin.permissions }, { withCredentials: true })
+        await axiosClient.put(
+          `/users/${admin.id}/permissions`,
+          { permissions: admin.permissions },
+          { withCredentials: true },
+        )
         notification.success({ title: "Admin saved", duration: 3000 })
         router.push("/admins")
       } catch (error) {
