@@ -39,7 +39,7 @@ playerStore.$subscribe(() => {
     }
   })
 
-  menuOptions.value = toMenuOptions([...noAuthRoutes, ...authRoutes] as Routes)
+  menuOptions.value = toMenuOptions([...noAuthRoutes.filter((route) => route.meta.menuItem), ...authRoutes] as Routes)
 })
 
 function toMenuOptions(rts: Routes) {
