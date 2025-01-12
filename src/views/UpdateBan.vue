@@ -27,7 +27,7 @@ import { NButton, NSelect, useNotification } from "naive-ui"
 import type { Ban } from "../types"
 import axiosClient from "../axios"
 import type { AxiosResponse } from "axios"
-import { getDiff, toErrorMsg, calcBanDuration } from "../utils"
+import { getDiff, toErrorMsg } from "../utils"
 import { isEqual } from "lodash-es"
 
 const router = useRouter()
@@ -41,11 +41,11 @@ let oldBan: Record<string, string>
 const ban = reactive<{
   reason: string
   banDuration: number | string
-  createdOn: string
+  createAt: string
 }>({
   reason: "",
   banDuration: 1,
-  createdOn: "",
+  createAt: "",
 })
 
 const banReasonOptions = [
@@ -70,8 +70,7 @@ onBeforeMount(async () => {
     // console.log(data);
 
     ban.reason = data.reason
-    ban.banDuration = calcBanDuration(data)
-    ban.createdOn = data.created_on
+    ban.createAt = data.created_at
 
     oldBan = JSON.parse(JSON.stringify(ban))
   } catch (error) {
@@ -91,12 +90,12 @@ async function updateBan() {
 
     if ("banDuration" in diff) {
       if (ban.banDuration === "permanent") {
-        update = { ...diff, expires_on: null }
+        update = { ...diff, expires_at: null }
       } else {
-        const expires_on = new Date(
-          new Date(ban.createdOn).getTime() + (ban.banDuration as number) * 24 * 60 * 60 * 1000,
+        const expires_at = new Date(
+          new Date(ban.createAt).getTime() + (ban.banDuration as number) * 24 * 60 * 60 * 1000,
         ).toISOString()
-        update = { ...diff, expires_on }
+        update = { ...diff, expires_at }
       }
     }
 
