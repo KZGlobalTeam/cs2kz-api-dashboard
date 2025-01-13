@@ -183,7 +183,7 @@ function generateUpdate(): any {
 
         if (Object.keys(courseUpdate).length > 0) {
           if (!update.course_updates) update.course_updates = []
-          update.course_updates!.push({ idx: index, ...courseUpdate })
+          update.course_updates!.push({ idx: index + 1, ...courseUpdate })
         }
       }
     })
