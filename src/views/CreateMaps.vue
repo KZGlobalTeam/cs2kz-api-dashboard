@@ -146,7 +146,6 @@ async function saveMaps() {
 
   for (const map of mapTabs.value) {
     const validated = validateMap(map)
-    console.log("validated map", validated)
     if (!validated) {
       allValidated = false
     }
