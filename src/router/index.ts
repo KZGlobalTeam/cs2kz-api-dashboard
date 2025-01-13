@@ -7,6 +7,7 @@ export const noAuthRoutes = [
     name: "home",
     component: () => import("../views/Home.vue"),
     meta: {
+      menuItem: true,
       title: "Home",
       iconName: "home",
     },
@@ -14,6 +15,24 @@ export const noAuthRoutes = [
 ]
 
 export const routes = [
+  {
+    path: "/myservers",
+    name: "myservers",
+    component: () => import("../views/MyServers.vue"),
+    meta: {
+      menuItem: true,
+      title: "My Servers",
+      iconName: "server",
+    },
+  },
+  {
+    path: "/myservers/create",
+    name: "createmyserver",
+    component: () => import("../views/CreateServer.vue"),
+    meta: {
+      title: "Create Server",
+    },
+  },
   {
     path: "/maps",
     name: "maps",
@@ -79,24 +98,6 @@ export const routes = [
     meta: {
       title: "Update Server",
       requiresPermission: "servers",
-    },
-  },
-  {
-    path: "/myservers",
-    name: "myservers",
-    component: () => import("../views/MyServers.vue"),
-    meta: {
-      menuItem: true,
-      title: "My Servers",
-      iconName: "server",
-    },
-  },
-  {
-    path: "/myservers/create",
-    name: "createmyserver",
-    component: () => import("../views/CreateServer.vue"),
-    meta: {
-      title: "Create Server",
     },
   },
   {
@@ -175,7 +176,7 @@ export const routes = [
     },
   },
   {
-    path: "/admins/:steam_id/update",
+    path: "/admins/:id/update",
     name: "updateadmin",
     component: () => import("../views/UpdateAdmin.vue"),
     meta: {

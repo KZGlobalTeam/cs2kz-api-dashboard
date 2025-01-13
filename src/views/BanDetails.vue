@@ -3,7 +3,7 @@
     <n-space vertical v-if="ban">
       <div>
         <p class="title">Player</p>
-        <p>{{ `${ban.player.name}, ${ban.player.steam_id}` }}</p>
+        <p>{{ `${ban.player.name}, ${ban.player.id}` }}</p>
       </div>
 
       <div>
@@ -13,51 +13,32 @@
         </p>
       </div>
 
-      <div v-if="ban.server">
+      <div v-if="ban.banned_by.type === 'server'">
         <p class="title">Server ID</p>
-        <p>{{ ban.server?.id }}</p>
+        <p>{{ ban.banned_by.id }}</p>
       </div>
 
-      <div v-if="ban.server">
-        <p class="title">Server Name</p>
-        <p>{{ ban.server.name }}</p>
-      </div>
-
-      <div v-if="ban.server">
-        <p class="title">Server Owner</p>
-        <p>
-          {{ `${ban.server.owner.name}, ${ban.server.owner.steam_id}` }}
-        </p>
-      </div>
-
-      <div v-if="ban.admin">
+      <div v-if="ban.banned_by.type === 'admin'">
         <p class="title">Banned By</p>
-        <p>{{ `${ban.admin.name}, ${ban.admin.steam_id}` }}</p>
+        <p>{{ ban.banned_by.id }}</p>
       </div>
 
       <div>
         <p class="title">Created On</p>
         <p>
-          {{ toLocal(ban.created_on) }}
-        </p>
-      </div>
-
-      <div>
-        <p class="title">Expires On</p>
-        <p>
-          {{ ban.expires_on ? toLocal(ban.expires_on) : "Permanent" }}
+          {{ toLocal(ban.created_at) }}
         </p>
       </div>
 
       <div v-if="ban.unban">
         <p class="title">Unban Created On</p>
-        <p>{{ toLocal(ban.unban.created_on) }}</p>
+        <p>{{ toLocal(ban.unban.created_at) }}</p>
       </div>
 
-      <div v-if="ban.unban?.admin">
+      <div v-if="ban.unban">
         <p class="title">Unbanned By</p>
         <p>
-          {{ `${ban.unban.admin.name}, ${ban.unban.admin.steam_id}` }}
+          {{ ban.unban.admin_id }}
         </p>
       </div>
 

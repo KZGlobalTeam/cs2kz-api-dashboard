@@ -79,7 +79,7 @@ onBeforeMount(async () => {
 
     server.name = data.name
     server.ip_address = `${data.host}:${data.port}`
-    server.owner = data.owner.steam_id
+    server.owner = data.owner.id
 
     oldServer = JSON.parse(JSON.stringify(server))
   } catch (error) {
@@ -124,10 +124,10 @@ function newKey() {
       return new Promise((resolve) => {
         const id = route.params.id
         axiosClient
-          .put(`/servers/${id}/key`, null, { withCredentials: true })
-          .then(({ data }: AxiosResponse<{ key: string }>) => {
+          .put(`/servers/${id}/access-key`, null, { withCredentials: true })
+          .then(({ data }: AxiosResponse<{ access_key: string }>) => {
             resolve()
-            apiKey.value = data.key
+            apiKey.value = data.access_key
             showModal.value = true
           })
           .catch((error) => {
@@ -153,7 +153,7 @@ function revokeKey() {
       return new Promise((resolve) => {
         const id = route.params.id
         axiosClient
-          .delete(`/servers/${id}/key`, { withCredentials: true })
+          .delete(`/servers/${id}/access-key`, { withCredentials: true })
           .then(() => {
             resolve()
             notification.success({ title: "API key revoked", duration: 3000 })

@@ -1,7 +1,6 @@
 import { format } from "date-fns"
 import { h } from "vue"
 import SteamID from "steamid"
-import { Ban } from "./types"
 
 export function toLocal(date: string) {
   return format(new Date(date), "yyyy-MM-dd HH:mm:ss")
@@ -39,7 +38,8 @@ export function renderWorkshopId(workshopId: number) {
 }
 
 export function toErrorMsg(error: any) {
-  return `${error.response.data.title}\n${error.response.data.json_error.detail}`
+  const { data } = error.response
+  return `${data.title}\n${data.json_error ? data.json_error.detail : data.detail}`
 }
 
 export function getDiff(obj1: any, obj2: any) {
@@ -64,18 +64,4 @@ export function transformSrv(server: any) {
     port: parseInt(port),
     owner_id: server.owner,
   }
-}
-
-export function calcBanDuration(ban: Ban) {
-  const createdDate = new Date(ban.created_on)
-  if (!ban.expires_on) {
-    return "permanent"
-  }
-  const expiresDate = new Date(ban.expires_on)
-
-  const diffInMs = expiresDate.getTime() - createdDate.getTime()
-
-  const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
-
-  return Math.round(diffInDays)
 }

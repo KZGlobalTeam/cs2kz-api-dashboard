@@ -83,10 +83,10 @@ const columns = ref<DataTableColumn<Server>[]>([
     key: "created_on",
     sortOrder: false,
     render(rowData) {
-      return toLocal(rowData.created_on)
+      return toLocal(rowData.approved_at)
     },
     sorter(rowA, rowB) {
-      return new Date(rowA.created_on).getTime() - new Date(rowB.created_on).getTime()
+      return new Date(rowA.approved_at).getTime() - new Date(rowB.approved_at).getTime()
     },
   },
   {
@@ -158,7 +158,7 @@ async function loadServersData() {
       params,
     })
 
-    data.value = res?.servers || []
+    data.value = res?.values || []
   } catch (error) {
     notification.error({
       title: "Failed to fetch servers",

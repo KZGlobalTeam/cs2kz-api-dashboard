@@ -6,10 +6,6 @@
           <n-input v-model:value="ban.player_id" placeholder="STEAM_1:1:XXXXXXXXXXX" />
         </n-form-item>
 
-        <n-form-item label="Player IP" path="player_ip">
-          <n-input v-model:value="ban.player_ip" placeholder="127.0.0.1" />
-        </n-form-item>
-
         <n-form-item label="Reason" path="reason">
           <n-select v-model:value="ban.reason" :options="banReasonOptions" />
         </n-form-item>
@@ -47,13 +43,13 @@ const banForm = ref<FormInst | null>(null)
 
 const ban = reactive({
   player_id: "",
-  player_ip: "",
   reason: null,
 })
 
 const banReasonOptions = [
-  { label: "Auto Bhop", value: "auto_bhop" },
-  { label: "Auto Strafe", value: "auto_strafe" },
+  { label: "Macro", value: "macro" },
+  { label: "Auto Bhop", value: "auto-bhop" },
+  { label: "Auto Strafe", value: "auto-strafe" },
 ]
 
 const rules = {
@@ -81,7 +77,6 @@ async function createBan() {
           "/bans",
           {
             player_id: ban.player_id,
-            ip_address: ban.player_ip || null,
             reason: ban.reason,
           },
           { withCredentials: true },
