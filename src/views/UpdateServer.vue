@@ -83,6 +83,7 @@ onBeforeMount(async () => {
 
     oldServer = JSON.parse(JSON.stringify(server))
   } catch (error) {
+    console.error(error)
     notification.error({
       title: "Failed to fetch the server",
       content: toErrorMsg(error),
