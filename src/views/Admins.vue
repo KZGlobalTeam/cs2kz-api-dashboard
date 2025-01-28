@@ -71,7 +71,7 @@ const columns = ref<DataTableColumn<User>[]>([
   {
     title: "Permissions",
     key: "permissions",
-    defaultFilterOptionValues: ["user-permissions", "servers", "player-bans", "user-permissions"],
+    defaultFilterOptionValues: ["user-permissions", "servers", "player-bans", "map-pool"],
     filterOptions: [
       {
         label: "map-pool",
