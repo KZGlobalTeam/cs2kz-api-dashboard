@@ -70,7 +70,7 @@ export const usePlayerStore = defineStore("admin", {
 
         try {
           const { data } = await axiosClient.get(`/users/${this.steamId}`)
-          this.permissions = ["user", data.permissions]
+          this.permissions = ["user", ...data.permissions]
         } catch (error: any) {
           if (error.response.status === 404) {
             this.permissions = []
