@@ -23,6 +23,7 @@ export const routes = [
       menuItem: true,
       title: "My Servers",
       iconName: "server",
+      requiresPermission: "user",
     },
   },
   {
@@ -31,6 +32,7 @@ export const routes = [
     component: () => import("../views/CreateServer.vue"),
     meta: {
       title: "Create Server",
+      requiresPermission: "user",
     },
   },
   {
