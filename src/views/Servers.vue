@@ -3,19 +3,21 @@
     <div class="mb-4 flex justify-between gap-4">
       <!-- filters -->
       <n-space align="center">
+        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.name" placeholder="Name, ID" />
+
         <n-input
+          v-if="!showMyServers"
           @keyup.enter="loadServersData"
           type="text"
-          v-model:value="serverQuery.name"
-          placeholder="Server Name, ID"
+          v-model:value="serverQuery.owned_by"
+          placeholder="Owner"
         />
-
-        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.owner" placeholder="Owner" />
       </n-space>
 
       <div class="flex gap-4">
-        <n-button @click="loadServersData"> APPLY FILTER</n-button>
-        <n-button @click="clearFilter"> CLEAR </n-button>
+        <n-button type="info" :secondary="showMyServers ? false : true" @click="showMyServers = !showMyServers">
+          My Servers
+        </n-button>
       </div>
     </div>
 
@@ -25,8 +27,8 @@
         :columns="columns"
         :data="data"
         :loading="loading"
-        :pagination="pagination"
-        :row-key="rowKey"
+        :pagination="{ pageSize: 10 }"
+        :row-key="(rowData: RowData) => rowData.id"
         size="small"
         @update:sorter="handleSorterChange"
       />
@@ -34,34 +36,62 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadServersData">REFRESH</n-button>
-      <n-button secondary type="primary" @click="router.push({ name: 'createserver' })">New Server</n-button>
+      <n-tooltip v-if="canCreateServers" trigger="hover">
+        <template #trigger>
+          <n-button
+            :disabled="playerStore.serverBudget <= 0"
+            secondary
+            type="primary"
+            @click="router.push({ name: 'createserver' })"
+            >Register Server</n-button
+          >
+        </template>
+        <span>Your current server budgets is {{ playerStore.serverBudget }}.</span>
+      </n-tooltip>
     </div>
+
+    <key-modal :api-key="apiKey" :show-modal="showModal" @close="handleCloseModal" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h, onBeforeMount } from "vue"
+import { ref, reactive, h, watch, toRaw, computed } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NSpace, NTooltip, useNotification } from "naive-ui"
-import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
+import { NInput, NDataTable, NButton, NSpace, NTooltip, useNotification, useDialog } from "naive-ui"
+import type { DataTableSortState, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
-import type { Server } from "../types"
-import { toLocal, renderSteamID, toErrorMsg } from "../utils"
-import ActionButton from "../components/ActionButton.vue"
+import type { Game, Server } from "../types"
+import { toLocal, renderPlayerName, toErrorMsg, validQuery } from "../utils"
+import { useGameStore } from "../store/game"
+import { usePlayerStore } from "../store/player"
+import { RowData } from "naive-ui/es/data-table/src/interface"
+import KeyModal from "../components/server/KeyModal.vue"
 
 type ServerQuery = {
+  game: Game
   name: string
-  owner: string
+  owned_by: string
 }
 
 const router = useRouter()
+
 const notification = useNotification()
+const dialog = useDialog()
+
+const gameStore = useGameStore()
+const playerStore = usePlayerStore()
 
 const loading = ref(false)
 
+const showMyServers = ref(false)
+
+const apiKey = ref("")
+const showModal = ref(false)
+
 const serverQuery = reactive<ServerQuery>({
+  game: gameStore.game,
   name: "",
-  owner: "",
+  owned_by: "",
 })
 
 const columns = ref<DataTableColumn<Server>[]>([
@@ -93,7 +123,7 @@ const columns = ref<DataTableColumn<Server>[]>([
     title: "Owner ID",
     key: "owner_id",
     render(rowData) {
-      return renderSteamID(rowData.owner.id)
+      return renderPlayerName(rowData.owner.name, rowData.owner.id)
     },
   },
   {
@@ -101,76 +131,147 @@ const columns = ref<DataTableColumn<Server>[]>([
     key: "created_on",
     sortOrder: false,
     render(rowData) {
-      return toLocal(rowData.approved_at)
+      return toLocal(rowData.created_at)
     },
     sorter(rowA, rowB) {
-      return new Date(rowA.approved_at).getTime() - new Date(rowB.approved_at).getTime()
+      return new Date(rowA.created_at).getTime() - new Date(rowB.created_at).getTime()
     },
   },
   {
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return h(
-        NTooltip,
-        { trigger: "hover" },
-        {
-          trigger: () =>
-            h(ActionButton, {
-              iconName: "edit",
-              onClick: () => {
-                router.push({
-                  name: "updateserver",
-                  params: {
-                    id: rowData.id,
-                  },
-                })
-              },
-            }),
-          default: () => "Update",
-        },
-      )
+      return h("div", { class: "flex gap-1" }, renderActionButtons(rowData))
     },
   },
 ])
 
-const pagination = reactive({
-  page: 1,
-  pageSize: 10,
-  showSizePicker: true,
-  pageSizes: [10, 20, 50],
-  prefix(info: PaginationInfo) {
-    return `Total: ${info.itemCount} servers`
-  },
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  },
-})
-
 const data = ref<Server[]>([])
 
-onBeforeMount(() => {
+const canCreateServers = computed(() => {
+  return playerStore.steamId !== ""
+})
+
+watch(
+  () => gameStore.game,
+  (g) => {
+    serverQuery.game = g
+  },
+  { immediate: true },
+)
+
+watch(showMyServers, (val) => {
+  serverQuery.owned_by = val ? playerStore.steamId : ""
+})
+
+watch(serverQuery, () => {
   loadServersData()
 })
+
+loadServersData()
+
+function renderActionButtons(rowData: RowData) {
+  const buttons = []
+  if (playerStore.permissions.includes("modify-server-metadata") || playerStore.steamId === rowData.owner.id) {
+    buttons.push(
+      h(
+        NButton,
+        {
+          size: "tiny",
+          onClick: () => {
+            router.push({ name: "updateserver", params: { id: rowData.id } })
+          },
+        },
+        () => "Update",
+      ),
+    )
+  }
+  if (playerStore.permissions.includes("reset-server-access-keys")) {
+    buttons.push(
+      h(
+        NButton,
+        {
+          size: "tiny",
+          onClick: () => {
+            dialog.warning({
+              title: "Warning",
+              content: "Are you sure you want to reset server access key?",
+              class: "font-poppings",
+              positiveText: "Yes",
+              negativeText: "Cancel",
+              onPositiveClick: async () => {
+                try {
+                  const { data } = await axiosClient.put(`/servers/${rowData.id}/access-key`, null, {
+                    withCredentials: true,
+                  })
+
+                  apiKey.value = data.access_key
+                  showModal.value = true
+                } catch (error) {
+                  notification.error({
+                    title: "Failed to reset access key",
+                    content: toErrorMsg(error),
+                  })
+                } finally {
+                  loading.value = false
+                }
+              },
+            })
+          },
+        },
+        () => "Reset Key",
+      ),
+    )
+  }
+
+  if (playerStore.permissions.includes("delete-server-access-keys")) {
+    buttons.push(
+      h(
+        NButton,
+        {
+          size: "tiny",
+          onClick: () => {
+            dialog.warning({
+              title: "Warning",
+              content: "Are you sure you want to delete server access key?",
+              class: "font-poppings",
+              positiveText: "Yes",
+              negativeText: "Cancel",
+              onPositiveClick: async () => {
+                try {
+                  await axiosClient.delete(`/servers/${rowData.id}/access-key`, { withCredentials: true })
+                  await loadServersData()
+                  notification.success({
+                    title: "Access key deleted",
+                  })
+                } catch (error) {
+                  notification.error({
+                    title: "Failed to delete access key",
+                    content: toErrorMsg(error),
+                  })
+                } finally {
+                  loading.value = false
+                }
+              },
+            })
+          },
+        },
+        () => "Delete Key",
+      ),
+    )
+  }
+
+  return buttons
+}
+
+function handleCloseModal() {
+  showModal.value = false
+}
 
 async function loadServersData() {
   loading.value = true
   try {
-    const params = {
-      // typescript...
-      name: serverQuery.name || null,
-      owned_by: serverQuery.owner || null,
-    }
-
-    // console.log(params)
-
-    const { data: res } = await axiosClient.get("/servers", {
-      params,
-    })
+    const { data: res } = await axiosClient.get("/servers", validQuery(toRaw(serverQuery)))
 
     data.value = res?.values || []
   } catch (error) {
@@ -181,16 +282,6 @@ async function loadServersData() {
   } finally {
     loading.value = false
   }
-}
-
-function clearFilter() {
-  serverQuery.name = ""
-  serverQuery.owner = ""
-  loadServersData()
-}
-
-function rowKey(rowData: Server) {
-  return rowData.id
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

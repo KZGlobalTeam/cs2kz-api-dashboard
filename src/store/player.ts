@@ -1,37 +1,36 @@
 import { defineStore } from "pinia"
 import { h } from "vue"
 import { RouterLink } from "vue-router"
+import type { Permission } from "../types"
 import axiosClient from "../axios"
 import Cookies from "universal-cookie"
-import { noAuthRoutes, routes } from "../router"
-
-type Routes = typeof noAuthRoutes | typeof routes
+import { noAuthRoutes, authRoutes } from "../router"
 
 const cookies = new Cookies(null, { path: "/" })
 
-export const usePlayerStore = defineStore("admin", {
+export const usePlayerStore = defineStore("player", {
   state: () => ({
     steamId: "",
-    avatar_url: "",
-    permissions: [] as string[],
+    avatarUrl: "",
+    serverBudget: 0,
+    permissions: [] as Permission[],
     loading: false,
   }),
   getters: {
     menuItems: (state) => {
-      const authRoutes: Routes = routes.filter((route) => {
-        if (route.meta?.menuItem) {
-          if (route.meta.requiresPermission === undefined) {
+      const menuRoutes = [...noAuthRoutes, ...authRoutes].filter((route) => {
+        if (route.meta.menuItem) {
+          if (route.meta.requiresPermission === null) {
             return true
           } else {
-            if (state.permissions.length === 0) return false
-            else return state.permissions.includes(route.meta.requiresPermission)
+            return state.permissions.includes(route.meta.requiresPermission as Permission)
           }
         } else {
           return false
         }
       })
 
-      return [...noAuthRoutes, ...authRoutes].map((route) => ({
+      return menuRoutes.map((route) => ({
         label: () =>
           h(
             "div",
@@ -65,12 +64,13 @@ export const usePlayerStore = defineStore("admin", {
       const kzPlayer = cookies.get("kz-player")
 
       if (kzPlayer) {
-        this.steamId = kzPlayer.id
-        this.avatar_url = kzPlayer.avatar_url
+        this.avatarUrl = kzPlayer.avatar_url
 
         try {
-          const { data } = await axiosClient.get(`/users/${this.steamId}`)
-          this.permissions = ["user", ...data.permissions]
+          const { data } = await axiosClient.get(`/users/${kzPlayer.id}`)
+          this.steamId = data.id
+          this.permissions = data.permissions
+          this.serverBudget = data.server_budget
         } catch (error: any) {
           if (error.response.status === 404) {
             this.permissions = []

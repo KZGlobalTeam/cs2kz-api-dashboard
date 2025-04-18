@@ -1,131 +1,37 @@
-export type Tier =
-  | "very-easy"
-  | "easy"
-  | "medium"
-  | "advanced"
-  | "hard"
-  | "very-hard"
-  | "extreme"
-  | "death"
-  | "unfeasible"
-  | "impossible"
+import type { paths, components } from "../openapi-types"
 
-export type Mode = "classic" | "vanilla"
+export type Game = components["schemas"]["Game"]
 
-export type MapState = "approved" | "invalid" | "in-testing"
+export type User = components["schemas"]["User"]
 
-export type FilterState = "pending" | "unranked" | "ranked"
+export type Mapper = components["schemas"]["Mapper"]
 
-export type Permission = "map-pool" | "servers" | "player-bans" | "user-permissions"
+export type Map = components["schemas"]["Map"]
 
-export type BanReason = "macro" | "auto_strafe" | "auto_bhop"
+export type Courses = Map["courses"]
 
-export interface Player {
-  name: string
-  id: string
-}
+export type Mappers = Courses[number]["mappers"]
 
-export interface CourseFilter {
-  nub_tier: Tier
-  pro_tier: Tier
-  state: FilterState
-  notes: string
-}
+export type NewMap = components["schemas"]["CreateMapRequest"]
 
-export interface CourseFilters {
-  vanilla: CourseFilter
-  classic: CourseFilter
-}
+export type MapUpdate = components["schemas"]["UpdateMapRequest"]
 
-export interface FilterUpdate {
-  vanilla?: Partial<CourseFilter>
-  classic?: Partial<CourseFilter>
-}
+export type NewCourses = paths["/maps"]["put"]["requestBody"]["content"]["application/json"]["courses"]
 
-export interface Course {
-  name: string
-  description?: string
-  filters: CourseFilters
-  mappers: Player[]
-}
+export type NewFilters = NewCourses[number]["filters"]
 
-export interface NewCourse {
-  name: string
-  description?: string
-  filters: CourseFilters
-  mappers: string[]
-}
+export type NewCS2Filters = Extract<NewFilters, { ckz: any }>
 
-export interface CourseUpdate {
-  idx: number
-  name?: string
-  description?: string
-  added_mappers: string[]
-  deleted_mappers: string[]
-  filter_updates: FilterUpdate
-}
+export type NewCSGOFilters = Extract<NewFilters, { kzt: any }>
 
-export interface Map {
-  id: number
-  workshop_id: number
-  name: string
-  description?: string
-  state: MapState
-  vpk_checksum: number
-  mappers: Player[]
-  courses: Course[]
-  approved_at: string
-}
+export type NewFilter = components["schemas"]["CreateFilterRequest"]
 
-export interface NewMap {
-  workshop_id: string
-  description?: string
-  state: MapState
-  mappers: string[]
-  courses: NewCourse[]
-}
+export type MapState = components["schemas"]["MapState"]
 
-export interface MapUpdate {
-  workshop_id?: number
-  description?: string
-  state?: MapState
-  added_mappers?: string[]
-  deleted_mappers?: string[]
-  course_updates?: CourseUpdate[]
-}
+export type Server = components["schemas"]["Server"]
 
-export interface User {
-  id: string
-  name: string
-  permissions: Permission[]
-  registered_at: string
-}
+export type NewServer = components["schemas"]["CreateServerRequest"]
 
-export interface Server {
-  id: number
-  name: string
-  host: string
-  port: number
-  owner: Player
-  approved_at: string
-}
+export type Ban = components["schemas"]["Ban"]
 
-export interface Ban {
-  id: number
-  player: Player
-  reason: BanReason
-  banned_by: BannedBy
-  created_at: string
-  unban?: Unban
-}
-
-export interface BannedBy {
-  id: number
-  type: "server" | "admin"
-}
-
-export interface Unban {
-  admin_id: number
-  reason: string
-  created_at: string
-}
+export type Permission = components["schemas"]["Permission"]

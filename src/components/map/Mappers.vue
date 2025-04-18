@@ -4,7 +4,7 @@
     <n-dynamic-input
       v-model:value="mappers"
       item-style="margin-bottom: 1rem;"
-      :on-create="onCreateMapper"
+      :on-create="() => ''"
       :min="1"
       #="{ index }"
     >
@@ -19,8 +19,4 @@
 import { NInput, NDynamicInput } from "naive-ui"
 
 const mappers = defineModel<string[]>("mappers", { required: true })
-
-function onCreateMapper() {
-  return ""
-}
 </script>

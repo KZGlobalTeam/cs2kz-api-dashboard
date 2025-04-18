@@ -1,6 +1,6 @@
 <template>
   <n-modal
-    @close="redirect"
+    @close="emits('close')"
     :show="showModal"
     style="width: 600px"
     preset="card"
@@ -23,24 +23,19 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from "vue-router"
 import { NModal, useNotification } from "naive-ui"
+
+const emits = defineEmits(["close"])
 
 const props = defineProps<{
   apiKey: string
   showModal: boolean
-  redirectTo: string
 }>()
 
-const router = useRouter()
 const notification = useNotification()
 
 function handleClickApiKey() {
   navigator.clipboard.writeText(props.apiKey)
-  notification.info({ title: "Saved to clipboard!", duration: 2000 })
-}
-
-function redirect() {
-  router.push({ name: props.redirectTo })
+  notification.info({ title: "Copied to clipboard!", duration: 2000 })
 }
 </script>

@@ -6,19 +6,21 @@ export function toLocal(date: string) {
   return format(new Date(date), "yyyy-MM-dd HH:mm:ss")
 }
 
-export function renderSteamID(steamId: string, isBanned?: boolean) {
-  const steamId64 = new SteamID(steamId).toString()
+export function validQuery(query: Record<string, unknown>) {
+  return Object.fromEntries(Object.entries(query).filter(([_, value]) => value !== "" && value !== null))
+}
+
+export function renderPlayerName(name: string, id: string) {
+  const steamId64 = new SteamID(id).toString()
   return h(
     "a",
     {
       href: `https://steamcommunity.com/profiles/${steamId64}`,
       target: "_blank",
       rel: "noopener noreferrer",
-      class: isBanned ? "border-b border-red-400 text-red-400" : "border-b border-green-400 text-green-400",
+      class: "text-green-600",
     },
-    {
-      default: () => steamId,
-    },
+    name,
   )
 }
 

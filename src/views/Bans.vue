@@ -1,25 +1,30 @@
 <template>
   <div class="rounded-md bg-gray-800 p-4">
-    <div class="mb-4 flex justify-between gap-4">
+    <div class="mb-4 flex justify-start gap-4">
       <!-- filters -->
-      <n-space align="center">
-        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.player" placeholder="Player" />
+      <n-input
+        @keyup.enter="loadBansData"
+        type="text"
+        v-model:value="banQuery.player_id"
+        placeholder="Player"
+        style="width: 200px"
+      />
 
-        <n-input @keyup.enter="loadBansData" type="text" v-model:value="banQuery.bannedBy" placeholder="Banned By" />
+      <n-input
+        @keyup.enter="loadBansData"
+        type="text"
+        v-model:value="banQuery.banned_by"
+        placeholder="Banned By"
+        style="width: 200px"
+      />
 
-        <n-select
-          style="width: 8rem"
-          @update-value="nextTick(loadBansData)"
-          v-model:value="banQuery.reason"
-          :options="banReasonOptions"
-          placeholder="Ban Reason"
-        />
-      </n-space>
-
-      <div class="flex gap-4">
-        <n-button @click="loadBansData"> APPLY FILTER</n-button>
-        <n-button @click="clearFilter"> CLEAR </n-button>
-      </div>
+      <n-select
+        style="width: 8rem"
+        @update-value="nextTick(loadBansData)"
+        v-model:value="banQuery.reason"
+        :options="banReasonOptions"
+        placeholder="Ban Reason"
+      />
     </div>
 
     <!-- servers table -->
@@ -28,8 +33,8 @@
         :columns="columns"
         :data="data"
         :loading="loading"
-        :pagination="pagination"
-        :row-key="rowKey"
+        :pagination="{ pageSize: 10 }"
+        :row-key="(rowData: Ban) => rowData.id"
         size="small"
         @update:sorter="handleSorterChange"
       />
@@ -37,41 +42,47 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadBansData">REFRESH</n-button>
-      <n-button type="error" secondary @click="router.push({ name: 'createban' })">New Ban</n-button>
+      <n-button v-if="canCreateBans" type="error" secondary @click="router.push({ name: 'createban' })"
+        >Create Ban</n-button
+      >
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h, onBeforeMount, nextTick } from "vue"
+import { ref, reactive, h, nextTick, toRaw, computed } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NSpace, NSelect, NTooltip, useNotification } from "naive-ui"
-import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
+import { NInput, NDataTable, NButton, NSelect, useNotification, useDialog } from "naive-ui"
+import type { DataTableSortState, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
 import type { Ban } from "../types"
-import { toLocal, renderSteamID, toErrorMsg } from "../utils"
-import ActionButton from "../components/ActionButton.vue"
+import { toLocal, renderPlayerName, toErrorMsg, validQuery } from "../utils"
+import { usePlayerStore } from "../store/player"
 
 interface BanQuery {
-  player?: string
-  bannedBy?: string
-  reason?: string | null
+  player_id: string
+  banned_by: string
+  reason: string | null
 }
 
 const router = useRouter()
+
 const notification = useNotification()
+const dialog = useDialog()
+
+const playerStore = usePlayerStore()
 
 const banReasonOptions = [
   { label: "Macro", value: "macro" },
-  { label: "Auto Bhop", value: "auto-bhop" },
-  { label: "Auto Strafe", value: "auto-strafe" },
+  { label: "Auto Bhop", value: "autobhop" },
+  { label: "Auto Strafe", value: "autostrafe" },
 ]
 
 const loading = ref(false)
 
 const banQuery = reactive<BanQuery>({
-  player: "",
-  bannedBy: "",
+  player_id: "",
+  banned_by: "",
   reason: null,
 })
 
@@ -86,28 +97,23 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Name",
     key: "name",
     render(rowData) {
-      return rowData.player.name
-    },
-  },
-  {
-    title: "Steam ID",
-    key: "steam_id",
-    render(rowData) {
-      return renderSteamID(rowData.player.id, true)
+      return renderPlayerName(rowData.player_id, rowData.player_id)
     },
   },
   {
     title: "Reason",
     key: "reason",
     render(rowData) {
-      return rowData.reason.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+      return banReasonOptions.find((option) => option.value === rowData.reason)!.label
     },
   },
   {
     title: "Banned By",
     key: "banned_by",
     render(rowData) {
-      return rowData.banned_by.type === "server" ? "Anticheat" : renderSteamID(rowData.banned_by.id.toString(), true)
+      return rowData.banned_by.type === "server"
+        ? "Anticheat"
+        : renderPlayerName(rowData.banned_by.user_id, rowData.banned_by.user_id)
     },
   },
   {
@@ -125,118 +131,81 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return [
-        !rowData.unban &&
-          h(
-            NTooltip,
-            { trigger: "hover" },
-            {
-              trigger: () =>
-                h(ActionButton, {
-                  iconName: "edit",
-                  style: {
-                    marginRight: "0.5rem",
-                  },
-                  onClick: () => {
-                    router.push({
-                      name: "updateban",
-                      params: {
-                        id: rowData.id,
-                      },
-                    })
-                  },
-                }),
-              default: () => "Update",
-            },
-          ),
-        ,
-        !rowData.unban &&
-          h(
-            NTooltip,
-            { trigger: "hover" },
-            {
-              trigger: () =>
-                h(ActionButton, {
-                  iconName: "unban",
-                  style: {
-                    marginRight: "0.5rem",
-                  },
-                  onClick: () => {
-                    router.push({
-                      name: "unban",
-                      params: {
-                        id: rowData.id,
-                      },
-                    })
-                  },
-                }),
-              default: () => "Unban",
-            },
-          ),
-        ,
-        h(
-          NTooltip,
-          { trigger: "hover" },
-          {
-            trigger: () =>
-              h(ActionButton, {
-                iconName: "more",
-                style: {
-                  marginRight: "0.5rem",
-                },
-                onClick: () => {
-                  router.push({
-                    name: "bandetails",
-                    params: {
-                      id: rowData.id,
-                    },
-                  })
-                },
-              }),
-            default: () => "Details",
-          },
-        ),
-        ,
-      ]
+      return h("div", { class: "flex gap-1" }, renderActionButtons(rowData))
     },
   },
 ])
 
-const pagination = reactive({
-  page: 1,
-  pageSize: 10,
-  showSizePicker: true,
-  pageSizes: [10, 20, 50],
-  prefix(info: PaginationInfo) {
-    return `Total: ${info.itemCount} bans`
-  },
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  },
-})
-
 const data = ref<Ban[]>([])
 
-onBeforeMount(() => {
-  loadBansData()
+const canCreateBans = computed(() => {
+  return playerStore.permissions.includes("create-bans")
 })
+
+loadBansData()
+
+function renderActionButtons(rowData: Ban) {
+  const buttons = []
+
+  if (playerStore.permissions.includes("update-bans")) {
+    buttons.push(
+      h(
+        NButton,
+        {
+          size: "tiny",
+          onClick: () => {
+            router.push({ name: "updateban", params: { id: rowData.id } })
+          },
+        },
+        () => "Update",
+      ),
+    )
+  }
+
+  if (playerStore.permissions.includes("revert-bans")) {
+    buttons.push(
+      h(
+        NButton,
+        {
+          size: "tiny",
+          onClick: () => {
+            dialog.warning({
+              title: "Warning",
+              content: "Are you sure you want to revert this ban?",
+              class: "font-poppings",
+              positiveText: "Yes",
+              negativeText: "Cancel",
+              onPositiveClick: async () => {
+                try {
+                  await axiosClient.delete(`/bans/${rowData.id}`, { withCredentials: true })
+                  await loadBansData()
+                  notification.success({
+                    title: "Ban reverted",
+                  })
+                } catch (error) {
+                  notification.error({
+                    title: "Failed to revert ban",
+                    content: toErrorMsg(error),
+                  })
+                } finally {
+                  loading.value = false
+                }
+              },
+            })
+          },
+        },
+        () => "Update",
+      ),
+    )
+  }
+
+  return buttons
+}
 
 async function loadBansData() {
   loading.value = true
   try {
-    const params = {
-      player: banQuery.player || null,
-      banned_by: banQuery.bannedBy || null,
-      reason: banQuery.reason,
-    }
-
-    const { data: res } = await axiosClient.get("/bans", {
-      params,
-    })
+    const { data: res } = await axiosClient.get("/bans", validQuery(toRaw(banQuery)))
 
     data.value = res?.values || []
   } catch (error) {
@@ -249,17 +218,6 @@ async function loadBansData() {
   } finally {
     loading.value = false
   }
-}
-
-function clearFilter() {
-  banQuery.player = ""
-  banQuery.bannedBy = ""
-  banQuery.reason = null
-  loadBansData()
-}
-
-function rowKey(rowData: Ban) {
-  return rowData.id
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

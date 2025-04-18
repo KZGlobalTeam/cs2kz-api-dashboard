@@ -1,16 +1,7 @@
 <template>
   <div>
     <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <MapInfo
-        v-model:workshop-id="workshopId"
-        v-model:description="description"
-        v-model:state="state"
-        :updating="false"
-      />
-    </div>
-
-    <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <Mappers v-model:mappers="mappers" />
+      <MapInfo v-model:workshop-id="workshopId" v-model:description="description" v-model:state="state" type="create" />
     </div>
 
     <!-- courses -->
@@ -23,42 +14,70 @@
 
 <script setup lang="ts">
 import { NButton } from "naive-ui"
-import type { MapState, NewCourse } from "../types"
-
+import type { MapState, NewCourses } from "../types"
+import { useGameStore } from "../store/game"
 import MapInfo from "../components/map/MapInfo.vue"
-import Mappers from "../components/map/Mappers.vue"
 import Courses from "../components/map/Courses.vue"
 
-const workshopId = defineModel<string>("workshopId", { required: true })
-const description = defineModel<string>("description")
-const state = defineModel<MapState>("state", {
-  required: true,
-})
+const workshopId = defineModel<number>("workshopId", { required: true })
+const description = defineModel<string>("description", { required: true })
+const state = defineModel<MapState>("state")
 
-const mappers = defineModel<string[]>("mappers", { required: true })
+const courses = defineModel<NewCourses>("courses", { required: true })
 
-const courses = defineModel<NewCourse[]>("courses", { required: true })
+const gameStore = useGameStore()
 
-// the stage number will be updated before map is submitted
 function createCourse() {
-  courses.value.push({
-    name: courses.value.length === 0 ? "Main" : "",
+  const indices = Object.keys(courses.value).map((i) => parseInt(i))
+  const maxIndex = Math.max(...indices, -1)
+  const newIndex = (maxIndex + 1).toString()
+  const cs2Course = {
+    name: "",
     description: "",
     filters: {
-      classic: {
-        nub_tier: "very-easy",
-        pro_tier: "very-easy",
-        state: "ranked",
+      ckz: {
+        nub_tier: "very-easy" as const,
+        pro_tier: "very-easy" as const,
+        ranked: true,
         notes: "",
       },
-      vanilla: {
-        nub_tier: "very-easy",
-        pro_tier: "very-easy",
-        state: "ranked",
+      vnl: {
+        nub_tier: "very-easy" as const,
+        pro_tier: "very-easy" as const,
+        ranked: true,
         notes: "",
       },
+      game: "cs2" as const,
     },
     mappers: [""],
-  })
+  }
+
+  const csgoCourse = {
+    name: "",
+    description: "",
+    filters: {
+      kzt: {
+        nub_tier: "very-easy" as const,
+        pro_tier: "very-easy" as const,
+        ranked: true,
+        notes: "",
+      },
+      skz: {
+        nub_tier: "very-easy" as const,
+        pro_tier: "very-easy" as const,
+        ranked: true,
+        notes: "",
+      },
+      vnl: {
+        nub_tier: "very-easy" as const,
+        pro_tier: "very-easy" as const,
+        ranked: true,
+        notes: "",
+      },
+      game: "csgo" as const,
+    },
+    mappers: [""],
+  }
+  courses.value[newIndex] = gameStore.game === "cs2" ? cs2Course : csgoCourse
 }
 </script>

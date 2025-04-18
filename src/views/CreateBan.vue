@@ -48,8 +48,8 @@ const ban = reactive({
 
 const banReasonOptions = [
   { label: "Macro", value: "macro" },
-  { label: "Auto Bhop", value: "auto-bhop" },
-  { label: "Auto Strafe", value: "auto-strafe" },
+  { label: "Auto Bhop", value: "autobhop" },
+  { label: "Auto Strafe", value: "autostrafe" },
 ]
 
 const rules = {

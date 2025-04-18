@@ -3,21 +3,29 @@
     <div class="mb-4 flex justify-between gap-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input @keyup.enter="loadMapsData" type="text" v-model:value="mapQuery.name" placeholder="Name" />
+        <n-input @keyup.enter="loadMapsData" type="text" v-model:value="mapQuery.name" placeholder="Map" />
 
-        <n-input @keyup.enter="loadMapsData" type="text" v-model:value="mapQuery.mapper" placeholder="Mapper" />
+        <n-input
+          v-if="!showMyMaps"
+          @keyup.enter="loadMapsData"
+          type="text"
+          v-model:value="mapQuery.created_by"
+          placeholder="Creator"
+        />
 
         <n-select
           style="width: 8rem"
           @update-value="handleStatusChange"
           v-model:value="mapQuery.state"
           :options="options"
+          placeholder="Map State"
         />
       </n-space>
 
       <div class="flex gap-4">
-        <n-button @click="loadMapsData"> APPLY FILTER</n-button>
-        <n-button @click="clearFilter"> CLEAR </n-button>
+        <n-button type="info" :secondary="showMyMaps ? false : true" @click="showMyMaps = !showMyMaps">
+          My Maps
+        </n-button>
       </div>
     </div>
 
@@ -27,8 +35,8 @@
         :columns="columns"
         :data="data"
         :loading="loading"
-        :pagination="pagination"
-        :row-key="rowKey"
+        :pagination="{ pageSize: 10 }"
+        :row-key="(row: RowData) => row.id"
         size="small"
         @update:sorter="handleSorterChange"
       />
@@ -36,47 +44,42 @@
 
     <div class="flex justify-end gap-4">
       <n-button @click="loadMapsData">REFRESH</n-button>
-      <n-button secondary type="primary" @click="router.push({ name: 'createmaps' })">New Map</n-button>
+      <n-button v-if="canCreateMaps" secondary type="primary" @click="router.push({ name: 'createmaps' })"
+        >Create Map</n-button
+      >
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick, onBeforeMount, h } from "vue"
-import { NInput, NDataTable, NButton, NTag, NSpace, NSelect, NTooltip, useNotification } from "naive-ui"
-import type { DataTableSortState, PaginationInfo, DataTableColumn } from "naive-ui"
-import ActionButton from "../components/ActionButton.vue"
-import type { Map, MapState } from "../types"
+import { ref, reactive, computed, watch, nextTick, h, toRaw } from "vue"
+import { NInput, NDataTable, NButton, NTag, NSpace, NSelect, useNotification, useDialog } from "naive-ui"
+import type { DataTableSortState, DataTableColumn } from "naive-ui"
+import type { Game, Map, MapState } from "../types"
 import { useRouter } from "vue-router"
 import axiosClient from "../axios"
-import { toLocal, renderWorkshopId, toErrorMsg } from "../utils"
+import { toLocal, renderWorkshopId, toErrorMsg, validQuery, renderPlayerName } from "../utils"
+import { usePlayerStore } from "../store/player"
+import { useGameStore } from "../store/game"
 
 type RowData = {
   id: number
   name: string
-  approved_at: string
+  created_at: string
+  created_by: { name: string; id: string }
   workshop_id: number
   state: MapState
   courseCount: number
 }
 
 type MapQuery = {
+  game: Game
   name: string
-  mapper: string
-  state?: MapState
+  created_by: string
+  state: MapState | null
 }
 
-const router = useRouter()
-const notification = useNotification()
-
-const loading = ref(true)
-const data = ref<RowData[]>([])
-
-const mapQuery = reactive<MapQuery>({
-  name: "",
-  mapper: "",
-  state: "approved",
-})
+type Tag = "default" | "success" | "error" | "warning" | "info"
 
 const options = [
   {
@@ -84,14 +87,50 @@ const options = [
     value: "approved",
   },
   {
-    label: "Testing",
-    value: "in-testing",
+    label: "Completed",
+    value: "completed",
   },
   {
-    label: "Invalid",
-    value: "invalid",
+    label: "Pending",
+    value: "pending",
+  },
+  {
+    label: "WIP",
+    value: "wip",
+  },
+  {
+    label: "Graveyard",
+    value: "graveyard",
   },
 ]
+
+const tagTypeMap: Record<MapState, Tag> = {
+  approved: "success",
+  completed: "info",
+  pending: "warning",
+  wip: "default",
+  graveyard: "error",
+}
+
+const router = useRouter()
+
+const notification = useNotification()
+const dialog = useDialog()
+
+const playerStore = usePlayerStore()
+const gameStore = useGameStore()
+
+const showMyMaps = ref(false)
+
+const loading = ref(true)
+const data = ref<RowData[]>([])
+
+const mapQuery = reactive<MapQuery>({
+  game: gameStore.game,
+  name: "",
+  created_by: "",
+  state: null,
+})
 
 const columns = ref<DataTableColumn<RowData>[]>([
   {
@@ -119,17 +158,23 @@ const columns = ref<DataTableColumn<RowData>[]>([
     },
   },
   {
+    title: "Created By",
+    key: "created_by",
+    render(rowData) {
+      return renderPlayerName(rowData.created_by.name, rowData.created_by.id)
+    },
+  },
+  {
     title: "Status",
     key: "status",
     render(rowData) {
       return h(
         NTag,
         {
-          type: rowData.state === "approved" ? "success" : rowData.state === "in-testing" ? "warning" : "default",
+          type: tagTypeMap[rowData.state],
         },
         {
-          default: () =>
-            rowData.state === "approved" ? "Approved" : rowData.state === "in-testing" ? "Testing" : "Invalid",
+          default: () => options.find((option) => option.value === rowData.state)!.label,
         },
       )
     },
@@ -143,106 +188,208 @@ const columns = ref<DataTableColumn<RowData>[]>([
     key: "created_on",
     sortOrder: false,
     render(rowData) {
-      return toLocal(rowData.approved_at)
+      return toLocal(rowData.created_at)
     },
     sorter(rowA, rowB) {
-      return new Date(rowA.approved_at).getTime() - new Date(rowB.approved_at).getTime()
+      return new Date(rowA.created_at).getTime() - new Date(rowB.created_at).getTime()
     },
   },
   {
     title: "Actions",
     key: "actions",
     render(rowData) {
-      return [
-        h(
-          NTooltip,
-          { trigger: "hover" },
-          {
-            trigger: () =>
-              h(ActionButton, {
-                iconName: "edit",
-                style: {
-                  marginRight: "0.5rem",
-                },
-                onClick: () => {
-                  router.push({
-                    name: "updatemap",
-                    params: {
-                      id: rowData.id,
-                    },
-                  })
-                },
-              }),
-            default: () => "Update",
-          },
-        ),
-        h(
-          NTooltip,
-          { trigger: "hover" },
-          {
-            trigger: () =>
-              h(ActionButton, {
-                iconName: "delete",
-                type: "error",
-                onClick: () => {
-                  router.push({
-                    name: "removecourse",
-                    params: {
-                      id: rowData.id,
-                    },
-                  })
-                },
-              }),
-            default: () => "Remove Courses",
-          },
-        ),
-      ]
+      return h("div", { class: "flex gap-1" }, renderActionButtons(rowData))
     },
   },
 ])
 
-const pagination = reactive({
-  page: 1,
-  pageSize: 10,
-  showSizePicker: true,
-  pageSizes: [10, 20, 50],
-  prefix(info: PaginationInfo) {
-    return `Total: ${info.itemCount} maps`
-  },
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  },
+const canCreateMaps = computed(() => {
+  return playerStore.permissions.includes("create-maps")
 })
 
-onBeforeMount(() => {
+watch(
+  () => gameStore.game,
+  (g) => {
+    mapQuery.game = g
+  },
+)
+
+watch(showMyMaps, (val) => {
+  mapQuery.created_by = val ? playerStore.steamId : ""
+})
+
+watch(mapQuery, () => {
   loadMapsData()
 })
+
+loadMapsData()
+
+function renderActionButtons(rowData: RowData) {
+  if (rowData.state === "wip") {
+    if (playerStore.permissions.includes("create-maps")) {
+      return [
+        h(
+          NButton,
+          {
+            size: "tiny",
+            onClick: () => {
+              dialog.warning({
+                title: "Warning",
+                content: "Are you sure you want to submit this map?",
+                class: "font-poppings",
+                positiveText: "Yes",
+                negativeText: "Cancel",
+                onPositiveClick: async () => {
+                  try {
+                    await axiosClient.put(`/maps/${rowData.id}/state`, { state: "pending" }, { withCredentials: true })
+                  } catch (error) {
+                    notification.error({
+                      title: "Failed to submit map",
+                      content: toErrorMsg(error),
+                    })
+                  } finally {
+                    loading.value = false
+                  }
+                },
+              })
+            },
+          },
+          () => "Submit",
+        ),
+        h(
+          NButton,
+          {
+            size: "tiny",
+            onClick: () => {
+              router.push({ name: "updatemap", params: { id: rowData.id } })
+            },
+          },
+          () => "Update",
+        ),
+        h(
+          NButton,
+          {
+            size: "tiny",
+            onClick: () => {
+              dialog.warning({
+                title: "Warning",
+                content: "Are you sure you want to sync to the workshop map?",
+                class: "font-poppings",
+                positiveText: "Yes",
+                negativeText: "Cancel",
+                onPositiveClick: async () => {
+                  try {
+                    await axiosClient.patch(
+                      `/maps/${rowData.id}`,
+                      { workshop_id: rowData.workshop_id },
+                      { withCredentials: true },
+                    )
+                  } catch (error) {
+                    notification.error({
+                      title: "Failed to sync to workshop",
+                      content: toErrorMsg(error),
+                    })
+                  } finally {
+                    loading.value = false
+                  }
+                },
+              })
+            },
+          },
+          () => "Sync with workshop",
+        ),
+      ]
+    } else {
+      return []
+    }
+  }
+
+  if (rowData.state === "pending") {
+    return [
+      h(
+        NButton,
+        {
+          size: "tiny",
+          onClick: () => {
+            dialog.warning({
+              title: "Warning",
+              content: "Are you sure you want to approve this map?",
+              class: "font-poppings",
+              positiveText: "Yes",
+              negativeText: "Cancel",
+              onPositiveClick: async () => {
+                try {
+                  await axiosClient.put(`/maps/${rowData.id}/state`, { state: "approved" }, { withCredentials: true })
+                } catch (error) {
+                  notification.error({
+                    title: "Failed to approve map submission",
+                    content: toErrorMsg(error),
+                  })
+                } finally {
+                  loading.value = false
+                }
+              },
+            })
+          },
+        },
+        "Approve",
+      ),
+      h(
+        NButton,
+        {
+          size: "tiny",
+          onClick: () => {
+            dialog.warning({
+              title: "Warning",
+              content: "Are you sure you want to reject this map?",
+              class: "font-poppings",
+              positiveText: "Yes",
+              negativeText: "Cancel",
+              onPositiveClick: async () => {
+                try {
+                  await axiosClient.put(`/maps/${rowData.id}/state`, { state: "wip" }, { withCredentials: true })
+                } catch (error) {
+                  notification.error({
+                    title: "Failed to reject map submission",
+                    content: toErrorMsg(error),
+                  })
+                } finally {
+                  loading.value = false
+                }
+              },
+            })
+          },
+        },
+        "Reject",
+      ),
+    ]
+  }
+
+  if (rowData.state === "approved") {
+    return [h(NButton, { size: "tiny" }, "Nothing")]
+  }
+
+  if (rowData.state === "completed") {
+    return [h(NButton, { size: "tiny" }, "Nothing")]
+  }
+
+  if (rowData.state === "graveyard") {
+    return [h(NButton, { size: "tiny" }, "Nothing")]
+  }
+}
 
 async function loadMapsData() {
   loading.value = true
   try {
-    const params = {
-      // typescript...
-      name: mapQuery.name || null,
-      mapper: mapQuery.mapper || null,
-      state: mapQuery.state || null,
-    }
-
-    // console.log(params)
-
-    const { data: res } = await axiosClient.get("/maps", { params })
-    // console.log(result.data)
+    const { data: res } = await axiosClient.get("/maps", { params: validQuery(toRaw(mapQuery)) })
 
     data.value = res?.values
       ? res.values.map((v: Map) => ({
           id: v.id,
           name: v.name,
           state: v.state,
-          approved_at: v.approved_at,
+          created_at: v.created_at,
+          created_by: v.created_by,
           workshop_id: v.workshop_id,
           courseCount: v.courses.length,
         }))
@@ -261,17 +408,6 @@ function handleStatusChange() {
   nextTick(() => {
     loadMapsData()
   })
-}
-
-function clearFilter() {
-  mapQuery.name = ""
-  mapQuery.mapper = ""
-  mapQuery.state = "approved"
-  loadMapsData()
-}
-
-function rowKey(rowData: RowData) {
-  return rowData.id
 }
 
 function handleSorterChange(sorter: DataTableSortState) {

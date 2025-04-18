@@ -1,10 +1,10 @@
 <template>
-  <div v-for="(course, index) in courses" class="mb-4 rounded-md border border-slate-600 bg-gray-900 p-4">
+  <div v-for="(course, key) in courses" :key="key" class="mb-4 rounded-md border border-slate-600 bg-gray-900 p-4">
     <div class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2">
       <p class="text-xl font-medium">
-        {{ `Course ${index + 1}` }}
+        {{ `Course ${Number(key) + 1}` }}
       </p>
-      <n-button v-if="removable" @click="deleteCourse(index)" type="error" tertiary>Delete</n-button>
+      <n-button @click="deleteCourse(key as string)" type="error" tertiary>Delete</n-button>
     </div>
 
     <div class="mb-4">
@@ -32,20 +32,13 @@
 import { NButton, NInput, useDialog } from "naive-ui"
 import Mappers from "./Mappers.vue"
 import Filters from "./Filters.vue"
-import type { NewCourse } from "../../types"
+import type { NewCourses } from "../../types"
 
-withDefaults(
-  defineProps<{
-    removable?: boolean
-  }>(),
-  { removable: true },
-)
-
-const courses = defineModel<NewCourse[]>("courses", { required: true })
+const courses = defineModel<NewCourses | null>("courses", { required: true })
 
 const dialog = useDialog()
 
-function deleteCourse(index: number) {
+function deleteCourse(key: string) {
   dialog.warning({
     title: "Warning",
     content: "Are you sure you want to delete this course?",
@@ -53,7 +46,15 @@ function deleteCourse(index: number) {
     positiveText: "Yes",
     negativeText: "Cancel",
     onPositiveClick: () => {
-      courses.value.splice(index, 1)
+      const values = Object.values(courses.value!)
+      values.splice(parseInt(key), 1)
+
+      const entries = []
+      for (let i = 0; i < values.length; i++) {
+        entries.push([i.toString(), values[i]])
+      }
+      const updatedCourses = Object.fromEntries(entries)
+      courses.value = updatedCourses
     },
   })
 }

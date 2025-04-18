@@ -32,9 +32,7 @@
       <n-tab-pane v-for="mapTab in mapTabs" :key="mapTab.name" :tab="mapTab.name" :name="mapTab.name">
         <CreateMap
           v-model:workshop-id="mapTab.newMap.workshop_id"
-          v-model:description="mapTab.newMap.description"
-          v-model:state="mapTab.newMap.state"
-          v-model:mappers="mapTab.newMap.mappers"
+          v-model:description="mapTab.newMap.description!"
           v-model:courses="mapTab.newMap.courses"
         />
       </n-tab-pane>
@@ -61,6 +59,7 @@ import CreateMap from "./CreateMap.vue"
 import axiosClient from "../axios"
 import { cloneDeep } from "lodash-es"
 import { toErrorMsg } from "../utils"
+import { useGameStore } from "../store/game"
 
 interface MapTab {
   name: string
@@ -71,12 +70,15 @@ const router = useRouter()
 
 const notification = useNotification()
 
-const loading = ref(false)
-
-const selectedMapName = ref("")
-const mapTabs = ref<MapTab[]>([])
+const gameStore = useGameStore()
 
 const drafts = useStorage<MapTab[]>("maps-draft", () => [])
+
+const loading = ref(false)
+
+const mapTabs = ref<MapTab[]>([])
+
+const selectedMapName = ref("")
 
 const mapTabName = ref("")
 
@@ -86,11 +88,52 @@ function createMapTab() {
   mapTabs.value.push({
     name: mapTabName.value,
     newMap: {
-      workshop_id: "",
+      workshop_id: 0,
       description: "",
-      state: "approved",
-      mappers: [""],
-      courses: [],
+      game: gameStore.game,
+      courses: {
+        "1": {
+          name: "Main",
+          description: "",
+          mappers: [""],
+          filters:
+            gameStore.game === "cs2"
+              ? {
+                  ckz: {
+                    nub_tier: "very-easy",
+                    pro_tier: "very-easy",
+                    ranked: true,
+                    notes: "",
+                  },
+                  vnl: {
+                    nub_tier: "very-easy",
+                    pro_tier: "very-easy",
+                    ranked: true,
+                    notes: "",
+                  },
+                }
+              : {
+                  kzt: {
+                    nub_tier: "very-easy",
+                    pro_tier: "very-easy",
+                    ranked: true,
+                    notes: "",
+                  },
+                  skz: {
+                    nub_tier: "very-easy",
+                    pro_tier: "very-easy",
+                    ranked: true,
+                    notes: "",
+                  },
+                  vnl: {
+                    nub_tier: "very-easy",
+                    pro_tier: "very-easy",
+                    ranked: true,
+                    notes: "",
+                  },
+                },
+        },
+      },
     },
   })
   selectedMapName.value = mapTabName.value
@@ -215,54 +258,23 @@ function validateMap(map: MapTab) {
     validated = false
   }
 
-  if (map.newMap.mappers.length === 0) {
-    notification.error({
-      title: map.name,
-      content: "At least one mapper is required",
-    })
-    validated = false
-  } else {
-    map.newMap.mappers.forEach((mapper, index) => {
+  for (const courseIndex in map.newMap.courses) {
+    const course = map.newMap.courses[courseIndex]
+    if (course.name === "") {
+      notification.error({
+        title: map.name,
+        content: `Course ${parseInt(courseIndex) + 1}: Course name is required`,
+      })
+      validated = false
+    }
+
+    course.mappers.forEach((mapper, mapperIndex) => {
       if (!mapper) {
         notification.error({
           title: map.name,
-          content: `Mapper ${index + 1}: Steam ID is required`,
+          content: `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1}: Steam ID is required`,
         })
         validated = false
-      }
-    })
-  }
-
-  if (map.newMap.courses.length === 0) {
-    notification.error({
-      title: map.name,
-      content: "No courses created",
-    })
-  } else {
-    map.newMap.courses.forEach((course, courseIndex) => {
-      if (course.name === "") {
-        notification.error({
-          title: map.name,
-          content: `Course ${courseIndex + 1}: Course name is required`,
-        })
-        validated = false
-      }
-      if (course.mappers.length === 0) {
-        notification.error({
-          title: map.name,
-          content: `Course ${courseIndex + 1}: At least one mapper is required`,
-        })
-        validated = false
-      } else {
-        course.mappers.forEach((mapper, mapperIndex) => {
-          if (!mapper) {
-            notification.error({
-              title: map.name,
-              content: `Course ${courseIndex + 1}: Mapper ${mapperIndex + 1}: Steam ID is required`,
-            })
-            validated = false
-          }
-        })
       }
     })
   }
@@ -272,6 +284,6 @@ function validateMap(map: MapTab) {
 
 async function createMap(newMap: NewMap) {
   console.log("new map", newMap)
-  return axiosClient.put("/maps", { ...newMap, workshop_id: parseInt(newMap.workshop_id) }, { withCredentials: true })
+  return axiosClient.put("/maps", newMap, { withCredentials: true })
 }
 </script>

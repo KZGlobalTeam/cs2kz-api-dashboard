@@ -4,10 +4,14 @@
   >
     <p class="text-xl font-semibold">CS2KZ API</p>
 
-    <div>
+    <div class="flex gap-8">
+      <n-radio-group v-model:value="gameStore.game" name="Game">
+        <n-radio-button key="cs2" value="cs2" label="CS2" />
+        <n-radio-button key="csgo" value="csgo" label="CSGO" />
+      </n-radio-group>
       <div class="flex gap-4" v-if="playerStore.steamId">
         <!-- avatar -->
-        <img class="h-8 w-8 rounded-full ring-2 ring-slate-700" :src="playerStore.avatar_url" />
+        <img class="h-8 w-8 rounded-full ring-2 ring-slate-700" :src="playerStore.avatarUrl" />
         <div>
           <n-button secondary type="warning" @click="signOut" strong>SIGN OUT</n-button>
         </div>
@@ -20,9 +24,10 @@
 </template>
 
 <script setup lang="ts">
-import { NButton } from "naive-ui"
+import { NButton, NRadioGroup, NRadioButton } from "naive-ui"
 import { useRouter } from "vue-router"
 import { usePlayerStore } from "../store/player"
+import { useGameStore } from "../store/game"
 import axiosClient from "../axios"
 import Cookies from "universal-cookie"
 
@@ -32,8 +37,10 @@ const router = useRouter()
 
 const playerStore = usePlayerStore()
 
+const gameStore = useGameStore()
+
 async function signIn() {
-  location.href = `${import.meta.env.VITE_API_URL}/auth/web/login?redirect_to=${location.origin}`
+  location.href = `${import.meta.env.VITE_API_URL}/auth/web/login?return_to=${location.origin}`
 }
 
 async function signOut() {

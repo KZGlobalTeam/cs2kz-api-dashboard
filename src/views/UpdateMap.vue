@@ -1,22 +1,12 @@
 <template>
   <div>
     <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <MapInfo
-        :name="name"
-        v-model:workshop-id="workshopId"
-        v-model:description="description"
-        v-model:state="state"
-        updating
-      />
-    </div>
-
-    <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <Mappers v-model:mappers="mappers" />
+      <MapInfo :name="name" v-model:workshop-id="workshopId" v-model:description="description" type="update" />
     </div>
 
     <!-- courses -->
     <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <Courses :removable="false" v-model:courses="courses" />
+      <Courses v-model:courses="courses" />
     </div>
 
     <!-- save map -->
@@ -35,16 +25,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount, toRaw } from "vue"
+import { ref, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { NButton, useNotification } from "naive-ui"
-import { MapState, type Map, type MapUpdate, type NewCourse } from "../types"
+import type { NewCourses, Map, NewCS2Filters, NewCSGOFilters } from "../types"
 import { cloneDeep, isEqual } from "lodash-es"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"
 import type { AxiosResponse } from "axios"
 import MapInfo from "../components/map/MapInfo.vue"
-import Mappers from "../components/map/Mappers.vue"
 import Courses from "../components/map/Courses.vue"
 
 let oldMap: Map
@@ -55,41 +44,39 @@ const route = useRoute()
 const notification = useNotification()
 
 const name = ref("")
-const workshopId = ref("")
 const description = ref("")
-const state = ref<MapState>("approved")
-
-// mappers input
-const mappers = ref<string[]>([])
-
-const courses = ref<NewCourse[]>([])
+const workshopId = ref(0)
+const courses = ref<NewCourses | null>(null)
 
 const loading = ref(false)
 
-onBeforeMount(async () => {
+loadMapData()
+
+async function loadMapData() {
   try {
     const { data } = (await axiosClient.get(`/maps/${route.params.id}`)) as AxiosResponse<Map>
-    // console.log(data);
-
-    // save original map for generating update
     oldMap = cloneDeep(data)
-
-    state.value = data.state
     name.value = data.name
-    workshopId.value = data.workshop_id.toString()
-    description.value = data.description || ""
-    mappers.value = data.mappers.map((mapper) => mapper.id)
-    courses.value = data.courses.map((course) => ({
-      ...course,
-      mappers: course.mappers.map((mapper) => mapper.id),
-    }))
+    description.value = data.description
+    workshopId.value = data.workshop_id
+    courses.value = Object.fromEntries(
+      Object.entries(data.courses).map(([key, course]) => [
+        key,
+        {
+          name: course.name,
+          description: course.description,
+          mappers: course.mappers.map((mapper) => mapper.id),
+          filters: course.filters,
+        },
+      ]),
+    )
   } catch (error) {
     notification.error({
-      title: "Failed to fetch maps",
+      title: "Failed to fetch map",
       content: toErrorMsg(error),
     })
   }
-})
+}
 
 async function updateMap() {
   loading.value = true
@@ -116,40 +103,25 @@ async function updateMap() {
 }
 
 function generateUpdate(): any {
-  const update: MapUpdate = {}
+  const update: Record<string, any> = {}
 
-  if (oldMap.description !== description.value && description.value !== "") update.description = description.value
+  update.workshop_id = workshopId.value
 
-  if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
-
-  if (oldMap.state !== state.value) update.state = state.value
-
-  const oldMappers = new Set(oldMap.mappers.map((mapper) => mapper.id))
-  const newMappers = new Set(mappers.value)
-
-  const added_mappers = Array.from(new Set([...newMappers].filter((x) => !oldMappers.has(x))))
-  const deleted_mappers = Array.from(new Set([...oldMappers].filter((x) => !newMappers.has(x))))
-
-  if (added_mappers.length > 0) {
-    update.added_mappers = added_mappers
-  }
-  if (deleted_mappers.length > 0) {
-    update.deleted_mappers = deleted_mappers
-  }
+  if (oldMap.description !== description.value) update.description = description.value
 
   // check if courses are changed
   if (!isEqual(oldMap.courses, toRaw(courses.value))) {
-    courses.value.forEach((course, index) => {
+    for (const index in courses.value) {
       const oldCourse = oldMap.courses[index]
+      const course = courses.value[index]
 
       // check if each course is changed
       if (!isEqual(oldCourse, toRaw(course))) {
-        const courseUpdate: any = {}
+        const courseUpdate: Record<string, any> = {}
 
-        if (oldCourse.name !== course.name && course.name !== "") courseUpdate.name = course.name
+        if (oldCourse.name !== course.name) courseUpdate.name = course.name
 
-        if (oldCourse.description !== course.description && course.description !== "")
-          courseUpdate.description = course.description
+        if (oldCourse.description !== course.description) courseUpdate.description = course.description
 
         const oldMappers = new Set(oldCourse.mappers.map((mapper) => mapper.id))
         const newMappers = new Set(course.mappers)
@@ -168,13 +140,26 @@ function generateUpdate(): any {
         const oldFilters = oldCourse.filters
         const newFilters = course.filters
         if (!isEqual(oldFilters, newFilters)) {
-          const filterUpdates: any = {}
+          const filterUpdates: Record<string, any> = {}
 
-          const vanillaDiff = extractChanges(oldFilters.vanilla, newFilters.vanilla)
-          if (Object.keys(vanillaDiff).length) filterUpdates.vanilla = vanillaDiff
+          if (oldMap.game === "cs2") {
+            const vanillaDiff = extractChanges((oldFilters as NewCS2Filters).vnl, (newFilters as NewCS2Filters).vnl)
+            if (Object.keys(vanillaDiff).length) filterUpdates["vanilla-cs2"] = vanillaDiff
 
-          const classicDiff = extractChanges(oldFilters.classic, newFilters.classic)
-          if (Object.keys(classicDiff).length) filterUpdates.classic = classicDiff
+            const classicDiff = extractChanges((oldFilters as NewCS2Filters).ckz, (newFilters as NewCS2Filters).ckz)
+            if (Object.keys(classicDiff).length) filterUpdates["classic"] = classicDiff
+          }
+
+          if (oldMap.game === "csgo") {
+            const vanillaDiff = extractChanges((oldFilters as NewCSGOFilters).vnl, (newFilters as NewCSGOFilters).vnl)
+            if (Object.keys(vanillaDiff).length) filterUpdates["vanilla-cs2"] = vanillaDiff
+
+            const kztimerDiff = extractChanges((oldFilters as NewCSGOFilters).kzt, (newFilters as NewCSGOFilters).kzt)
+            if (Object.keys(kztimerDiff).length) filterUpdates["kztimer"] = kztimerDiff
+
+            const simplekzDiff = extractChanges((oldFilters as NewCSGOFilters).skz, (newFilters as NewCSGOFilters).skz)
+            if (Object.keys(simplekzDiff).length) filterUpdates["simplekz"] = simplekzDiff
+          }
 
           if (Object.keys(filterUpdates).length) {
             courseUpdate.filter_updates = filterUpdates
@@ -182,11 +167,13 @@ function generateUpdate(): any {
         }
 
         if (Object.keys(courseUpdate).length > 0) {
-          if (!update.course_updates) update.course_updates = []
-          update.course_updates!.push({ idx: index + 1, ...courseUpdate })
+          if (update.course_updates === undefined) {
+            update.course_updates = {}
+          }
+          update.course_updates[parseInt(index) + 1] = courseUpdate
         }
       }
-    })
+    }
   }
 
   return update

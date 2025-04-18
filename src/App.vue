@@ -26,6 +26,7 @@ import NavBar from "./components/NavBar.vue"
 import { RouterView, useRoute, useRouter } from "vue-router"
 import { darkTheme, NConfigProvider, NNotificationProvider, NDialogProvider, enUS } from "naive-ui"
 import { usePlayerStore } from "./store/player"
+import { useGameStore } from "./store/game"
 import axiosClient from "./axios"
 import Cookies from "universal-cookie"
 
@@ -35,9 +36,14 @@ const playerStore = usePlayerStore()
 
 const route = useRoute()
 const router = useRouter()
+const gameStore = useGameStore()
+
+gameStore.$subscribe(() => {
+  router.push("/")
+})
 
 onMounted(async () => {
-  playerStore.readPlayer()
+  await playerStore.readPlayer()
   // if logged in
   if (playerStore.steamId) {
     await verifySession()

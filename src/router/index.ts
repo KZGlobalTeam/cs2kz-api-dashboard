@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
 import { usePlayerStore } from "../store/player"
+import { Permission } from "../types"
 
 export const noAuthRoutes = [
   {
@@ -10,29 +11,7 @@ export const noAuthRoutes = [
       menuItem: true,
       title: "Home",
       iconName: "home",
-    },
-  },
-]
-
-export const routes = [
-  {
-    path: "/myservers",
-    name: "myservers",
-    component: () => import("../views/MyServers.vue"),
-    meta: {
-      menuItem: true,
-      title: "My Servers",
-      iconName: "server",
-      requiresPermission: "user",
-    },
-  },
-  {
-    path: "/myservers/create",
-    name: "createmyserver",
-    component: () => import("../views/CreateServer.vue"),
-    meta: {
-      title: "Create Server",
-      requiresPermission: "user",
+      requiresPermission: null,
     },
   },
   {
@@ -43,34 +22,7 @@ export const routes = [
       menuItem: true,
       title: "Maps",
       iconName: "map",
-      requiresPermission: "map-pool",
-    },
-  },
-  {
-    path: "/maps/create",
-    name: "createmaps",
-    component: () => import("../views/CreateMaps.vue"),
-    meta: {
-      title: "Create Maps",
-      requiresPermission: "map-pool",
-    },
-  },
-  {
-    path: "/maps/:id/update",
-    name: "updatemap",
-    component: () => import("../views/UpdateMap.vue"),
-    meta: {
-      title: "Update Map",
-      requiresPermission: "map-pool",
-    },
-  },
-  {
-    path: "/maps/:id/removecourse",
-    name: "removecourse",
-    component: () => import("../views/RemoveCourse.vue"),
-    meta: {
-      title: "Remove Course",
-      requiresPermission: "map-pool",
+      requiresPermission: null,
     },
   },
   {
@@ -81,33 +33,7 @@ export const routes = [
       menuItem: true,
       title: "Servers",
       iconName: "server",
-      requiresPermission: "servers",
-    },
-  },
-  {
-    path: "/servers/create",
-    name: "createserver",
-    component: () => import("../views/CreateServer.vue"),
-    meta: {
-      title: "Create Server",
-      requiresPermission: "servers",
-    },
-  },
-  {
-    path: "/servers/:id/update",
-    name: "updateserver",
-    component: () => import("../views/UpdateServer.vue"),
-    meta: {
-      title: "Update Server",
-      requiresPermission: "servers",
-    },
-  },
-  {
-    path: "/myservers/:id/update",
-    name: "updatemyserver",
-    component: () => import("../views/UpdateServer.vue"),
-    meta: {
-      title: "Update Server",
+      requiresPermission: null,
     },
   },
   {
@@ -118,34 +44,7 @@ export const routes = [
       menuItem: true,
       title: "Bans",
       iconName: "ban",
-      requiresPermission: "player-bans",
-    },
-  },
-  {
-    path: "/bans/create",
-    name: "createban",
-    component: () => import("../views/CreateBan.vue"),
-    meta: {
-      title: "Create Ban",
-      requiresPermission: "player-bans",
-    },
-  },
-  {
-    path: "/bans/:id/update",
-    name: "updateban",
-    component: () => import("../views/UpdateBan.vue"),
-    meta: {
-      title: "Update Ban",
-      requiresPermission: "player-bans",
-    },
-  },
-  {
-    path: "/bans/:id/unban",
-    name: "unban",
-    component: () => import("../views/Unban.vue"),
-    meta: {
-      title: "Unban",
-      requiresPermission: "player-bans",
+      requiresPermission: null,
     },
   },
   {
@@ -153,37 +52,101 @@ export const routes = [
     name: "bandetails",
     component: () => import("../views/BanDetails.vue"),
     meta: {
+      menuItem: false,
       title: "Ban Details",
-      requiresPermission: "player-bans",
+      iconName: null,
+      requiresPermission: null,
     },
   },
   {
-    path: "/admins",
-    name: "admins",
-    component: () => import("../views/Admins.vue"),
+    path: "/permissions",
+    name: "permissions",
+    component: () => import("../views/Permissions.vue"),
     meta: {
       menuItem: true,
-      title: "Admins",
+      title: "Permissions",
       iconName: "person",
-      requiresPermission: "user-permissions",
+      requiresPermission: null,
+    },
+  },
+]
+
+export const authRoutes = [
+  {
+    path: "/maps/create",
+    name: "createmaps",
+    component: () => import("../views/CreateMaps.vue"),
+    meta: {
+      menuItem: false,
+      title: "Create Maps",
+      iconName: null,
+      requiresPermission: "create-maps",
     },
   },
   {
-    path: "/admins/create",
-    name: "createadmin",
-    component: () => import("../views/CreateAdmin.vue"),
+    path: "/maps/:id/update",
+    name: "updatemap",
+    component: () => import("../views/UpdateMap.vue"),
     meta: {
-      title: "Create Admin",
-      requiresPermission: "user-permissions",
+      menuItem: false,
+      title: "Update Map",
+      iconName: null,
+      requiresPermission: "update-maps",
     },
   },
   {
-    path: "/admins/:id/update",
-    name: "updateadmin",
-    component: () => import("../views/UpdateAdmin.vue"),
+    path: "/servers/create",
+    name: "createserver",
+    component: () => import("../views/CreateServer.vue"),
     meta: {
-      title: "Update Admin",
-      requiresPermission: "user-permissions",
+      menuItem: false,
+      title: "Create Server",
+      iconName: null,
+      requiresPermission: null,
+    },
+  },
+  {
+    path: "/servers/:id/update",
+    name: "updateserver",
+    component: () => import("../views/UpdateServer.vue"),
+    meta: {
+      menuItem: false,
+      title: "Update Server",
+      iconName: null,
+      requiresPermission: null,
+    },
+  },
+  {
+    path: "/bans/create",
+    name: "createban",
+    component: () => import("../views/CreateBan.vue"),
+    meta: {
+      menuItem: false,
+      title: "Create Ban",
+      iconName: null,
+      requiresPermission: "create-bans",
+    },
+  },
+  {
+    path: "/bans/:id/update",
+    name: "updateban",
+    component: () => import("../views/UpdateBan.vue"),
+    meta: {
+      menuItem: false,
+      title: "Update Ban",
+      iconName: null,
+      requiresPermission: "update-bans",
+    },
+  },
+  {
+    path: "/bans/:id/unban",
+    name: "unban",
+    component: () => import("../views/Unban.vue"),
+    meta: {
+      menuItem: false,
+      title: "Unban",
+      iconName: null,
+      requiresPermission: "revert-bans",
     },
   },
 ]
@@ -196,7 +159,7 @@ const router = createRouter({
       redirect: "/home",
     },
     ...noAuthRoutes,
-    ...routes,
+    ...authRoutes,
     {
       path: "/:catchAll(.*)",
       component: () => import("../views/NotFound.vue"),
@@ -207,10 +170,10 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const playerStore = usePlayerStore()
 
-  const requiredPermission = to.meta.requiresPermission as string
+  const requiredPermission = to.meta.requiresPermission as Permission | null
 
   if (requiredPermission && to.name !== "home") {
-    if (!playerStore.permissions?.includes(requiredPermission)) return { name: "home" }
+    if (!playerStore.permissions.includes(requiredPermission)) return { name: "home" }
   }
 })
 
