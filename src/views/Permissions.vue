@@ -147,6 +147,9 @@ function renderActionButtons(rowData: User) {
                 onPositiveClick: async () => {
                   try {
                     await axiosClient.put(`/mappers/${rowData.id}`, null, { withCredentials: true })
+                    if (playerStore.steamId === rowData.id) {
+                      playerStore.readPlayer()
+                    }
                   } catch (error) {
                     notification.error({
                       title: "Operation failed",
@@ -178,6 +181,9 @@ function renderActionButtons(rowData: User) {
                 onPositiveClick: async () => {
                   try {
                     await axiosClient.delete(`/mappers/${rowData.id}`, { withCredentials: true })
+                    if (playerStore.steamId === rowData.id) {
+                      playerStore.readPlayer()
+                    }
                   } catch (error) {
                     notification.error({
                       title: "Operation failed",

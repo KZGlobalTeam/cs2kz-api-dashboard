@@ -1,8 +1,8 @@
 <template>
   <n-modal v-model:show="showModal">
-    <n-card style="width: 600px" title="Mark As Mapper" :bordered="false" role="dialog" aria-modal="true">
+    <n-card style="width: 600px" title="Modify Permissions" :bordered="false" role="dialog" aria-modal="true">
       <n-form ref="formRef" inline :model="formModel">
-        <n-form-item label="permission" path="permission">
+        <n-form-item label="Permission" path="permission">
           <n-select v-model:value="formModel.permissions" multiple :options="permOptions" style="width: 200px" />
         </n-form-item>
       </n-form>
@@ -23,6 +23,7 @@ import { reactive, ref, watch } from "vue"
 import axiosClient from "../../axios"
 import type { Permission, User } from "../../types"
 import { toErrorMsg } from "../../utils"
+import { usePlayerStore } from "../../store/player"
 
 const permissions = [
   "create-maps",
@@ -50,6 +51,8 @@ const emits = defineEmits(["update:success"])
 
 const notification = useNotification()
 
+const playerStore = usePlayerStore()
+
 const formRef = ref<FormInst | null>(null)
 
 const formModel = reactive<{ permissions: Permission[] }>({
@@ -76,6 +79,9 @@ const submitForm = () => {
           },
           { withCredentials: true },
         )
+        if (playerStore.steamId === props.user!.id) {
+          await playerStore.readPlayer()
+        }
         emits("update:success")
         notification.success({ title: "User's permissions updated", duration: 3000 })
       } catch (error) {

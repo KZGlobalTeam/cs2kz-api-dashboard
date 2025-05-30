@@ -645,7 +645,7 @@ export interface components {
     AccessKey: string
     Ban: {
       id: components["schemas"]["BanId"]
-      player_id: components["schemas"]["PlayerId"]
+      player: components["schemas"]["BannedPlayer"]
       reason: components["schemas"]["BanReason"]
       banned_by: components["schemas"]["BannedBy"]
       created_at: components["schemas"]["Timestamp"]
@@ -667,6 +667,10 @@ export interface components {
           /** @enum {string} */
           type: "admin"
         }
+    BannedPlayer: {
+      id: components["schemas"]["PlayerId"]
+      name: components["schemas"]["PlayerName"]
+    }
     /** @description an MD5 checksum */
     Checksum: string
     ConnectedPlayerInfo: {
@@ -736,8 +740,8 @@ export interface components {
           vnl: components["schemas"]["CreateFilterRequest"]
         }
     /** @example {
-     *       "courses": {
-     *         "1": {
+     *       "courses": [
+     *         {
      *           "filters": {
      *             "cs2": {
      *               "ckz": {
@@ -757,7 +761,7 @@ export interface components {
      *           ],
      *           "name": "Main"
      *         },
-     *         "2": {
+     *         {
      *           "filters": {
      *             "cs2": {
      *               "ckz": {
@@ -777,7 +781,7 @@ export interface components {
      *           ],
      *           "name": "Garden"
      *         },
-     *         "3": {
+     *         {
      *           "filters": {
      *             "ckz": {
      *               "nub_tier": "advanced",
@@ -795,7 +799,7 @@ export interface components {
      *           ],
      *           "name": "word's backyard"
      *         },
-     *         "4": {
+     *         {
      *           "filters": {
      *             "ckz": {
      *               "nub_tier": "medium",
@@ -813,7 +817,7 @@ export interface components {
      *           ],
      *           "name": "Old grotto (hard)"
      *         }
-     *       },
+     *       ],
      *       "description": "KZ but in a GROTTO! Make your way through an obstacle course based in a cave.",
      *       "workshop_id": 3121168339
      *     } */
@@ -821,9 +825,7 @@ export interface components {
       workshop_id: components["schemas"]["WorkshopId"]
       description?: components["schemas"]["MapDescription"]
       game: components["schemas"]["Game"]
-      courses: {
-        [key: string]: components["schemas"]["CreateCourseRequest"]
-      }
+      courses: components["schemas"]["CreateCourseRequest"][]
     }
     CreateMapResponse: {
       map_id: components["schemas"]["MapId"]
@@ -964,9 +966,7 @@ export interface components {
       state: components["schemas"]["MapState"]
       /** @description A checksum of the map's `.vpk` file */
       checksum: components["schemas"]["Checksum"]
-      courses: {
-        [key: string]: components["schemas"]["Course"]
-      }
+      courses: components["schemas"]["Course"][]
       created_by: components["schemas"]["Mapper"]
       created_at: components["schemas"]["Timestamp"]
     }
@@ -998,7 +998,7 @@ export interface components {
       total: number
       values: {
         id: components["schemas"]["BanId"]
-        player_id: components["schemas"]["PlayerId"]
+        player: components["schemas"]["BannedPlayer"]
         reason: components["schemas"]["BanReason"]
         banned_by: components["schemas"]["BannedBy"]
         created_at: components["schemas"]["Timestamp"]
@@ -1018,9 +1018,7 @@ export interface components {
         state: components["schemas"]["MapState"]
         /** @description A checksum of the map's `.vpk` file */
         checksum: components["schemas"]["Checksum"]
-        courses: {
-          [key: string]: components["schemas"]["Course"]
-        }
+        courses: components["schemas"]["Course"][]
         created_by: components["schemas"]["Mapper"]
         created_at: components["schemas"]["Timestamp"]
       }[]

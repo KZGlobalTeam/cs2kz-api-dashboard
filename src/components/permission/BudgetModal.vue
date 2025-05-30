@@ -23,6 +23,7 @@ import { reactive, ref, watch } from "vue"
 import axiosClient from "../../axios"
 import type { User } from "../../types"
 import { toErrorMsg } from "../../utils"
+import { usePlayerStore } from "../../store/player"
 
 const props = defineProps<{
   user: User | null
@@ -44,6 +45,8 @@ const rules = {
     },
   },
 }
+
+const playerStore = usePlayerStore()
 
 const notification = useNotification()
 
@@ -73,6 +76,9 @@ const submitForm = () => {
           },
           { withCredentials: true },
         )
+        if (playerStore.steamId === props.user!.id) {
+          playerStore.readPlayer()
+        }
         notification.success({ title: "Server budget updated", duration: 3000 })
         emits("update:success")
       } catch (error) {

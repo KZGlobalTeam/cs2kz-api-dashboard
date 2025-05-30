@@ -48,17 +48,6 @@ export const noAuthRoutes = [
     },
   },
   {
-    path: "/bans/:id",
-    name: "bandetails",
-    component: () => import("../views/BanDetails.vue"),
-    meta: {
-      menuItem: false,
-      title: "Ban Details",
-      iconName: null,
-      requiresPermission: null,
-    },
-  },
-  {
     path: "/permissions",
     name: "permissions",
     component: () => import("../views/Permissions.vue"),

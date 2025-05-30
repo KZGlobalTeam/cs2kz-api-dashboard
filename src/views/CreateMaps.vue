@@ -30,11 +30,7 @@
       @close="closeTab"
     >
       <n-tab-pane v-for="mapTab in mapTabs" :key="mapTab.name" :tab="mapTab.name" :name="mapTab.name">
-        <CreateMap
-          v-model:workshop-id="mapTab.newMap.workshop_id"
-          v-model:description="mapTab.newMap.description!"
-          v-model:courses="mapTab.newMap.courses"
-        />
+        <CreateMap v-model:new-map="mapTab.newMap" />
       </n-tab-pane>
     </n-tabs>
 
@@ -91,8 +87,8 @@ function createMapTab() {
       workshop_id: 0,
       description: "",
       game: gameStore.game,
-      courses: {
-        "1": {
+      courses: [
+        {
           name: "Main",
           description: "",
           mappers: [""],
@@ -133,7 +129,7 @@ function createMapTab() {
                   },
                 },
         },
-      },
+      ],
     },
   })
   selectedMapName.value = mapTabName.value

@@ -271,7 +271,7 @@ function handleCloseModal() {
 async function loadServersData() {
   loading.value = true
   try {
-    const { data: res } = await axiosClient.get("/servers", validQuery(toRaw(serverQuery)))
+    const { data: res } = await axiosClient.get("/servers", { params: validQuery(toRaw(serverQuery)) })
 
     data.value = res?.values || []
   } catch (error) {
