@@ -8,10 +8,12 @@
       :min="1"
       #="{ index }"
     >
-      <div v-if="type === 'create'" class="flex gap-4">
-        <n-input v-model:value="(mappers as NewMappers)[index]" placeholder="Steam ID" @keydown.enter.prevent />
-        <n-input v-model:value="(mappers as NewMappers)[index]" placeholder="Steam ID" @keydown.enter.prevent />
-      </div>
+      <n-input
+        v-if="type === 'create'"
+        v-model:value="(mappers as NewMappers)[index]"
+        placeholder="Steam ID"
+        @keydown.enter.prevent
+      />
       <div v-if="type === 'update'" class="flex gap-4">
         <n-input v-model:value="(mappers as Mappers)[index].name" placeholder="Steam ID" @keydown.enter.prevent />
         <n-input v-model:value="(mappers as Mappers)[index].id" placeholder="Steam ID" @keydown.enter.prevent />

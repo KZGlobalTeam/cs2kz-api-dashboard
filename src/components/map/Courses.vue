@@ -1,9 +1,5 @@
 <template>
-  <div
-    v-for="(course, index) in map.courses"
-    :key="course.name"
-    class="mb-4 rounded-md border border-slate-600 bg-gray-900 p-4"
-  >
+  <div v-for="(course, index) in map.courses" class="mb-4 rounded-md border border-slate-600 bg-gray-900 p-4">
     <div class="flex items-center justify-between gap-2 border-b border-slate-600 pb-2">
       <p class="text-xl font-medium">
         {{ `Course ${index + 1}` }}
