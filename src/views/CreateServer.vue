@@ -10,7 +10,7 @@
       </n-form-item>
 
       <n-form-item label="Port" path="port">
-        <n-input-number v-model:value="server.port" placeholder="27015" />
+        <n-input-number v-model:value="server.port" :show-button="false" placeholder="27015" />
       </n-form-item>
     </n-form>
 

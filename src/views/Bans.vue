@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h, nextTick, toRaw, computed } from "vue"
+import { ref, reactive, h, nextTick, toRaw, computed, watch } from "vue"
 import { useRouter } from "vue-router"
 import { NInput, NDataTable, NButton, NSelect, useNotification, useDialog } from "naive-ui"
 import type { DataTableSortState, DataTableColumn } from "naive-ui"
@@ -58,6 +58,7 @@ import axiosClient from "../axios"
 import type { Ban } from "../types"
 import { toLocal, renderPlayerName, toErrorMsg, validQuery } from "../utils"
 import { usePlayerStore } from "../store/player"
+import { debounce } from "lodash-es"
 
 interface BanQuery {
   player_id: string
@@ -97,7 +98,7 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Name",
     key: "name",
     render(rowData) {
-      return renderPlayerName(rowData.player_id, rowData.player_id)
+      return renderPlayerName(rowData.player.name, rowData.player.id)
     },
   },
   {
@@ -140,6 +141,12 @@ const data = ref<Ban[]>([])
 
 const canCreateBans = computed(() => {
   return playerStore.permissions.includes("create-bans")
+})
+
+const debouncedLoadBansData = debounce(loadBansData, 300)
+
+watch(banQuery, () => {
+  debouncedLoadBansData()
 })
 
 loadBansData()
@@ -205,7 +212,7 @@ function renderActionButtons(rowData: Ban) {
 async function loadBansData() {
   loading.value = true
   try {
-    const { data: res } = await axiosClient.get("/bans", validQuery(toRaw(banQuery)))
+    const { data: res } = await axiosClient.get("/bans", { params: validQuery(toRaw(banQuery)) })
 
     data.value = res?.values || []
   } catch (error) {

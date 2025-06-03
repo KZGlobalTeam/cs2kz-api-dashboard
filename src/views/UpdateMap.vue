@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div v-if="map">
     <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <MapInfo :name="name" v-model:workshop-id="workshopId" v-model:description="description" type="update" />
+      <MapInfo v-model:map="map as Map" type="update" />
     </div>
 
     <!-- courses -->
     <div class="mb-4 rounded-md bg-gray-800 p-4">
-      <Courses v-model:courses="courses" />
+      <Courses v-model:map="map as Map" type="update" />
     </div>
 
     <!-- save map -->
@@ -28,7 +28,7 @@
 import { ref, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { NButton, useNotification } from "naive-ui"
-import type { NewCourses, Map, NewCS2Filters, NewCSGOFilters } from "../types"
+import type { Map, NewCS2Filters, NewCSGOFilters } from "../types"
 import { cloneDeep, isEqual } from "lodash-es"
 import axiosClient from "../axios"
 import { toErrorMsg } from "../utils"
@@ -43,10 +43,7 @@ const route = useRoute()
 
 const notification = useNotification()
 
-const name = ref("")
-const description = ref("")
-const workshopId = ref(0)
-const courses = ref<NewCourses | null>(null)
+const map = ref<Map>()
 
 const loading = ref(false)
 
@@ -56,20 +53,8 @@ async function loadMapData() {
   try {
     const { data } = (await axiosClient.get(`/maps/${route.params.id}`)) as AxiosResponse<Map>
     oldMap = cloneDeep(data)
-    name.value = data.name
-    description.value = data.description
-    workshopId.value = data.workshop_id
-    courses.value = Object.fromEntries(
-      Object.entries(data.courses).map(([key, course]) => [
-        key,
-        {
-          name: course.name,
-          description: course.description,
-          mappers: course.mappers.map((mapper) => mapper.id),
-          filters: course.filters,
-        },
-      ]),
-    )
+
+    map.value = data
   } catch (error) {
     notification.error({
       title: "Failed to fetch map",
@@ -83,7 +68,6 @@ async function updateMap() {
 
   try {
     const update = generateUpdate()
-    console.log("map update", update)
     await axiosClient.patch(`/maps/${oldMap.id}`, update, {
       withCredentials: true,
     })
@@ -105,15 +89,15 @@ async function updateMap() {
 function generateUpdate(): any {
   const update: Record<string, any> = {}
 
-  update.workshop_id = workshopId.value
+  update.workshop_id = map.value!.workshop_id
 
-  if (oldMap.description !== description.value) update.description = description.value
+  if (oldMap.description !== map.value!.description) update.description = map.value!.description
 
-  // check if courses are changed
-  if (!isEqual(oldMap.courses, toRaw(courses.value))) {
-    for (const index in courses.value) {
+  // check if courses are modified
+  if (!isEqual(oldMap.courses, toRaw(map.value!.courses))) {
+    for (let index = 0; index < map.value!.courses.length; index++) {
       const oldCourse = oldMap.courses[index]
-      const course = courses.value[index]
+      const course = map.value!.courses[index]
 
       // check if each course is changed
       if (!isEqual(oldCourse, toRaw(course))) {
@@ -124,7 +108,7 @@ function generateUpdate(): any {
         if (oldCourse.description !== course.description) courseUpdate.description = course.description
 
         const oldMappers = new Set(oldCourse.mappers.map((mapper) => mapper.id))
-        const newMappers = new Set(course.mappers)
+        const newMappers = new Set(course.mappers.map((mapper) => mapper.id))
 
         const added_mappers = Array.from(new Set([...newMappers].filter((x) => !oldMappers.has(x))))
         const deleted_mappers = Array.from(new Set([...oldMappers].filter((x) => !newMappers.has(x))))
@@ -170,7 +154,7 @@ function generateUpdate(): any {
           if (update.course_updates === undefined) {
             update.course_updates = {}
           }
-          update.course_updates[parseInt(index) + 1] = courseUpdate
+          update.course_updates[index + 1] = courseUpdate
         }
       }
     }

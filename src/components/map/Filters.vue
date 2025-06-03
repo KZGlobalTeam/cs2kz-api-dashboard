@@ -15,7 +15,7 @@
       <Filter v-if="gameStore.game === 'csgo'" mode-title="SKZ" v-model:filter="(filters as NewCSGOFilters).skz" />
       <Filter v-if="gameStore.game === 'csgo'" mode-title="VNL" v-model:filter="(filters as NewCSGOFilters).vnl" />
 
-      <!-- CSGO -->
+      <!-- CS2 -->
       <Filter v-if="gameStore.game === 'cs2'" mode-title="CKZ" v-model:filter="(filters as NewCS2Filters).ckz" />
       <Filter v-if="gameStore.game === 'cs2'" mode-title="VNL" v-model:filter="(filters as NewCS2Filters).vnl" />
     </tbody>

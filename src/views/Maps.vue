@@ -3,7 +3,7 @@
     <div class="mb-4 flex justify-between gap-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input @keyup.enter="loadMapsData" type="text" v-model:value="mapQuery.name" placeholder="Map" />
+        <n-input @keyup.enter="loadMapsData" type="text" v-model:value="mapQuery.name" placeholder="Name" />
 
         <n-input
           v-if="!showMyMaps"
@@ -18,7 +18,7 @@
           @update-value="handleStatusChange"
           v-model:value="mapQuery.state"
           :options="options"
-          placeholder="Map State"
+          placeholder="State"
         />
       </n-space>
 
@@ -36,18 +36,20 @@
         :data="data"
         :loading="loading"
         :pagination="{ pageSize: 10 }"
-        :row-key="(row: RowData) => row.id"
+        :row-key="(row: Map) => row.id"
         size="small"
         @update:sorter="handleSorterChange"
       />
     </div>
 
     <div class="flex justify-end gap-4">
-      <n-button @click="loadMapsData">REFRESH</n-button>
+      <n-button @click="loadMapsData">Refresh</n-button>
       <n-button v-if="canCreateMaps" secondary type="primary" @click="router.push({ name: 'createmaps' })"
         >Create Map</n-button
       >
     </div>
+
+    <state-modal v-model:show="showStateModal" :map="activeMap" @update:success="loadMapsData()" />
   </div>
 </template>
 
@@ -61,16 +63,8 @@ import axiosClient from "../axios"
 import { toLocal, renderWorkshopId, toErrorMsg, validQuery, renderPlayerName } from "../utils"
 import { usePlayerStore } from "../store/player"
 import { useGameStore } from "../store/game"
-
-type RowData = {
-  id: number
-  name: string
-  created_at: string
-  created_by: { name: string; id: string }
-  workshop_id: number
-  state: MapState
-  courseCount: number
-}
+import StateModal from "../components/map/StateModal.vue"
+import { debounce } from "lodash-es"
 
 type MapQuery = {
   game: Game
@@ -122,8 +116,12 @@ const gameStore = useGameStore()
 
 const showMyMaps = ref(false)
 
+const showStateModal = ref(false)
+
+const activeMap = ref<Map | null>(null)
+
 const loading = ref(true)
-const data = ref<RowData[]>([])
+const data = ref<Map[]>([])
 
 const mapQuery = reactive<MapQuery>({
   game: gameStore.game,
@@ -132,7 +130,7 @@ const mapQuery = reactive<MapQuery>({
   state: null,
 })
 
-const columns = ref<DataTableColumn<RowData>[]>([
+const columns = ref<DataTableColumn<Map>[]>([
   {
     title: "ID",
     key: "id",
@@ -158,7 +156,7 @@ const columns = ref<DataTableColumn<RowData>[]>([
     },
   },
   {
-    title: "Created By",
+    title: "Creator",
     key: "created_by",
     render(rowData) {
       return renderPlayerName(rowData.created_by.name, rowData.created_by.id)
@@ -207,6 +205,8 @@ const canCreateMaps = computed(() => {
   return playerStore.permissions.includes("create-maps")
 })
 
+const debouncedLoadMapsData = debounce(loadMapsData, 500)
+
 watch(
   () => gameStore.game,
   (g) => {
@@ -219,14 +219,14 @@ watch(showMyMaps, (val) => {
 })
 
 watch(mapQuery, () => {
-  loadMapsData()
+  debouncedLoadMapsData()
 })
 
 loadMapsData()
 
-function renderActionButtons(rowData: RowData) {
-  if (rowData.state === "wip") {
-    if (playerStore.permissions.includes("create-maps")) {
+function renderActionButtons(rowData: Map) {
+  if (playerStore.permissions.includes("create-maps")) {
+    if (rowData.state === "wip") {
       return [
         h(
           NButton,
@@ -235,13 +235,14 @@ function renderActionButtons(rowData: RowData) {
             onClick: () => {
               dialog.warning({
                 title: "Warning",
-                content: "Are you sure you want to submit this map?",
+                content: "Are you sure you want to submit this map for approval?",
                 class: "font-poppings",
                 positiveText: "Yes",
                 negativeText: "Cancel",
                 onPositiveClick: async () => {
                   try {
                     await axiosClient.put(`/maps/${rowData.id}/state`, { state: "pending" }, { withCredentials: true })
+                    await loadMapsData()
                   } catch (error) {
                     notification.error({
                       title: "Failed to submit map",
@@ -256,6 +257,7 @@ function renderActionButtons(rowData: RowData) {
           },
           () => "Submit",
         ),
+
         h(
           NButton,
           {
@@ -284,6 +286,7 @@ function renderActionButtons(rowData: RowData) {
                       { workshop_id: rowData.workshop_id },
                       { withCredentials: true },
                     )
+                    await loadMapsData()
                   } catch (error) {
                     notification.error({
                       title: "Failed to sync to workshop",
@@ -296,85 +299,134 @@ function renderActionButtons(rowData: RowData) {
               })
             },
           },
-          () => "Sync with workshop",
+          () => "Sync",
+        ),
+        h(
+          NButton,
+          {
+            size: "tiny",
+            onClick: () => {
+              dialog.warning({
+                title: "Warning",
+                content: "Are you sure you want to mark this map as completed?",
+                class: "font-poppings",
+                positiveText: "Yes",
+                negativeText: "Cancel",
+                onPositiveClick: async () => {
+                  try {
+                    await axiosClient.put(
+                      `/maps/${rowData.id}/state`,
+                      { state: "completed" },
+                      { withCredentials: true },
+                    )
+                    await loadMapsData()
+                  } catch (error) {
+                    notification.error({
+                      title: "Failed to submit map",
+                      content: toErrorMsg(error),
+                    })
+                  } finally {
+                    loading.value = false
+                  }
+                },
+              })
+            },
+          },
+          () => "Complete",
         ),
       ]
-    } else {
-      return []
+    } else if (rowData.state === "graveyard") {
+      return [
+        h(
+          NButton,
+          {
+            size: "tiny",
+            onClick: () => {
+              dialog.warning({
+                title: "Warning",
+                content: "Are you sure you want to submit this map for approval?",
+                class: "font-poppings",
+                positiveText: "Yes",
+                negativeText: "Cancel",
+                onPositiveClick: async () => {
+                  try {
+                    await axiosClient.put(`/maps/${rowData.id}/state`, { state: "pending" }, { withCredentials: true })
+                    await loadMapsData()
+                  } catch (error) {
+                    notification.error({
+                      title: "Failed to submit map",
+                      content: toErrorMsg(error),
+                    })
+                  } finally {
+                    loading.value = false
+                  }
+                },
+              })
+            },
+          },
+          () => "Submit",
+        ),
+        h(
+          NButton,
+          {
+            size: "tiny",
+            onClick: () => {
+              dialog.warning({
+                title: "Warning",
+                content: "Are you sure you want to mark this map as completed?",
+                class: "font-poppings",
+                positiveText: "Yes",
+                negativeText: "Cancel",
+                onPositiveClick: async () => {
+                  try {
+                    await axiosClient.put(
+                      `/maps/${rowData.id}/state`,
+                      { state: "completed" },
+                      { withCredentials: true },
+                    )
+                    await loadMapsData()
+                  } catch (error) {
+                    notification.error({
+                      title: "Failed to submit map",
+                      content: toErrorMsg(error),
+                    })
+                  } finally {
+                    loading.value = false
+                  }
+                },
+              })
+            },
+          },
+          () => "Complete",
+        ),
+      ]
     }
-  }
-
-  if (rowData.state === "pending") {
+  } else if (playerStore.permissions.includes("update-maps")) {
     return [
       h(
         NButton,
         {
           size: "tiny",
           onClick: () => {
-            dialog.warning({
-              title: "Warning",
-              content: "Are you sure you want to approve this map?",
-              class: "font-poppings",
-              positiveText: "Yes",
-              negativeText: "Cancel",
-              onPositiveClick: async () => {
-                try {
-                  await axiosClient.put(`/maps/${rowData.id}/state`, { state: "approved" }, { withCredentials: true })
-                } catch (error) {
-                  notification.error({
-                    title: "Failed to approve map submission",
-                    content: toErrorMsg(error),
-                  })
-                } finally {
-                  loading.value = false
-                }
-              },
-            })
+            activeMap.value = rowData
+            showStateModal.value = true
           },
         },
-        "Approve",
+        () => "Modify State",
       ),
       h(
         NButton,
         {
           size: "tiny",
           onClick: () => {
-            dialog.warning({
-              title: "Warning",
-              content: "Are you sure you want to reject this map?",
-              class: "font-poppings",
-              positiveText: "Yes",
-              negativeText: "Cancel",
-              onPositiveClick: async () => {
-                try {
-                  await axiosClient.put(`/maps/${rowData.id}/state`, { state: "wip" }, { withCredentials: true })
-                } catch (error) {
-                  notification.error({
-                    title: "Failed to reject map submission",
-                    content: toErrorMsg(error),
-                  })
-                } finally {
-                  loading.value = false
-                }
-              },
-            })
+            router.push({ name: "updatemap", params: { id: rowData.id } })
           },
         },
-        "Reject",
+        () => "Update",
       ),
     ]
-  }
-
-  if (rowData.state === "approved") {
-    return [h(NButton, { size: "tiny" }, "Nothing")]
-  }
-
-  if (rowData.state === "completed") {
-    return [h(NButton, { size: "tiny" }, "Nothing")]
-  }
-
-  if (rowData.state === "graveyard") {
-    return [h(NButton, { size: "tiny" }, "Nothing")]
+  } else {
+    return []
   }
 }
 

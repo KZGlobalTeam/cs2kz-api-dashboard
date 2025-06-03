@@ -4,7 +4,9 @@
       <p class="text-xl font-medium">
         {{ `Course ${index + 1}` }}
       </p>
-      <n-button v-if="index > 0" @click="deleteCourse(index)" type="error" tertiary>Delete</n-button>
+      <n-button v-if="type === 'create' && index > 0" @click="deleteCourse(index)" type="error" tertiary
+        >Delete</n-button
+      >
     </div>
 
     <div class="mb-4">

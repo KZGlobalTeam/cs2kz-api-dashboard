@@ -3,7 +3,7 @@
     <div class="mb-4 flex justify-between gap-4">
       <!-- filters -->
       <n-space align="center">
-        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.name" placeholder="Name, ID" />
+        <n-input @keyup.enter="loadServersData" type="text" v-model:value="serverQuery.name" placeholder="Name" />
 
         <n-input
           v-if="!showMyServers"
@@ -66,6 +66,7 @@ import { useGameStore } from "../store/game"
 import { usePlayerStore } from "../store/player"
 import { RowData } from "naive-ui/es/data-table/src/interface"
 import KeyModal from "../components/server/KeyModal.vue"
+import { debounce } from "lodash-es"
 
 type ServerQuery = {
   game: Game
@@ -114,13 +115,6 @@ const columns = ref<DataTableColumn<Server>[]>([
   },
   {
     title: "Owner",
-    key: "owner_name",
-    render(rowData) {
-      return rowData.owner.name
-    },
-  },
-  {
-    title: "Owner ID",
     key: "owner_id",
     render(rowData) {
       return renderPlayerName(rowData.owner.name, rowData.owner.id)
@@ -152,6 +146,8 @@ const canCreateServers = computed(() => {
   return playerStore.steamId !== ""
 })
 
+const debouncedLoadServersData = debounce(loadServersData, 500)
+
 watch(
   () => gameStore.game,
   (g) => {
@@ -165,7 +161,7 @@ watch(showMyServers, (val) => {
 })
 
 watch(serverQuery, () => {
-  loadServersData()
+  debouncedLoadServersData()
 })
 
 loadServersData()

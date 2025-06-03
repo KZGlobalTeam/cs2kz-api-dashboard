@@ -279,7 +279,6 @@ function validateMap(map: MapTab) {
 }
 
 async function createMap(newMap: NewMap) {
-  console.log("new map", newMap)
   return axiosClient.put("/maps", newMap, { withCredentials: true })
 }
 </script>

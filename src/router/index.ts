@@ -80,7 +80,7 @@ export const authRoutes = [
       menuItem: false,
       title: "Update Map",
       iconName: null,
-      requiresPermission: "update-maps",
+      requiresPermission: "create-maps",
     },
   },
   {

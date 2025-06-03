@@ -26,8 +26,8 @@
       <n-button @click="loadUsersData">REFRESH</n-button>
     </div>
 
-    <budget-modal v-model:show="showBudgetModal" :user="activeUser" @update:success="loadUsersData" />
-    <perm-modal v-model:show="showPermModal" :user="activeUser" @update:success="loadUsersData" />
+    <budget-modal v-model:show="showBudgetModal" :user="activeUser" @update:success="loadUsersData()" />
+    <perm-modal v-model:show="showPermModal" :user="activeUser" @update:success="loadUsersData()" />
   </div>
 </template>
 

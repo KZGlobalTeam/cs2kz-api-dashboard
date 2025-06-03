@@ -9,7 +9,13 @@
     <!-- workshop id -->
     <div class="mb-4">
       <p class="mb-2 font-medium">Workshop ID</p>
-      <n-input-number style="margin-bottom: 0.25rem" v-model:value="map.workshop_id" placeholder="" />
+      <n-input-number
+        :show-button="false"
+        style="margin-bottom: 0.25rem"
+        v-model:value="map.workshop_id"
+        :disabled="type === 'update'"
+        placeholder=""
+      />
     </div>
 
     <!-- description -->

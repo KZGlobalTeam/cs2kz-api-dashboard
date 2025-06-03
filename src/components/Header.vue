@@ -7,7 +7,7 @@
     <div class="flex gap-8">
       <n-radio-group v-model:value="gameStore.game" name="Game">
         <n-radio-button key="cs2" value="cs2" label="CS2" />
-        <n-radio-button key="csgo" value="csgo" label="CSGO" />
+        <n-radio-button key="csgo" value="csgo" label="CSGO" disabled />
       </n-radio-group>
       <div class="flex gap-4" v-if="playerStore.steamId">
         <!-- avatar -->
