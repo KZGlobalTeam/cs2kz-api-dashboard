@@ -14,7 +14,7 @@
         />
       </n-space>
 
-      <div class="flex gap-4">
+      <div v-if="playerStore.steamId" class="flex gap-4">
         <n-button type="info" :secondary="showMyServers ? false : true" @click="showMyServers = !showMyServers">
           My Servers
         </n-button>

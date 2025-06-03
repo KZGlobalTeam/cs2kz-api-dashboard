@@ -22,7 +22,7 @@
         />
       </n-space>
 
-      <div class="flex gap-4">
+      <div v-if="playerStore.steamId" class="flex gap-4">
         <n-button type="info" :secondary="showMyMaps ? false : true" @click="showMyMaps = !showMyMaps">
           My Maps
         </n-button>
