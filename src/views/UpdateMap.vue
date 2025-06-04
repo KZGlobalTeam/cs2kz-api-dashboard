@@ -11,23 +11,24 @@
 
     <!-- save map -->
     <div class="rounded-md bg-gray-800 p-4">
-      <n-button
-        @click.prevent="updateMap"
-        :disabled="loading"
-        :loading="loading"
-        class="saveButton"
-        type="primary"
-        strong
-        >Update</n-button
-      >
+      <n-button @click.prevent="updateMap" class="saveButton" type="primary" strong>Update</n-button>
     </div>
+
+    <n-modal v-model:show="loading" :mask-closable="false" class="bg-gray-700">
+      <n-card style="width: 300px">
+        <div class="flex items-center gap-2">
+          <img src="/icons/loading.svg" class="h-8 w-auto" />
+          <span class="font-poppings text-lg font-medium">Updating map...</span>
+        </div>
+      </n-card>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, toRaw } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { NButton, useNotification } from "naive-ui"
+import { NButton, NModal, NCard, useNotification } from "naive-ui"
 import type { Map, NewCS2Filters, NewCSGOFilters } from "../types"
 import { cloneDeep, isEqual } from "lodash-es"
 import axiosClient from "../axios"

@@ -257,7 +257,6 @@ function renderActionButtons(rowData: Map) {
           },
           () => "Submit",
         ),
-
         h(
           NButton,
           {
@@ -365,6 +364,16 @@ function renderActionButtons(rowData: Map) {
             },
           },
           () => "Submit",
+        ),
+        h(
+          NButton,
+          {
+            size: "tiny",
+            onClick: () => {
+              router.push({ name: "updatemap", params: { id: rowData.id } })
+            },
+          },
+          () => "Update",
         ),
         h(
           NButton,
