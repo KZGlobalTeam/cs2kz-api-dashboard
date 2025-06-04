@@ -24,6 +24,20 @@ export function renderPlayerName(name: string, id: string) {
   )
 }
 
+export function renderBannedPlayerName(name: string, id: string, banned: boolean) {
+  const steamId64 = new SteamID(id).toString()
+  return h(
+    "a",
+    {
+      href: `https://steamcommunity.com/profiles/${steamId64}`,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      class: banned ? "text-red-600" : "text-green-600",
+    },
+    name,
+  )
+}
+
 export function renderWorkshopId(workshopId: number) {
   return h(
     "a",

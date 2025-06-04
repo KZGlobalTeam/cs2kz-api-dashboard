@@ -46,19 +46,21 @@
         >Create Ban</n-button
       >
     </div>
+    <ban-reason-modal v-model:show="showBanReasonModal" :ban="activeBan" @revert:success="loadBansData()" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, h, nextTick, toRaw, computed, watch } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NSelect, useNotification, useDialog } from "naive-ui"
+import { NInput, NDataTable, NButton, NSelect, useNotification } from "naive-ui"
 import type { DataTableSortState, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
 import type { Ban } from "../types"
-import { toLocal, renderPlayerName, toErrorMsg, validQuery } from "../utils"
+import { toLocal, renderBannedPlayerName, renderPlayerName, toErrorMsg, validQuery } from "../utils"
 import { usePlayerStore } from "../store/player"
 import { debounce } from "lodash-es"
+import BanReasonModal from "../components/ban/BanReasonModal.vue"
 
 interface BanQuery {
   player_id: string
@@ -69,7 +71,6 @@ interface BanQuery {
 const router = useRouter()
 
 const notification = useNotification()
-const dialog = useDialog()
 
 const playerStore = usePlayerStore()
 
@@ -80,6 +81,10 @@ const banReasonOptions = [
 ]
 
 const loading = ref(false)
+
+const activeBan = ref<Ban | null>(null)
+
+const showBanReasonModal = ref(false)
 
 const banQuery = reactive<BanQuery>({
   player_id: "",
@@ -98,7 +103,11 @@ const columns = ref<DataTableColumn<Ban>[]>([
     title: "Name",
     key: "name",
     render(rowData) {
-      return renderPlayerName(rowData.player.name, rowData.player.id)
+      return renderBannedPlayerName(
+        rowData.player.name,
+        rowData.player.id,
+        rowData.unban === null || rowData.unban === undefined,
+      )
     },
   },
   {
@@ -126,6 +135,17 @@ const columns = ref<DataTableColumn<Ban>[]>([
     },
     sorter(rowA, rowB) {
       return new Date(rowA.created_at).getTime() - new Date(rowB.created_at).getTime()
+    },
+  },
+  {
+    title: "Expires On",
+    key: "expires_on",
+    sortOrder: false,
+    render(rowData) {
+      return toLocal(rowData.expires_at)
+    },
+    sorter(rowA, rowB) {
+      return new Date(rowA.expires_at).getTime() - new Date(rowB.expires_at).getTime()
     },
   },
   {
@@ -169,39 +189,18 @@ function renderActionButtons(rowData: Ban) {
     )
   }
 
-  if (playerStore.permissions.includes("revert-bans")) {
+  if (playerStore.permissions.includes("revert-bans") && !rowData.unban) {
     buttons.push(
       h(
         NButton,
         {
           size: "tiny",
           onClick: () => {
-            dialog.warning({
-              title: "Warning",
-              content: "Are you sure you want to revert this ban?",
-              class: "font-poppings",
-              positiveText: "Yes",
-              negativeText: "Cancel",
-              onPositiveClick: async () => {
-                try {
-                  await axiosClient.delete(`/bans/${rowData.id}`, { withCredentials: true })
-                  await loadBansData()
-                  notification.success({
-                    title: "Ban reverted",
-                  })
-                } catch (error) {
-                  notification.error({
-                    title: "Failed to revert ban",
-                    content: toErrorMsg(error),
-                  })
-                } finally {
-                  loading.value = false
-                }
-              },
-            })
+            activeBan.value = rowData
+            showBanReasonModal.value = true
           },
         },
-        () => "Update",
+        () => "Revert",
       ),
     )
   }
