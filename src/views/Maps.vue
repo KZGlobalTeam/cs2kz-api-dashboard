@@ -182,7 +182,7 @@ const columns = ref<DataTableColumn<Map>[]>([
     key: "courseCount",
   },
   {
-    title: "Created",
+    title: "Created On",
     key: "created_on",
     sortOrder: false,
     render(rowData) {

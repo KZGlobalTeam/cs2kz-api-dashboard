@@ -41,7 +41,7 @@
     </div>
 
     <div class="flex justify-end gap-4">
-      <n-button @click="loadBansData">REFRESH</n-button>
+      <n-button @click="loadBansData">Refresh</n-button>
       <n-button v-if="canCreateBans" type="error" secondary @click="router.push({ name: 'createban' })"
         >Create Ban</n-button
       >

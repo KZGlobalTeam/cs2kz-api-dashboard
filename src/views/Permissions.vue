@@ -23,7 +23,7 @@
     </div>
 
     <div class="flex justify-end gap-4">
-      <n-button @click="loadUsersData">REFRESH</n-button>
+      <n-button @click="loadUsersData">Refresh</n-button>
     </div>
 
     <budget-modal v-model:show="showBudgetModal" :user="activeUser" @update:success="loadUsersData()" />

@@ -35,7 +35,7 @@
     </div>
 
     <div class="flex justify-end gap-4">
-      <n-button @click="loadServersData">REFRESH</n-button>
+      <n-button @click="loadServersData">Refresh</n-button>
       <n-tooltip v-if="canCreateServers" trigger="hover">
         <template #trigger>
           <n-button
