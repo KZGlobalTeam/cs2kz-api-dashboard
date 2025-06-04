@@ -5,14 +5,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, h } from "vue"
+import { h } from "vue"
 import { RouterLink } from "vue-router"
 import { useRoute } from "vue-router"
 import { NMenu } from "naive-ui"
 
 const route = useRoute()
-
-const activeKey = ref<string>("Home")
 
 const menuItems = [
   {
