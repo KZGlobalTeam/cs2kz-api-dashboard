@@ -61,7 +61,7 @@ export function toErrorMsg(error: any) {
   } else if (error.response.status === 500) {
     return "Internal Server Error"
   } else {
-    const { title, detail } = error.response.data
+    const { title = "", detail = "" } = error.response.data
     return `${title}\n${detail}`
   }
 }
