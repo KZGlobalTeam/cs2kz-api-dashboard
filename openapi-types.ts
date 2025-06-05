@@ -1072,6 +1072,7 @@ export interface components {
         port: components["schemas"]["ServerPort"]
         game: components["schemas"]["Game"]
         owner: components["schemas"]["ServerOwner"]
+        is_global: boolean
         connection_info?: null | components["schemas"]["ConnectionInfo"]
         created_at: components["schemas"]["Timestamp"]
       }[]
@@ -1217,6 +1218,7 @@ export interface components {
       port: components["schemas"]["ServerPort"]
       game: components["schemas"]["Game"]
       owner: components["schemas"]["ServerOwner"]
+      is_global: boolean
       connection_info?: null | components["schemas"]["ConnectionInfo"]
       created_at: components["schemas"]["Timestamp"]
     }
@@ -1792,6 +1794,8 @@ export interface operations {
         game?: components["schemas"]["Game"]
         /** @description Only include servers owned by the specified user */
         owned_by?: components["schemas"]["UserId"]
+        /** @description Include servers that currently don't have an API key */
+        include_degloballed?: boolean
         /** @description Pagination offset */
         offset?: components["schemas"]["Offset"]
         /** @description Limit the number of results returned */

@@ -28,7 +28,7 @@
         :data="data"
         :loading="loading"
         :pagination="{ pageSize: 10 }"
-        :row-key="(rowData: RowData) => rowData.id"
+        :row-key="(rowData: Server) => rowData.id"
         size="small"
         @update:sorter="handleSorterChange"
       />
@@ -57,14 +57,13 @@
 <script setup lang="ts">
 import { ref, reactive, h, watch, toRaw, computed } from "vue"
 import { useRouter } from "vue-router"
-import { NInput, NDataTable, NButton, NSpace, NTooltip, useNotification, useDialog } from "naive-ui"
+import { NInput, NDataTable, NButton, NSpace, NTag, NTooltip, useNotification, useDialog } from "naive-ui"
 import type { DataTableSortState, DataTableColumn } from "naive-ui"
 import axiosClient from "../axios"
 import type { Game, Server } from "../types"
 import { toLocal, renderPlayerName, toErrorMsg, validQuery } from "../utils"
 import { useGameStore } from "../store/game"
 import { usePlayerStore } from "../store/player"
-import { RowData } from "naive-ui/es/data-table/src/interface"
 import KeyModal from "../components/server/KeyModal.vue"
 import { debounce } from "lodash-es"
 
@@ -72,6 +71,7 @@ type ServerQuery = {
   game: Game
   name: string
   owned_by: string
+  include_degloballed: boolean
 }
 
 const router = useRouter()
@@ -93,6 +93,7 @@ const serverQuery = reactive<ServerQuery>({
   game: gameStore.game,
   name: "",
   owned_by: "",
+  include_degloballed: true,
 })
 
 const columns = ref<DataTableColumn<Server>[]>([
@@ -118,6 +119,21 @@ const columns = ref<DataTableColumn<Server>[]>([
     key: "owner_id",
     render(rowData) {
       return renderPlayerName(rowData.owner.name, rowData.owner.id)
+    },
+  },
+  {
+    title: "Status",
+    key: "is_global",
+    render(rowData) {
+      return h(
+        NTag,
+        {
+          type: rowData.is_global ? "success" : "warning",
+        },
+        {
+          default: () => (rowData.is_global ? "Global" : "Degloballed"),
+        },
+      )
     },
   },
   {
@@ -166,7 +182,7 @@ watch(serverQuery, () => {
 
 loadServersData()
 
-function renderActionButtons(rowData: RowData) {
+function renderActionButtons(rowData: Server) {
   const buttons = []
   if (playerStore.permissions.includes("modify-server-metadata") || playerStore.steamId === rowData.owner.id) {
     buttons.push(
@@ -220,7 +236,7 @@ function renderActionButtons(rowData: RowData) {
     )
   }
 
-  if (playerStore.permissions.includes("delete-server-access-keys")) {
+  if (playerStore.permissions.includes("delete-server-access-keys") && rowData.is_global) {
     buttons.push(
       h(
         NButton,
