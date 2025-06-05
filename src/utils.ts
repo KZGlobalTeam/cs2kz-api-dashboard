@@ -54,8 +54,16 @@ export function renderWorkshopId(workshopId: number) {
 }
 
 export function toErrorMsg(error: any) {
-  const { data } = error.response
-  return `${data.title}\n${data.json_error ? data.json_error.detail : data.detail}`
+  if (error.response.status === 404) {
+    return "Not Found"
+  } else if (error.response.status === 401) {
+    return "Unauthorized"
+  } else if (error.response.status === 500) {
+    return "Internal Server Error"
+  } else {
+    const { title, detail } = error.response.data
+    return `${title}\n${detail}`
+  }
 }
 
 export function getDiff(obj1: any, obj2: any) {
@@ -70,14 +78,4 @@ export function getDiff(obj1: any, obj2: any) {
   }
 
   return diff
-}
-
-export function transformSrv(server: any) {
-  const [host, port] = server.ip_address.split(":")
-  return {
-    name: server.name,
-    host,
-    port: parseInt(port),
-    owner_id: server.owner,
-  }
 }
