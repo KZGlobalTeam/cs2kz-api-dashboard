@@ -150,6 +150,7 @@ function renderActionButtons(rowData: User) {
                     if (playerStore.steamId === rowData.id) {
                       playerStore.readPlayer()
                     }
+                    loadUsersData()
                   } catch (error) {
                     notification.error({
                       title: "Operation failed",
@@ -184,6 +185,7 @@ function renderActionButtons(rowData: User) {
                     if (playerStore.steamId === rowData.id) {
                       playerStore.readPlayer()
                     }
+                    loadUsersData()
                   } catch (error) {
                     notification.error({
                       title: "Operation failed",
