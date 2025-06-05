@@ -41,6 +41,7 @@ import { useRouter } from "vue-router"
 import type { NewServer } from "../types"
 import KeyModal from "../components/server/KeyModal.vue"
 import { useGameStore } from "../store/game"
+import { usePlayerStore } from "../store/player"
 
 const rules = {
   name: {
@@ -67,6 +68,8 @@ const rules = {
 const router = useRouter()
 
 const notification = useNotification()
+
+const playerStore = usePlayerStore()
 
 const gameStore = useGameStore()
 
@@ -111,6 +114,8 @@ async function createServer() {
         showModal.value = true
 
         notification.success({ title: "Server created", duration: 3000 })
+
+        playerStore.readPlayer()
       } catch (error) {
         notification.error({
           title: "Failed to create server",
