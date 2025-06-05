@@ -174,7 +174,7 @@ loadBansData()
 function renderActionButtons(rowData: Ban) {
   const buttons = []
 
-  if (playerStore.permissions.includes("update-bans")) {
+  if (playerStore.permissions.includes("update-bans") && !rowData.unban) {
     buttons.push(
       h(
         NButton,
