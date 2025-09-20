@@ -118,9 +118,9 @@ async function updateMap() {
 function generateUpdate(): any {
   const update: MapUpdate = {}
 
-  if (oldMap.description !== description.value && description.value !== "") update.description = description.value
+  update.workshop_id = Number(workshopId.value)
 
-  if (oldMap.workshop_id !== Number(workshopId.value)) update.workshop_id = Number(workshopId.value)
+  if (oldMap.description !== description.value && description.value !== "") update.description = description.value
 
   if (oldMap.state !== state.value) update.state = state.value
 
