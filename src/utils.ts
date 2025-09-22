@@ -38,8 +38,16 @@ export function renderWorkshopId(workshopId: number) {
 }
 
 export function toErrorMsg(error: any) {
-  const { data } = error.response
-  return `${data.title}\n${data.json_error ? data.json_error.detail : data.detail}`
+  if (error.response.status === 404) {
+    return "Not Found"
+  } else if (error.response.status === 401) {
+    return "Unauthorized"
+  } else if (error.response.status === 500) {
+    return "Internal Server Error"
+  } else {
+    const { data } = error.response
+    return `${data.title}\n${data.json_error ? data.json_error.detail : data.detail}`
+  }
 }
 
 export function getDiff(obj1: any, obj2: any) {
