@@ -12,6 +12,8 @@
       </div>
 
       <div class="flex gap-4">
+        <n-button @click="showImportModal" :disabled="loading" type="info" tertiary>Import JSON</n-button>
+
         <n-button @click="loadDraft(false)" :disabled="loading" type="info" tertiary>Load Draft</n-button>
 
         <n-button @click="saveDraft" :disabled="loading" type="warning" tertiary>Save as Draft</n-button>
@@ -48,6 +50,24 @@
         </div>
       </n-card>
     </n-modal>
+
+    <n-modal v-model:show="importModalVisible" style="width: 720px" preset="card">
+      <template #header>
+        <p class="font-poppings text-lg font-medium">Import JSON</p>
+      </template>
+      <n-input
+        v-model:value="importJson"
+        type="textarea"
+        placeholder='[{ "name": "kz_ozark", "workshop_id": "2798160350", ... }]'
+        :autosize="{ minRows: 14, maxRows: 28 }"
+      />
+      <template #footer>
+        <div class="flex justify-end gap-4 font-poppings">
+          <n-button @click="importModalVisible = false">Cancel</n-button>
+          <n-button type="primary" strong :disabled="!importJson.trim()" @click="confirmImport">Confirm</n-button>
+        </div>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -56,7 +76,7 @@ import { ref, toRaw } from "vue"
 import { useRouter } from "vue-router"
 import { useStorage } from "@vueuse/core"
 import { NInput, NButton, NCard, NModal, NTabs, NTabPane, useNotification } from "naive-ui"
-import type { NewMap } from "../types"
+import type { CourseFilter, FilterState, MapState, NewCourse, NewMap, Tier } from "../types"
 import CreateMap from "./CreateMap.vue"
 import axiosClient from "../axios"
 import { cloneDeep } from "lodash-es"
@@ -77,6 +97,24 @@ const selectedMapName = ref("")
 const mapTabs = ref<MapTab[]>([])
 
 const drafts = useStorage<MapTab[]>("maps-draft", () => [])
+
+const importModalVisible = ref(false)
+const importJson = ref("")
+
+const TIERS: Tier[] = [
+  "very-easy",
+  "easy",
+  "medium",
+  "advanced",
+  "hard",
+  "very-hard",
+  "extreme",
+  "death",
+  "unfeasible",
+  "impossible",
+]
+const MAP_STATES: MapState[] = ["approved", "invalid", "in-testing"]
+const FILTER_STATES: FilterState[] = ["pending", "unranked", "ranked"]
 
 const mapTabName = ref("")
 
@@ -139,6 +177,103 @@ function saveDraft() {
       duration: 3000,
     })
   }
+}
+
+function showImportModal() {
+  importJson.value = ""
+  importModalVisible.value = true
+}
+
+function confirmImport() {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(importJson.value)
+  } catch {
+    notification.error({
+      title: "Invalid JSON",
+      content: "Check the syntax and try again.",
+    })
+    return
+  }
+
+  const rawMaps = (Array.isArray(parsed) ? parsed : [parsed]) as Record<string, unknown>[]
+
+  const importedTabs: MapTab[] = []
+
+  for (let i = 0; i < rawMaps.length; i++) {
+    const raw = rawMaps[i]
+    if (typeof raw !== "object" || raw === null || typeof raw.name !== "string" || !raw.name.trim()) {
+      notification.error({
+        title: `Map ${i + 1}`,
+        content: "Each map must have a non-empty 'name' field.",
+      })
+      return
+    }
+    importedTabs.push({
+      name: uniqueTabName(raw.name),
+      newMap: normalizeNewMap(raw),
+    })
+  }
+
+  mapTabs.value.push(...importedTabs)
+  selectedMapName.value = importedTabs[0].name
+  importModalVisible.value = false
+
+  notification.success({
+    title: "Maps imported",
+    content: `Imported ${importedTabs.length} map(s)`,
+    duration: 3000,
+  })
+}
+
+function uniqueTabName(name: string): string {
+  const existing = new Set(mapTabs.value.map((tab) => tab.name))
+  if (!existing.has(name)) return name
+
+  let i = 2
+  while (existing.has(`${name} (${i})`)) {
+    i++
+  }
+  return `${name} (${i})`
+}
+
+function normalizeNewMap(raw: Record<string, unknown>): NewMap {
+  return {
+    workshop_id: String(raw.workshop_id ?? ""),
+    description: (raw.description as string) ?? "",
+    state: (MAP_STATES as string[]).includes(raw.state as string) ? (raw.state as MapState) : "approved",
+    mappers: toSteamIdList(raw.mappers),
+    courses: Array.isArray(raw.courses)
+      ? raw.courses.map((course) => normalizeCourse(course as Record<string, unknown>))
+      : [],
+  }
+}
+
+function normalizeCourse(raw: Record<string, unknown>): NewCourse {
+  const filters = (raw.filters as Record<string, unknown>) ?? {}
+  return {
+    name: (raw.name as string) ?? "",
+    description: (raw.description as string) ?? "",
+    filters: {
+      classic: normalizeFilter(filters.classic as Record<string, unknown> | undefined),
+      vanilla: normalizeFilter(filters.vanilla as Record<string, unknown> | undefined),
+    },
+    mappers: toSteamIdList(raw.mappers),
+  }
+}
+
+function normalizeFilter(raw: Record<string, unknown> | undefined): CourseFilter {
+  return {
+    nub_tier: (TIERS as string[]).includes(raw?.nub_tier as string) ? (raw?.nub_tier as Tier) : "very-easy",
+    pro_tier: (TIERS as string[]).includes(raw?.pro_tier as string) ? (raw?.pro_tier as Tier) : "very-easy",
+    state: (FILTER_STATES as string[]).includes(raw?.state as string) ? (raw?.state as FilterState) : "ranked",
+    notes: (raw?.notes as string) ?? "",
+  }
+}
+
+function toSteamIdList(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length === 0) return [""]
+  return value.map((mapper) => String(mapper))
 }
 
 async function saveMaps() {
